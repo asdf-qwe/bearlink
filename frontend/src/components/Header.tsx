@@ -11,16 +11,18 @@ export default function Header() {
       : "text-amber-100 hover:text-white";
   };
 
-  return (
-    <header
+  return (    <header
       className="shadow-md fixed top-0 left-0 right-0 z-50 border-b border-stone-300"
-      style={{ backgroundColor: "#907761" }}
+      style={{ 
+        backgroundImage: "url('/namu.jpg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center"
+      }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
-          <div className="flex">
-            <div className="flex-shrink-0 flex items-center">
-              <Link href="/" className="text-xl font-bold text-white">
+          <div className="flex">            <div className="flex-shrink-0 flex items-center">
+              <Link href="/" className="text-xl font-bold text-white" style={{ textShadow: "2px 2px 4px rgba(0,0,0,0.5)" }}>
                 BearLink
               </Link>
             </div>
@@ -51,8 +53,7 @@ export default function Header() {
               </Link>
             </nav>
           </div>
-          <div className="flex items-center">
-            <button className="p-2 rounded-full text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white focus:outline-none">
+          <div className="flex items-center">            <button className="p-2 rounded-full text-amber-100 hover:text-white focus:outline-none">
               <svg
                 className="h-6 w-6"
                 fill="none"
@@ -68,8 +69,7 @@ export default function Header() {
               </svg>
             </button>
             <div className="ml-3 relative">
-              <div>
-                <button className="p-1 rounded-full text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white focus:outline-none">
+              <div>                <button className="p-1 rounded-full text-amber-100 hover:text-white focus:outline-none">
                   <svg
                     className="h-6 w-6"
                     fill="none"
