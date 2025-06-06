@@ -1,8 +1,7 @@
 package com.project.bearlink.domain.categoryTab.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.project.bearlink.domain.link.entity.Link;
-import com.project.bearlink.domain.user.entity.User;
+import com.project.bearlink.domain.user.user.entity.User;
 import com.project.bearlink.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -33,5 +32,4 @@ public class Category extends BaseEntity {
     @OneToMany(mappedBy = "category")
     private List<Link> links = new ArrayList<>();
 
-    private Integer displayOrder;
 }

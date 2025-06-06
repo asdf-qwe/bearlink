@@ -1,6 +1,6 @@
 package com.project.bearlink.domain.theme.entity;
 
-import com.project.bearlink.domain.user.entity.User;
+import com.project.bearlink.domain.user.user.entity.User;
 import com.project.bearlink.global.jpa.BaseEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

@@ -1,4 +1,4 @@
-package com.project.bearlink.domain.user.entity;
+package com.project.bearlink.domain.user.user.entity;
 
 
 import com.project.bearlink.domain.categoryTab.entity.Category;
@@ -23,10 +23,16 @@ public class User extends BaseEntity {
 
     @Column(unique = true)
     private String oauthId;    // 카카오에서 받아올 oauthId -> 추가 필요
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String email;
-    private String username;
+    @Column(nullable = false)
+    private String nickname;
+    @Column(nullable = false)
     private String password;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Category> categories = new ArrayList<>();
