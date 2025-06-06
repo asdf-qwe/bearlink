@@ -1,36 +1,42 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, X, Folder, Trash2 } from "lucide-react";
+import { Plus, X, Folder, Trash2, AlertCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useSidebar } from "@/context/SidebarContext";
-
-interface Category {
-  id: string;
-  name: string;
-}
+import { categoryService } from "@/features/category/service/categoryService";
+import { Category, CategoryRequest } from "@/features/category/types/categoryTypes";
 
 export default function Sidebar() {
   const { isOpen, setIsOpen } = useSidebar();
-  const [categories, setCategories] = useState<Category[]>([
-    { id: "1", name: "즐겨찾기" },
-    { id: "2", name: "개발 관련" },
-  ]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [showAddCategoryForm, setShowAddCategoryForm] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  // 임시 사용자 ID - 실제로는 인증 시스템에서 가져와야 함
+  const userId = 1; 
 
-  // 로컬 스토리지에서 카테고리 항목들 불러오기
-  useEffect(() => {
-    const savedCategories = localStorage.getItem("sidebarCategories");
-    if (savedCategories) {
-      setCategories(JSON.parse(savedCategories));
+  // 백엔드에서 카테고리 목록 가져오기
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const categoriesData = await categoryService.getCategoriesByUserId(userId);
+      setCategories(categoriesData);
+    } catch (err) {
+      console.error('카테고리 로딩 실패:', err);
+      setError('카테고리를 불러오는데 문제가 발생했습니다.');
+    } finally {
+      setLoading(false);
     }
-  }, []);
+  };
 
-  // 카테고리 항목이 변경될 때 로컬 스토리지에 저장
+  // 컴포넌트 마운트 시 카테고리 목록 불러오기
   useEffect(() => {
-    localStorage.setItem("sidebarCategories", JSON.stringify(categories));
-  }, [categories]);
+    fetchCategories();
+  }, []);
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
@@ -41,20 +47,35 @@ export default function Sidebar() {
     setNewCategoryName("");
   };
 
-  const addCategory = () => {
+  const addCategory = async () => {
     if (newCategoryName.trim() === "") return;
 
-    const newCategory: Category = {
-      id: Date.now().toString(),
-      name: newCategoryName,
-    };
-
-    setCategories([...categories, newCategory]);
-    setNewCategoryName("");
-    setShowAddCategoryForm(false);
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const categoryRequest: CategoryRequest = {
+        name: newCategoryName
+      };
+      
+      await categoryService.createCategory(categoryRequest, userId);
+      await fetchCategories(); // 카테고리 목록 다시 불러오기
+      
+      setNewCategoryName("");
+      setShowAddCategoryForm(false);
+    } catch (err) {
+      console.error('카테고리 생성 실패:', err);
+      setError('카테고리 생성에 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const removeCategory = (categoryId: string) => {
+  // 카테고리 삭제 기능은 백엔드에 아직 구현되어 있지 않으므로 임시로 로컬에서만 처리
+  const removeCategory = (categoryId: number) => {
+    // 나중에 백엔드 API가 준비되면 아래와 같이 수정
+    // await categoryService.deleteCategory(categoryId);
+    
     setCategories(categories.filter((category) => category.id !== categoryId));
   };
 
@@ -65,6 +86,7 @@ export default function Sidebar() {
       setShowAddCategoryForm(false);
     }
   };
+  
   return (
     <div
       className={`sidebar-container ${
@@ -73,7 +95,6 @@ export default function Sidebar() {
       style={{ backgroundColor: isOpen ? "#907761" : "#907761" }}
     >
       <div className="p-3">
-        {" "}
         <button
           onClick={toggleSidebar}
           className={`mb-4 transition-all duration-200 ${
@@ -88,15 +109,31 @@ export default function Sidebar() {
         {isOpen && (
           <>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-white">카테고리</h2>{" "}
+              <h2 className="text-xl font-bold text-white">카테고리</h2>
               <button
                 onClick={toggleAddCategoryForm}
                 className="p-1 bg-stone-600 hover:bg-stone-700 text-white rounded-full transition-colors"
                 aria-label="카테고리 추가 폼 열기"
+                disabled={loading}
               >
                 <Plus size={16} />
               </button>
             </div>
+
+            {/* 오류 메시지 표시 */}
+            {error && (
+              <div className="mb-2 p-2 bg-red-100 border border-red-400 rounded text-red-700 text-sm flex items-center">
+                <AlertCircle size={16} className="mr-1" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* 로딩 표시 */}
+            {loading && (
+              <div className="flex justify-center my-2">
+                <Loader2 className="h-5 w-5 animate-spin text-amber-200" />
+              </div>
+            )}
 
             {showAddCategoryForm && (
               <div className="mb-4">
@@ -109,6 +146,7 @@ export default function Sidebar() {
                   className="w-full p-2 bg-white rounded border border-stone-300 text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
                   aria-label="새 카테고리 이름 입력"
                   autoFocus
+                  disabled={loading}
                 />
               </div>
             )}
@@ -123,7 +161,6 @@ export default function Sidebar() {
                     href={`/category/${category.id}`}
                     className="flex items-center space-x-2 flex-grow"
                   >
-                    {" "}
                     <Folder size={18} className="text-amber-200" />
                     <span className="font-medium text-white">
                       {category.name}
@@ -133,13 +170,14 @@ export default function Sidebar() {
                     onClick={() => removeCategory(category.id)}
                     className="p-1 text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
                     aria-label={`${category.name} 카테고리 삭제`}
+                    disabled={loading}
                   >
                     <Trash2 size={16} />
                   </button>
                 </div>
               ))}
 
-              {categories.length === 0 && (
+              {!loading && categories.length === 0 && (
                 <p className="text-center text-amber-200 p-4">
                   카테고리가 없습니다. 새 카테고리를 추가해보세요!
                 </p>
