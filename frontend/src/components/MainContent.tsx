@@ -9,11 +9,7 @@ interface MainContentProps {
 export default function MainContent({ children }: MainContentProps) {
   const { isOpen } = useSidebar();
   return (
-    <div
-      className={`transition-all duration-300 min-h-screen pt-16 ${
-        isOpen ? "ml-52" : "ml-16"
-      }`}
-    >
+    <div className="transition-all duration-300 min-h-screen flex-1">
       {children}
     </div>
   );

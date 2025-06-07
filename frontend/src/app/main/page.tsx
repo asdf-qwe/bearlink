@@ -1,7 +1,37 @@
 "use client";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import { categoryService } from "@/features/category/service/categoryService";
 import Image from "next/image";
 
 export default function Home() {
+  const router = useRouter();
+  const { userInfo } = useAuth();
+
+  useEffect(() => {
+    // 페이지 로드 시 첫 번째 카테고리로 리다이렉트
+    const redirectToFirstCategory = async () => {
+      if (!userInfo?.id) return;
+
+      try {
+        const categories = await categoryService.getCategoriesByUserId(
+          userInfo.id
+        );
+
+        if (categories && categories.length > 0) {
+          // 첫 번째 카테고리로 이동
+          router.replace(`/main/category/${categories[0].id}`);
+        }
+        // 카테고리가 없으면 현재 페이지에 머물기
+      } catch (error) {
+        console.error("카테고리 조회 실패:", error);
+        // 오류 발생 시 현재 페이지에 머물기
+      }
+    };
+
+    redirectToFirstCategory();
+  }, [router, userInfo?.id]);
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-8 bg-amber-50">
       <div className="w-full max-w-4xl">
