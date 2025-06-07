@@ -1,7 +1,7 @@
 package com.project.bearlink.domain.link.entity;
 
 import com.project.bearlink.domain.categoryTab.entity.Category;
-import com.project.bearlink.domain.user.entity.User;
+import com.project.bearlink.domain.user.user.entity.User;
 import com.project.bearlink.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
