@@ -5,7 +5,10 @@ import { Plus, X, Folder, Trash2, AlertCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useSidebar } from "@/context/SidebarContext";
 import { categoryService } from "@/features/category/service/categoryService";
-import { Category, CategoryRequest } from "@/features/category/types/categoryTypes";
+import {
+  Category,
+  CategoryRequest,
+} from "@/features/category/types/categoryTypes";
 
 export default function Sidebar() {
   const { isOpen, setIsOpen } = useSidebar();
@@ -14,20 +17,22 @@ export default function Sidebar() {
   const [showAddCategoryForm, setShowAddCategoryForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // 임시 사용자 ID - 실제로는 인증 시스템에서 가져와야 함
-  const userId = 1; 
+  const userId = 1;
 
   // 백엔드에서 카테고리 목록 가져오기
   const fetchCategories = async () => {
     try {
       setLoading(true);
       setError(null);
-      const categoriesData = await categoryService.getCategoriesByUserId(userId);
+      const categoriesData = await categoryService.getCategoriesByUserId(
+        userId
+      );
       setCategories(categoriesData);
     } catch (err) {
-      console.error('카테고리 로딩 실패:', err);
-      setError('카테고리를 불러오는데 문제가 발생했습니다.');
+      console.error("카테고리 로딩 실패:", err);
+      setError("카테고리를 불러오는데 문제가 발생했습니다.");
     } finally {
       setLoading(false);
     }
@@ -53,19 +58,19 @@ export default function Sidebar() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const categoryRequest: CategoryRequest = {
-        name: newCategoryName
+        name: newCategoryName,
       };
-      
+
       await categoryService.createCategory(categoryRequest, userId);
       await fetchCategories(); // 카테고리 목록 다시 불러오기
-      
+
       setNewCategoryName("");
       setShowAddCategoryForm(false);
     } catch (err) {
-      console.error('카테고리 생성 실패:', err);
-      setError('카테고리 생성에 실패했습니다.');
+      console.error("카테고리 생성 실패:", err);
+      setError("카테고리 생성에 실패했습니다.");
     } finally {
       setLoading(false);
     }
@@ -75,7 +80,7 @@ export default function Sidebar() {
   const removeCategory = (categoryId: number) => {
     // 나중에 백엔드 API가 준비되면 아래와 같이 수정
     // await categoryService.deleteCategory(categoryId);
-    
+
     setCategories(categories.filter((category) => category.id !== categoryId));
   };
 
@@ -86,7 +91,7 @@ export default function Sidebar() {
       setShowAddCategoryForm(false);
     }
   };
-  
+
   return (
     <div
       className={`sidebar-container ${

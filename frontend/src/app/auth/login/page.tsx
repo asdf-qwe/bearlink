@@ -1,0 +1,146 @@
+"use client";
+
+import React, { useState, FormEvent } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+
+export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const { login, loading: authLoading } = useAuth();
+  const router = useRouter();
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    // 기본 유효성 검사
+    if (!email.trim() || !password.trim()) {
+      setError("이메일과 비밀번호를 모두 입력해주세요.");
+      return;
+    }
+
+    try {
+      // AuthContext의 login 함수 사용
+      await login(email, password);
+
+      // 로그인 성공 후 홈으로 리다이렉트
+      router.push("/");
+    } catch (err: any) {
+      console.error("로그인 에러:", err);
+      setError(
+        err.message ||
+          "로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요."
+      );
+    }
+  };
+
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-stone-100">
+      <div className="w-full max-w-md space-y-8">
+        <div className="text-center">
+          <h2 className="mt-6 text-3xl font-bold tracking-tight text-stone-900">
+            BearLink에 로그인
+          </h2>
+          <p className="mt-2 text-sm text-stone-600">
+            아직 계정이 없으신가요?{" "}
+            <Link
+              href="/auth/signup"
+              className="font-medium text-amber-600 hover:text-amber-500"
+            >
+              회원가입
+            </Link>
+          </p>
+        </div>
+
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="space-y-4 rounded-md shadow-sm">
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-stone-700"
+              >
+                이메일
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="relative block w-full appearance-none rounded-md border border-stone-300 px-3 py-2 text-stone-900 placeholder-stone-400 focus:z-10 focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm"
+                placeholder="example@email.com"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-stone-700"
+              >
+                비밀번호
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="relative block w-full appearance-none rounded-md border border-stone-300 px-3 py-2 text-stone-900 placeholder-stone-400 focus:z-10 focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm"
+                placeholder="비밀번호 입력"
+              />
+            </div>
+          </div>
+          {error && (
+            <div className="p-3 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm">
+              {error}
+            </div>
+          )}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <input
+                id="remember-me"
+                name="remember-me"
+                type="checkbox"
+                className="h-4 w-4 rounded border-stone-300 text-amber-600 focus:ring-amber-500"
+              />
+              <label
+                htmlFor="remember-me"
+                className="ml-2 block text-sm text-stone-900"
+              >
+                로그인 상태 유지
+              </label>
+            </div>
+
+            <div className="text-sm">
+              <Link
+                href="#"
+                className="font-medium text-amber-600 hover:text-amber-500"
+              >
+                비밀번호 찾기
+              </Link>
+            </div>
+          </div>{" "}
+          <div>
+            <button
+              type="submit"
+              disabled={authLoading}
+              className={`group relative flex w-full justify-center rounded-md border border-transparent py-2 px-4 text-sm font-medium text-white ${
+                authLoading
+                  ? "bg-amber-300 cursor-not-allowed"
+                  : "bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
+              }`}
+            >
+              {authLoading ? "로그인 중..." : "로그인"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
