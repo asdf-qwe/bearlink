@@ -59,12 +59,11 @@ export default function SignupPage() {
       setLoading(false);
     }
   };
-
   return (
     <>
-      <Header />
-      <div className="flex min-h-screen flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-stone-100 pt-16">
-        <div className="w-full max-w-md space-y-8">
+      <Header />{" "}
+      <div className="flex min-h-screen flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 pt-16">
+        <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-lg shadow-lg border border-stone-200">
           <div className="text-center">
             <h2 className="mt-6 text-3xl font-bold tracking-tight text-stone-900">
               BearLink에 회원가입
