@@ -5,6 +5,7 @@ import { authService } from "@/features/auth/service/authService";
 import { SignupRequestDto } from "@/features/auth/types/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Header from "@/components/Header";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -58,132 +59,134 @@ export default function SignupPage() {
       setLoading(false);
     }
   };
-
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-stone-100">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <h2 className="mt-6 text-3xl font-bold tracking-tight text-stone-900">
-            BearLink에 회원가입
-          </h2>
-          <p className="mt-2 text-sm text-stone-600">
-            이미 계정이 있으신가요?{" "}
-            <Link
-              href="/auth/login"
-              className="font-medium text-amber-600 hover:text-amber-500"
-            >
-              로그인
-            </Link>
-          </p>
+    <>
+      <Header />{" "}
+      <div className="flex min-h-screen flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 pt-16">
+        <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-lg shadow-lg border border-stone-200">
+          <div className="text-center">
+            <h2 className="mt-6 text-3xl font-bold tracking-tight text-stone-900">
+              BearLink에 회원가입
+            </h2>
+            <p className="mt-2 text-sm text-stone-600">
+              이미 계정이 있으신가요?{" "}
+              <Link
+                href="/auth/login"
+                className="font-medium text-amber-600 hover:text-amber-500"
+              >
+                로그인
+              </Link>
+            </p>
+          </div>
+
+          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+            <div className="space-y-4 rounded-md shadow-sm">
+              <div>
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-stone-700"
+                >
+                  이메일
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="relative block w-full appearance-none rounded-md border border-stone-300 px-3 py-2 text-stone-900 placeholder-stone-400 focus:z-10 focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm"
+                  placeholder="example@email.com"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="nickname"
+                  className="block text-sm font-medium text-stone-700"
+                >
+                  닉네임
+                </label>
+                <input
+                  id="nickname"
+                  name="nickname"
+                  type="text"
+                  required
+                  value={nickname}
+                  onChange={(e) => setNickname(e.target.value)}
+                  className="relative block w-full appearance-none rounded-md border border-stone-300 px-3 py-2 text-stone-900 placeholder-stone-400 focus:z-10 focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm"
+                  placeholder="사용하실 닉네임을 입력하세요"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-stone-700"
+                >
+                  비밀번호
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="relative block w-full appearance-none rounded-md border border-stone-300 px-3 py-2 text-stone-900 placeholder-stone-400 focus:z-10 focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm"
+                  placeholder="비밀번호 입력"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="passwordConfirm"
+                  className="block text-sm font-medium text-stone-700"
+                >
+                  비밀번호 확인
+                </label>
+                <input
+                  id="passwordConfirm"
+                  name="passwordConfirm"
+                  type="password"
+                  required
+                  value={passwordConfirm}
+                  onChange={(e) => setPasswordConfirm(e.target.value)}
+                  className="relative block w-full appearance-none rounded-md border border-stone-300 px-3 py-2 text-stone-900 placeholder-stone-400 focus:z-10 focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm"
+                  placeholder="비밀번호 재입력"
+                />
+              </div>
+            </div>
+
+            {error && (
+              <div className="p-3 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm">
+                {error}
+              </div>
+            )}
+
+            {success && (
+              <div className="p-3 bg-green-50 border-l-4 border-green-500 text-green-700 text-sm">
+                {success}
+              </div>
+            )}
+
+            <div>
+              <button
+                type="submit"
+                disabled={loading}
+                className={`group relative flex w-full justify-center rounded-md border border-transparent py-2 px-4 text-sm font-medium text-white ${
+                  loading
+                    ? "bg-amber-300 cursor-not-allowed"
+                    : "bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
+                }`}
+              >
+                {loading ? "회원가입 중..." : "회원가입"}
+              </button>
+            </div>
+          </form>
         </div>
-
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4 rounded-md shadow-sm">
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-stone-700"
-              >
-                이메일
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="relative block w-full appearance-none rounded-md border border-stone-300 px-3 py-2 text-stone-900 placeholder-stone-400 focus:z-10 focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm"
-                placeholder="example@email.com"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="nickname"
-                className="block text-sm font-medium text-stone-700"
-              >
-                닉네임
-              </label>
-              <input
-                id="nickname"
-                name="nickname"
-                type="text"
-                required
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                className="relative block w-full appearance-none rounded-md border border-stone-300 px-3 py-2 text-stone-900 placeholder-stone-400 focus:z-10 focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm"
-                placeholder="사용하실 닉네임을 입력하세요"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-stone-700"
-              >
-                비밀번호
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="relative block w-full appearance-none rounded-md border border-stone-300 px-3 py-2 text-stone-900 placeholder-stone-400 focus:z-10 focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm"
-                placeholder="비밀번호 입력"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="passwordConfirm"
-                className="block text-sm font-medium text-stone-700"
-              >
-                비밀번호 확인
-              </label>
-              <input
-                id="passwordConfirm"
-                name="passwordConfirm"
-                type="password"
-                required
-                value={passwordConfirm}
-                onChange={(e) => setPasswordConfirm(e.target.value)}
-                className="relative block w-full appearance-none rounded-md border border-stone-300 px-3 py-2 text-stone-900 placeholder-stone-400 focus:z-10 focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm"
-                placeholder="비밀번호 재입력"
-              />
-            </div>
-          </div>
-
-          {error && (
-            <div className="p-3 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm">
-              {error}
-            </div>
-          )}
-
-          {success && (
-            <div className="p-3 bg-green-50 border-l-4 border-green-500 text-green-700 text-sm">
-              {success}
-            </div>
-          )}
-
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className={`group relative flex w-full justify-center rounded-md border border-transparent py-2 px-4 text-sm font-medium text-white ${
-                loading
-                  ? "bg-amber-300 cursor-not-allowed"
-                  : "bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
-              }`}
-            >
-              {loading ? "회원가입 중..." : "회원가입"}
-            </button>
-          </div>
-        </form>
       </div>
-    </div>
+    </>
   );
 }
