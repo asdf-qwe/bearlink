@@ -22,7 +22,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-        throws ServletException, IOException {
+            throws ServletException, IOException {
+
+        String uri = request.getRequestURI();
+
+        // 로그인, 회원가입 요청은 필터에서 JWT 검증 생략
+        if (uri.equals("/api/v1/auth/login") || uri.equals("/api/v1/auth/signup")) {
+            chain.doFilter(request, response);
+            return;
+        }
 
         String token = resolveToken(request);
         if (token != null && jwtTokenProvider.validateToken(token)) {
@@ -32,8 +40,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         }
+
         chain.doFilter(request, response);
     }
+
 
     private String resolveToken(HttpServletRequest request){
         String bearer = request.getHeader("Authorization");

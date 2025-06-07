@@ -16,24 +16,26 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 public class JwtTokenProvider {
+
     private final JwtProperties jwtProperties;
 
     public String generateAccessToken(String email) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("sub", email);
-        return generateToken(claims, jwtProperties.getAccessTokenExpiration());
+        return generateToken(claims, jwtProperties.getAccessToken().getExpirationSeconds());
     }
 
     public String generateRefreshToken(String email) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("sub", email);
-        return generateToken(claims, jwtProperties.getRefreshTokenExpiration());
+        return generateToken(claims, jwtProperties.getRefreshToken().getExpirationSeconds());
     }
 
     private String generateToken(Map<String, Object> claims, long expirationSeconds) {
         Date issuedAt = new Date();
         Date expiration = new Date(issuedAt.getTime() + expirationSeconds * 1000L);
-        SecretKey key = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes());
+
+        SecretKey key = Keys.hmacShaKeyFor(jwtProperties.getSecretKey().getBytes());
 
         return Jwts.builder()
                 .claims(claims)
@@ -44,7 +46,7 @@ public class JwtTokenProvider {
     }
 
     public String getEmailFromToken(String token) {
-        SecretKey key = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes());
+        SecretKey key = Keys.hmacShaKeyFor(jwtProperties.getSecretKey().getBytes());
 
         return Jwts.parser()
                 .verifyWith(key)
@@ -56,7 +58,7 @@ public class JwtTokenProvider {
 
     public boolean validateToken(String token) {
         try {
-            SecretKey key = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes());
+            SecretKey key = Keys.hmacShaKeyFor(jwtProperties.getSecretKey().getBytes());
             Jwts.parser()
                     .verifyWith(key)
                     .build()
@@ -66,4 +68,5 @@ public class JwtTokenProvider {
             return false;
         }
     }
+
 }
