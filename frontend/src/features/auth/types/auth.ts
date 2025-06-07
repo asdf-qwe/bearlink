@@ -35,3 +35,17 @@ export interface SignupRequestDto {
   password: string;
   nickname: string;
 }
+
+/**
+ * 사용자 응답 DTO - 백엔드의 UserResponseDto 클래스와 매핑됨
+ *
+ * @interface UserResponseDto
+ * @property {number} id - 사용자 ID
+ * @property {string} nickname - 사용자 닉네임
+ * @property {string} email - 사용자 이메일
+ */
+export interface UserResponseDto {
+  id: number;
+  nickname: string;
+  email: string;
+}

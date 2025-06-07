@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Plus, X, Folder, Trash2, AlertCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useSidebar } from "@/context/SidebarContext";
+import { useAuth } from "@/context/AuthContext";
 import { categoryService } from "@/features/category/service/categoryService";
 import {
   Category,
@@ -12,22 +13,22 @@ import {
 
 export default function Sidebar() {
   const { isOpen, setIsOpen } = useSidebar();
+  const { userInfo } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [showAddCategoryForm, setShowAddCategoryForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 임시 사용자 ID - 실제로는 인증 시스템에서 가져와야 함
-  const userId = 1;
-
   // 백엔드에서 카테고리 목록 가져오기
   const fetchCategories = async () => {
+    if (!userInfo?.id) return;
+
     try {
       setLoading(true);
       setError(null);
       const categoriesData = await categoryService.getCategoriesByUserId(
-        userId
+        userInfo.id
       );
       setCategories(categoriesData);
     } catch (err) {
@@ -37,11 +38,12 @@ export default function Sidebar() {
       setLoading(false);
     }
   };
-
   // 컴포넌트 마운트 시 카테고리 목록 불러오기
   useEffect(() => {
-    fetchCategories();
-  }, []);
+    if (userInfo?.id) {
+      fetchCategories();
+    }
+  }, [userInfo?.id]);
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
@@ -51,9 +53,8 @@ export default function Sidebar() {
     setShowAddCategoryForm(!showAddCategoryForm);
     setNewCategoryName("");
   };
-
   const addCategory = async () => {
-    if (newCategoryName.trim() === "") return;
+    if (newCategoryName.trim() === "" || !userInfo?.id) return;
 
     try {
       setLoading(true);
@@ -63,7 +64,7 @@ export default function Sidebar() {
         name: newCategoryName,
       };
 
-      await categoryService.createCategory(categoryRequest, userId);
+      await categoryService.createCategory(categoryRequest, userInfo.id);
       await fetchCategories(); // 카테고리 목록 다시 불러오기
 
       setNewCategoryName("");
@@ -96,7 +97,7 @@ export default function Sidebar() {
     <div
       className={`sidebar-container ${
         isOpen ? "w-52" : "w-16"
-      } h-screen text-white transition-all duration-300 fixed left-0 top-16 border-r border-stone-300 z-40 overflow-y-auto`}
+      } text-white transition-all duration-300 border-r border-stone-300 z-40 overflow-y-auto flex-shrink-0`}
       style={{ backgroundColor: isOpen ? "#907761" : "#907761" }}
     >
       <div className="p-3">

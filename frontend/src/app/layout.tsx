@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Sidebar from "@/components/Sidebar";
-import Header from "@/components/Header";
-import { SidebarProvider } from "@/context/SidebarContext";
 import { AuthProvider } from "@/context/AuthContext";
-import MainContent from "@/components/MainContent";
 
+// 폰트 설정
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -33,13 +30,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         style={{ backgroundColor: "#FFFBEB" }}
       >
-        <AuthProvider>
-          <SidebarProvider>
-            <Header />
-            <Sidebar />
-            <MainContent>{children}</MainContent>
-          </SidebarProvider>
-        </AuthProvider>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

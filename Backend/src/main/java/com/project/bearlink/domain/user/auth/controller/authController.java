@@ -4,6 +4,8 @@ import com.project.bearlink.domain.user.auth.service.authService;
 import com.project.bearlink.domain.user.user.dto.JwtResponseDto;
 import com.project.bearlink.domain.user.user.dto.LoginRequestDto;
 import com.project.bearlink.domain.user.user.dto.SignupRequestDto;
+import com.project.bearlink.domain.user.user.dto.UserResponseDto;
+import com.project.bearlink.domain.user.user.entity.User;
 import com.project.bearlink.domain.user.user.service.UserService;
 import com.project.bearlink.global.security.auth.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
@@ -25,8 +27,10 @@ public class authController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<String> getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        return ResponseEntity.ok("Hello, " + userDetails.getUser().getNickname());
+    public ResponseEntity<UserResponseDto> getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        User user = userDetails.getUser();
+        UserResponseDto responseDto = new UserResponseDto(user);
+        return ResponseEntity.ok(responseDto);
     }
 
     @PostMapping("/login")

@@ -2,6 +2,7 @@ import {
   JwtResponseDto,
   LoginRequestDto,
   SignupRequestDto,
+  UserResponseDto,
 } from "../types/auth";
 
 // API 기본 URL - 환경에 맞게 설정
@@ -71,12 +72,11 @@ export const authService = {
       throw error;
     }
   },
-
   /**
    * 현재 로그인한 사용자 정보 가져오기
-   * @returns 사용자 정보 (현재는 환영 메시지만 반환)
+   * @returns 사용자 정보 (UserResponseDto)
    */
-  async getCurrentUser(): Promise<string> {
+  async getCurrentUser(): Promise<UserResponseDto> {
     try {
       // 로컬 스토리지에서 액세스 토큰 가져오기
       const accessToken = localStorage.getItem("accessToken");
@@ -104,28 +104,48 @@ export const authService = {
         throw new Error(errorText || "사용자 정보를 가져오는데 실패했습니다");
       }
 
-      return await response.text();
+      const userData: UserResponseDto = await response.json();
+
+      // 사용자 ID를 로컬 스토리지에 저장 (카테고리 조회 등에 사용)
+      localStorage.setItem("userId", userData.id.toString());
+
+      return userData;
     } catch (error) {
       console.error("사용자 정보 조회 에러:", error);
       throw error;
     }
   },
-
   /**
    * 로그아웃 기능
    */
   logout(): void {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
+    localStorage.removeItem("userId");
     // 필요에 따라 추가 로직 구현 (예: 서버에 로그아웃 알림 등)
   },
-
   /**
    * 사용자가 로그인 상태인지 확인
    * @returns 로그인 상태 여부
    */
   isLoggedIn(): boolean {
     return !!localStorage.getItem("accessToken");
+  },
+  /**
+   * 액세스 토큰 가져오기
+   * @returns 액세스 토큰 또는 null
+   */
+  getAccessToken(): string | null {
+    return localStorage.getItem("accessToken");
+  },
+
+  /**
+   * 사용자 ID 가져오기
+   * @returns 사용자 ID 또는 null
+   */
+  getUserId(): number | null {
+    const userId = localStorage.getItem("userId");
+    return userId ? parseInt(userId, 10) : null;
   },
 };
 
