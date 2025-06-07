@@ -1,5 +1,6 @@
 server:
   port: 8080
+
 spring:
   output:
     ansi:
@@ -7,6 +8,8 @@ spring:
   profiles:
     active: dev
     include: secret
+  config:
+    import: optional:application-secret.yml  # ✅ 명시적 로딩 추가!
   datasource:
     url: jdbc:mysql://localhost:3306/bearLinkDB
     username: bear
@@ -23,6 +26,7 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
+
 logging:
   level:
     com.dd.blog: DEBUG
@@ -30,6 +34,7 @@ logging:
     org.hibernate.orm.jdbc.bind: TRACE
     org.hibernate.orm.jdbc.extract: TRACE
     org.springframework.transaction.interceptor: TRACE
+
 custom:
   dev:
     cookieDomain: localhost
@@ -44,5 +49,3 @@ custom:
     cookieDomain: "${custom.dev.cookieDomain}"
     frontUrl: "${custom.dev.frontUrl}"
     backUrl: "${custom.dev.backUrl}"
-
-
