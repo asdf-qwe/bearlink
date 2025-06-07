@@ -4,6 +4,7 @@ import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import { SidebarProvider } from "@/context/SidebarContext";
+import { AuthProvider } from "@/context/AuthContext";
 import MainContent from "@/components/MainContent";
 
 const geistSans = Geist({
@@ -32,11 +33,13 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         style={{ backgroundColor: "#FFFBEB" }}
       >
-        <SidebarProvider>
-          <Header />
-          <Sidebar />
-          <MainContent>{children}</MainContent>
-        </SidebarProvider>
+        <AuthProvider>
+          <SidebarProvider>
+            <Header />
+            <Sidebar />
+            <MainContent>{children}</MainContent>
+          </SidebarProvider>
+        </AuthProvider>
       </body>
     </html>
   );
