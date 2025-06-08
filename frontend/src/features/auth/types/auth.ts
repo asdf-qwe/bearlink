@@ -1,24 +1,32 @@
 /**
- * JWT 응답 DTO - 백엔드의 JwtResponseDto 클래스와 매핑됨
+ * 토큰 응답 DTO - 백엔드의 TokenResponseDto 클래스와 매핑됨
  *
- * @interface JwtResponseDto
+ * @interface TokenResponseDto
  * @property {string} accessToken - 액세스 토큰
  * @property {string} refreshToken - 리프레시 토큰
  */
-export interface JwtResponseDto {
+export interface TokenResponseDto {
   accessToken: string;
   refreshToken: string;
+}
+
+/**
+ * 사용자 역할 열거형
+ */
+export enum UserRole {
+  ADMIN = "ADMIN",
+  USER = "USER",
 }
 
 /**
  * 로그인 요청 DTO - 백엔드의 LoginRequestDto 클래스와 매핑됨
  *
  * @interface LoginRequestDto
- * @property {string} email - 사용자 이메일
+ * @property {string} loginId - 사용자 로그인 ID (이메일도 가능)
  * @property {string} password - 사용자 비밀번호
  */
 export interface LoginRequestDto {
-  email: string;
+  loginId: string;
   password: string;
 }
 
@@ -26,14 +34,20 @@ export interface LoginRequestDto {
  * 회원가입 요청 DTO - 백엔드의 SignupRequestDto 클래스와 매핑됨
  *
  * @interface SignupRequestDto
- * @property {string} email - 사용자 이메일
+ * @property {string} loginId - 사용자 로그인 ID (이메일도 가능)
  * @property {string} password - 사용자 비밀번호
- * @property {string} nickname - 사용자 닉네임
+ * @property {string} role - 사용자 역할 (ADMIN, USER)
+ * @property {string} [nickname] - 사용자 닉네임 (선택사항)
+ * @property {string} [email] - 사용자 이메일 (선택사항)
+ * @property {string} [imageUrl] - 사용자 이미지 URL (선택사항)
  */
 export interface SignupRequestDto {
-  email: string;
+  loginId: string;
   password: string;
-  nickname: string;
+  role: string;
+  nickname?: string;
+  email?: string;
+  imageUrl?: string;
 }
 
 /**
@@ -41,11 +55,17 @@ export interface SignupRequestDto {
  *
  * @interface UserResponseDto
  * @property {number} id - 사용자 ID
+ * @property {string} loginId - 사용자 로그인 ID
  * @property {string} nickname - 사용자 닉네임
  * @property {string} email - 사용자 이메일
+ * @property {string} imageUrl - 사용자 이미지 URL
+ * @property {UserRole} role - 사용자 역할
  */
 export interface UserResponseDto {
   id: number;
+  loginId: string;
   nickname: string;
   email: string;
+  imageUrl: string;
+  role: UserRole;
 }

@@ -75,14 +75,24 @@ export default function Sidebar() {
     } finally {
       setLoading(false);
     }
-  };
+  }; // 카테고리 삭제 기능
+  const removeCategory = async (categoryId: number, categoryName: string) => {
+    if (!confirm(`"${categoryName}" 카테고리를 삭제하시겠습니까?`)) {
+      return;
+    }
 
-  // 카테고리 삭제 기능은 백엔드에 아직 구현되어 있지 않으므로 임시로 로컬에서만 처리
-  const removeCategory = (categoryId: number) => {
-    // 나중에 백엔드 API가 준비되면 아래와 같이 수정
-    // await categoryService.deleteCategory(categoryId);
+    try {
+      setLoading(true);
+      setError(null);
 
-    setCategories(categories.filter((category) => category.id !== categoryId));
+      await categoryService.deleteCategory(categoryId);
+      await fetchCategories(); // 카테고리 목록 다시 불러오기
+    } catch (err) {
+      console.error("카테고리 삭제 실패:", err);
+      setError("카테고리 삭제에 실패했습니다.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCategoryKeyPress = (e: React.KeyboardEvent) => {
@@ -163,17 +173,18 @@ export default function Sidebar() {
                   key={category.id}
                   className="flex justify-between items-center p-2 border border-amber-200 rounded-md hover:bg-amber-900 hover:bg-opacity-30 transition-colors group"
                 >
+                  {" "}
                   <Link
-                    href={`/category/${category.id}`}
+                    href={`/main/category/${category.id}`}
                     className="flex items-center space-x-2 flex-grow"
                   >
                     <Folder size={18} className="text-amber-200" />
                     <span className="font-medium text-white">
                       {category.name}
                     </span>
-                  </Link>
+                  </Link>{" "}
                   <button
-                    onClick={() => removeCategory(category.id)}
+                    onClick={() => removeCategory(category.id, category.name)}
                     className="p-1 text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
                     aria-label={`${category.name} 카테고리 삭제`}
                     disabled={loading}
