@@ -1,4 +1,4 @@
-package com.project.bearlink.domain.user.user.dto;
+package com.project.bearlink.domain.user.auth.dto;
 
 import lombok.Builder;
 import lombok.Getter;
