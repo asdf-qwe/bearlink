@@ -7,29 +7,28 @@ import Link from "next/link";
 import Header from "@/components/Header";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const { login, loading: authLoading } = useAuth();
   const router = useRouter();
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
 
     // 기본 유효성 검사
-    if (!email.trim() || !password.trim()) {
-      setError("이메일과 비밀번호를 모두 입력해주세요.");
+    if (!loginId.trim() || !password.trim()) {
+      setError("로그인 ID와 비밀번호를 모두 입력해주세요.");
       return;
     }
     try {
       // AuthContext의 login 함수 사용 (로그인 성공 시 자동으로 카테고리 페이지로 이동)
-      await login(email, password);
+      await login(loginId, password);
     } catch (err: any) {
       console.error("로그인 에러:", err);
       setError(
         err.message ||
-          "로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요."
+          "로그인에 실패했습니다. 로그인 ID와 비밀번호를 확인해주세요."
       );
     }
   };
@@ -54,24 +53,25 @@ export default function LoginPage() {
           </div>
 
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+            {" "}
             <div className="space-y-4 rounded-md shadow-sm">
               <div>
                 <label
-                  htmlFor="email"
+                  htmlFor="loginId"
                   className="block text-sm font-medium text-stone-700"
                 >
-                  이메일
+                  로그인 ID
                 </label>
                 <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
+                  id="loginId"
+                  name="loginId"
+                  type="text"
+                  autoComplete="username"
                   required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={loginId}
+                  onChange={(e) => setLoginId(e.target.value)}
                   className="relative block w-full appearance-none rounded-md border border-stone-300 px-3 py-2 text-stone-900 placeholder-stone-400 focus:z-10 focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm"
-                  placeholder="example@email.com"
+                  placeholder="로그인 ID 또는 이메일"
                 />
               </div>
               <div>
@@ -94,13 +94,11 @@ export default function LoginPage() {
                 />
               </div>
             </div>
-
             {error && (
               <div className="p-3 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm">
                 {error}
               </div>
             )}
-
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <input
@@ -126,7 +124,6 @@ export default function LoginPage() {
                 </Link>
               </div>
             </div>
-
             <div>
               <button
                 type="submit"

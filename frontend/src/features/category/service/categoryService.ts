@@ -18,19 +18,14 @@ export const categoryService = {
     userId: number
   ): Promise<string> {
     try {
-      const accessToken = authService.getAccessToken();
-      if (!accessToken) {
-        throw new Error("로그인이 필요합니다");
-      }
-
       const response = await fetch(
         `${API_URL}/api/v1/category?userId=${userId}`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
           },
+          credentials: "include", // 쿠키를 포함하여 요청
           body: JSON.stringify(req),
         }
       );
@@ -50,26 +45,20 @@ export const categoryService = {
       throw error;
     }
   },
-
   /**
    * 사용자 ID에 해당하는 모든 카테고리를 조회합니다
    * @param userId 사용자 ID
    * @returns 카테고리 목록
    */ async getCategoriesByUserId(userId: number): Promise<Category[]> {
     try {
-      const accessToken = authService.getAccessToken();
-      if (!accessToken) {
-        throw new Error("로그인이 필요합니다");
-      }
-
       const response = await fetch(
         `${API_URL}/api/v1/category?userId=${userId}`,
         {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
           },
+          credentials: "include", // 쿠키를 포함하여 요청
         }
       );
       if (!response.ok) {
@@ -88,7 +77,6 @@ export const categoryService = {
       throw error;
     }
   },
-
   /**
    * 카테고리를 삭제합니다
    * @param categoryId 삭제할 카테고리 ID
@@ -96,19 +84,14 @@ export const categoryService = {
    */
   async deleteCategory(categoryId: number): Promise<string> {
     try {
-      const accessToken = authService.getAccessToken();
-      if (!accessToken) {
-        throw new Error("로그인이 필요합니다");
-      }
-
       const response = await fetch(
         `${API_URL}/api/v1/category?categoryId=${categoryId}`,
         {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
           },
+          credentials: "include", // 쿠키를 포함하여 요청
         }
       );
 
