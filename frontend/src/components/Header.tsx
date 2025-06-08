@@ -5,7 +5,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useState, useRef, useEffect } from "react";
 import { LogOut, LogIn, User } from "lucide-react";
-import { categoryService } from "@/features/category/service/categoryService";
 
 export default function Header() {
   const pathname = usePathname();
@@ -13,15 +12,13 @@ export default function Header() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-
   const isActive = (path: string) => {
     return pathname === path
-      ? "text-white border-b-2 border-amber-200"
+      ? "text-white border-b-[2px] border-amber-200"
       : "text-amber-100 hover:text-white";
   };
-
-  // 링크룸 클릭 핸들러 - 사용자의 첫 번째 카테고리로 이동
-  const handleLinkRoomClick = async (e: React.MouseEvent) => {
+  // 링크룸 클릭 핸들러 - 메인 페이지로 이동
+  const handleLinkRoomClick = (e: React.MouseEvent) => {
     e.preventDefault();
 
     if (!isLoggedIn || !userInfo) {
@@ -29,23 +26,8 @@ export default function Header() {
       return;
     }
 
-    try {
-      const categories = await categoryService.getCategoriesByUserId(
-        userInfo.id
-      );
-
-      if (categories && categories.length > 0) {
-        // 첫 번째 카테고리로 이동
-        router.push(`/main/category/${categories[0].id}`);
-      } else {
-        // 카테고리가 없으면 메인 페이지로
-        router.push("/main");
-      }
-    } catch (error) {
-      console.error("카테고리 조회 실패:", error);
-      // 오류 시 메인 페이지로 이동
-      router.push("/main");
-    }
+    // 로그인된 사용자는 메인 페이지로 이동
+    router.push("/main");
   };
 
   // 사용자 메뉴 외부 클릭 시 닫기
@@ -92,12 +74,12 @@ export default function Header() {
                 )}`}
               >
                 홈
-              </Link>
+              </Link>{" "}
               <button
                 onClick={handleLinkRoomClick}
                 className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
-                  pathname.startsWith("/main/category")
-                    ? "text-white border-b-2 border-amber-200"
+                  pathname.startsWith("/main")
+                    ? "text-white border-b-[3px] border-amber-200"
                     : "text-amber-100 hover:text-white"
                 }`}
               >
