@@ -1,11 +1,12 @@
 package com.project.bearlink.global.security.config;
 
-import com.project.bearlink.global.security.auth.CustomUserDetailService;
-import com.project.bearlink.global.security.filter.JwtAuthenticationFilter;
-import com.project.bearlink.global.security.jwt.JwtTokenProvider;
+import com.project.bearlink.global.rq.Rq;
+import com.project.bearlink.global.security.filter.CustomAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -20,45 +21,85 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
-@EnableWebSecurity
-@RequiredArgsConstructor
 @Configuration
+@EnableWebSecurity  // Spring Security 활성화
+@EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtTokenProvider jwtTokenProvider;
-    private final CustomUserDetailService customUserDetailsService;
+    private final Rq rq;
 
+    /**
+     * 비밀번호 암호화용 빈 등록
+     * 회원가입 시 비밀번호를 해시 처리하는 데 사용
+     */
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(c -> c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/login","/api/v1/auth/signup").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, customUserDetailsService), UsernamePasswordAuthenticationFilter.class)
-                .build();
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
+
+
+    /**
+     * 커스텀 JWT 인증 필터 빈 등록
+     * → HTTP 요청마다 JWT 토큰 검사해서 로그인 여부 확인해주는 필터
+     */
+    @Bean
+    public CustomAuthenticationFilter customAuthenticationFilter() {
+        return new CustomAuthenticationFilter(rq);
+    }
+
+
+
+    /**
+     * Spring Security 필터 체인 구성
+     * 어떤 요청에 인증이 필요한지, 어떤 필터를 적용할지를 설정
+     */
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(AbstractHttpConfigurer::disable) // CSRF 비활성화 (세션사용 X : JWT 방식이므로 꺼도 됨)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(config -> config.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션사용 X (JWT 기반 인증이므로)
+
+                // 요청 경로별 권한 설정
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/api/v1/users/signup",
+                                "/api/v1/users/login",
+                                "/api/v1/users/refresh"
+                        ).permitAll() // 회원가입, 로그인, 토큰 재발급 : 허용✔️
+                        .requestMatchers("/actuator/health")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/**").permitAll() // GET 요청 : 모두 허용✔️
+                        .requestMatchers("/api/**").authenticated() // 그 외 /api/** 요청 : 인증 필요⚠️
+                        .anyRequest().permitAll() // 나머지 요청 : 모두 허용✔️
+                )
+
+                // 커스텀 인증 필터를 UsernamePasswordAuthenticationFilter 앞에 넣음
+                // → 요청마다 JWT 토큰 확인 → 인증되면 SecurityContext 로그인 상태 저장
+                .addFilterBefore(customAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+
+
+
+    /**
+     * CORS 설정
+     * → 모든 origin, method, header 허용
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of("http://localhost:3000"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true); // 프론트에서 credential 전송 시 필요
+        config.setAllowCredentials(true); // 인증정보 허용 (쿠키 등)
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
     }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 }

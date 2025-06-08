@@ -46,6 +46,9 @@ custom:
     backUrl: "https://api.blog.${custom.prod.cookieDomain}"
   site:
     name: "MINGLE DEV"
+    cookie:
+      secure: false
+      sameSite: Lax
     cookieDomain: "${custom.dev.cookieDomain}"
     frontUrl: "${custom.dev.frontUrl}"
     backUrl: "${custom.dev.backUrl}"
