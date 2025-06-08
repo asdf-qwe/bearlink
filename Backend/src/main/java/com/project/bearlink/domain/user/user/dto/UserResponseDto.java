@@ -1,24 +1,30 @@
 package com.project.bearlink.domain.user.user.dto;
 
 import com.project.bearlink.domain.user.user.entity.User;
-import lombok.AllArgsConstructor;
+import com.project.bearlink.domain.user.user.entity.UserRole;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
+@Builder
 public class UserResponseDto {
+
     private Long id;
-    private String email;
+    private String loginId;
     private String nickname;
-    private String message;
+    private String email;
+    private String imageUrl;
+    private UserRole role;
 
-    public UserResponseDto(User user) {
-        this.id = user.getId();
-        this.email = user.getEmail();
-        this.nickname = user.getNickname();
-        this.message = "Hello, " + user.getNickname();
+
+    public static UserResponseDto fromEntity(User user) {
+        return UserResponseDto.builder()
+                .id(user.getId())
+                .loginId(user.getLoginId())
+                .nickname(user.getNickname())
+                .email(user.getEmail())
+                .imageUrl(user.getImageUrl())
+                .role(user.getRole())
+                .build();
     }
-
-    // getter 메서드들 추가
 }
