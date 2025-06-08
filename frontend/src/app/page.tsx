@@ -11,36 +11,16 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto">
           <h1 className="text-4xl font-bold text-center text-amber-900 mb-8">
             BearLink에 오신 것을 환영합니다
-          </h1>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {" "}
-            {/* 메인 배경 카드 */}
-            <div className="md:col-span-2 lg:col-span-2">
-              <BackgroundCard
-                imageUrl="/d.png"
-                title="산속 오두막"
-                description="평화로운 산속에서 링크를 정리해보세요"
-                className="h-80"
-              />
-            </div>
-            {/* 추가 카드들 */}
-            <div className="space-y-6">
-              <BackgroundCard
-                imageUrl="/namu.jpg"
-                title="자연 속 휴식"
-                description="나무 그늘 아래서"
-                className="h-36"
-              />
-
-              <BackgroundCard
-                imageUrl="/d.png"
-                title="곰돌이 친구"
-                description="함께하는 링크 관리"
-                className="h-36"
-              />
-            </div>
+          </h1>{" "}
+          {/* 메인 배경 카드 */}
+          <div className="mb-8">
+            <BackgroundCard
+              imageUrl="/d.png"
+              title="산속 오두막"
+              description="평화로운 산속에서 링크를 정리해보세요"
+              className="h-[32rem]"
+            />
           </div>
-
           {/* 추가 섹션 */}
           <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="bg-white p-6 rounded-lg shadow-md border border-amber-200">
