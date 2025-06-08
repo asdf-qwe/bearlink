@@ -222,67 +222,59 @@ export default function CategoryPage() {
       </div>
     );
   }
-
   return (
     <div className="container mx-auto px-4 py-8 bg-amber-50 min-h-screen">
       {/* 뒤로 가기 버튼 */}
       <button
         onClick={() => router.back()}
-        className="flex items-center text-amber-700 hover:text-amber-900 mb-4"
+        className="flex items-center text-amber-700 hover:text-amber-900 mb-6"
       >
         <ArrowLeft size={20} className="mr-2" />
         뒤로 가기
-      </button>
-
-      {/* 카테고리 헤더 */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-3">
-            {editingCategory ? (
-              <input
-                type="text"
-                value={categoryName}
-                onChange={(e) => setCategoryName(e.target.value)}
-                onKeyDown={handleCategoryKeyPress}
-                className="text-2xl font-bold text-amber-900 bg-amber-50 border border-amber-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-amber-500"
-                autoFocus
-              />
-            ) : (
-              <h1 className="text-2xl font-bold text-amber-900">
-                {category.name}
-              </h1>
-            )}
-          </div>
-          <div className="flex space-x-2">
-            {editingCategory ? (
-              <>
-                <button
-                  onClick={saveCategoryName}
-                  className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
-                >
-                  저장
-                </button>
-                <button
-                  onClick={() => {
-                    setEditingCategory(false);
-                    setCategoryName(category.name);
-                  }}
-                  className="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700"
-                >
-                  취소
-                </button>
-              </>
-            ) : (
+      </button>      {/* 카테고리 제목 */}
+      <div className="flex items-center space-x-3 mb-8">
+        {editingCategory ? (
+          <>
+            <input
+              type="text"
+              value={categoryName}
+              onChange={(e) => setCategoryName(e.target.value)}
+              onKeyDown={handleCategoryKeyPress}
+              className="text-3xl font-bold text-amber-900 bg-amber-50 border border-amber-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              autoFocus
+            />
+            <div className="flex space-x-2">
               <button
-                onClick={() => setEditingCategory(true)}
-                className="p-2 text-amber-600 hover:text-amber-800 hover:bg-amber-100 rounded"
-                aria-label="카테고리 이름 편집"
+                onClick={saveCategoryName}
+                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
               >
-                <Edit size={18} />
+                저장
               </button>
-            )}
-          </div>
-        </div>
+              <button
+                onClick={() => {
+                  setEditingCategory(false);
+                  setCategoryName(category.name);
+                }}
+                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+              >
+                취소
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <h1 className="text-3xl font-bold text-amber-900">
+              {category.name}
+            </h1>
+            <button
+              onClick={() => setEditingCategory(true)}
+              className="p-2 text-amber-600 hover:text-amber-800 hover:bg-amber-100 rounded"
+              aria-label="카테고리 이름 편집"
+            >
+              <Edit size={20} />
+            </button>
+          </>
+        )}
       </div>
 
       {/* 링크 추가 폼 */}
