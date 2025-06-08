@@ -15,7 +15,7 @@ export default function HomePage() {
           {/* 메인 배경 카드 */}
           <div className="mb-8">
             <BackgroundCard
-              imageUrl="/d.png"
+              imageUrl="/home.png"
               title="산속 오두막"
               description="평화로운 산속에서 링크를 정리해보세요"
               className="h-[32rem]"

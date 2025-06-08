@@ -1,68 +1,26 @@
 "use client";
 import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
+import BackgroundCard from "@/components/BackgroundCard";
 
 export default function Home() {
   const { userInfo } = useAuth();
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-8 bg-amber-50">
-      <div className="w-full max-w-4xl">
-        <h1 className="text-4xl font-bold mb-8 text-center text-amber-900">
-          BearLink에 오신 것을 환영합니다
-        </h1>
-
-        <div className="bg-white p-6 rounded-lg shadow-md mb-8 border border-amber-200">
-          <h2 className="text-2xl font-semibold mb-4 text-amber-900">
-            시작하기
-          </h2>
-          <p className="mb-4 text-amber-800">
-            왼쪽의 사이드바를 통해 다양한 메뉴로 이동할 수 있습니다. 사이드바의
-            메뉴는 직접 추가하고 삭제할 수 있습니다.
+    <div className="min-h-screen bg-amber-50 p-8">
+      <div className="max-w-6xl mx-auto">
+        {/* 상단 문구 영역 */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-center text-amber-900 mb-4">
+            링크 관리 메인 페이지
+          </h1>
+          <p className="text-center text-amber-700 text-lg">
+            카테고리를 선택하여 링크를 관리해보세요
           </p>
-          <p className="mb-4 text-amber-800">
-            사이드바 메뉴 목록 아래에 있는 입력창에 새로운 메뉴 이름을 입력하고
-            + 버튼을 클릭하면 메뉴가 추가됩니다.
-          </p>
-          <p className="text-amber-800">
-            각 메뉴 항목 옆의 X 버튼을 클릭하면 해당 메뉴가 삭제됩니다.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow-md border border-amber-200">
-            <h2 className="text-xl font-semibold mb-3 text-amber-900">
-              링크룸
-            </h2>
-            <p className="text-amber-700">
-              다른 사용자들과 링크를 공유하고 소통할 수 있는 공간입니다.
-            </p>
-            <div className="mt-4">
-              <a
-                href="/linkRoom"
-                className="px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700 inline-block"
-              >
-                방문하기
-              </a>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow-md border border-amber-200">
-            <h2 className="text-xl font-semibold mb-3 text-amber-900">
-              마이페이지
-            </h2>
-            <p className="text-amber-700">
-              사용자 정보와 저장한 링크를 관리할 수 있는 개인 페이지입니다.
-            </p>
-            <div className="mt-4">
-              <a
-                href="/myPage"
-                className="px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700 inline-block"
-              >
-                방문하기
-              </a>
-            </div>
-          </div>
+        </div>{" "}
+        {/* 배경 카드 */}
+        <div className="mb-8">
+          <BackgroundCard imageUrl="/main.png" className="h-[40rem]" />
         </div>
       </div>
     </div>
