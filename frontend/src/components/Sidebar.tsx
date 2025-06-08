@@ -173,8 +173,9 @@ export default function Sidebar() {
                   key={category.id}
                   className="flex justify-between items-center p-2 border border-amber-200 rounded-md hover:bg-amber-900 hover:bg-opacity-30 transition-colors group"
                 >
+                  {" "}
                   <Link
-                    href={`/category/${category.id}`}
+                    href={`/main/category/${category.id}`}
                     className="flex items-center space-x-2 flex-grow"
                   >
                     <Folder size={18} className="text-amber-200" />
