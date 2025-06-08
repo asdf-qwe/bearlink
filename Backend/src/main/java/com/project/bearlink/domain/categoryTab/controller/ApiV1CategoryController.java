@@ -1,6 +1,7 @@
 package com.project.bearlink.domain.categoryTab.controller;
 
 import com.project.bearlink.domain.categoryTab.dto.CategoryRequest;
+import com.project.bearlink.domain.categoryTab.dto.CategoryResponse;
 import com.project.bearlink.domain.categoryTab.entity.Category;
 import com.project.bearlink.domain.categoryTab.service.CategoryService;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +25,14 @@ public class ApiV1CategoryController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Category>> readCategory (@RequestParam Long userId) {
-        List<Category> categories = categoryService.getCategoriesByUserId(userId);
+    public ResponseEntity<List<CategoryResponse>> readCategory (@RequestParam Long userId) {
+        List<CategoryResponse> categories = categoryService.getCategoriesByUserId(userId);
         return ResponseEntity.ok(categories);
+    }
+
+    @DeleteMapping
+    public ResponseEntity<String> deleteCategory(@RequestParam Long categoryId) {
+        categoryService.deleteCategory(categoryId);
+        return ResponseEntity.ok("삭제 되었습니다");
     }
 }
