@@ -1,6 +1,7 @@
 package com.project.bearlink.domain.categoryTab.service;
 
 import com.project.bearlink.domain.categoryTab.dto.CategoryRequest;
+import com.project.bearlink.domain.categoryTab.dto.CategoryResponse;
 import com.project.bearlink.domain.categoryTab.entity.Category;
 import com.project.bearlink.domain.categoryTab.repository.CategoryRepository;
 import com.project.bearlink.domain.user.user.entity.User;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,9 +39,15 @@ public class CategoryService {
     }
 
     // 특정 사용자의 카테고리 목록 조회 (사이드바 메뉴로 보여줄 리스트)
-    public List<Category> getCategoriesByUserId(long userId) {
-
-        return categoryRepository.findByUserId(userId);
+    public List<CategoryResponse> getCategoriesByUserId(Long userId) {
+        List<Category> categories = categoryRepository.findByUserId(userId);
+        return categories.stream()
+                .map(category -> new CategoryResponse(
+                        category.getId(),
+                        category.getName(),
+                        category.getUser().getId()
+                ))
+                .collect(Collectors.toList());
     }
 
     public Category updateCategory (CategoryRequest req, Long categoryId) {

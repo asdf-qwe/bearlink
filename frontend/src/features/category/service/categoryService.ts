@@ -34,10 +34,12 @@ export const categoryService = {
           body: JSON.stringify(req),
         }
       );
-
       if (!response.ok) {
         if (response.status === 401) {
           throw new Error("인증이 만료되었습니다. 다시 로그인해주세요");
+        }
+        if (response.status === 403) {
+          throw new Error("접근 권한이 없습니다. 관리자에게 문의하세요");
         }
         throw new Error("카테고리 생성에 실패했습니다");
       }
@@ -70,10 +72,12 @@ export const categoryService = {
           },
         }
       );
-
       if (!response.ok) {
         if (response.status === 401) {
           throw new Error("인증이 만료되었습니다. 다시 로그인해주세요");
+        }
+        if (response.status === 403) {
+          throw new Error("접근 권한이 없습니다. 관리자에게 문의하세요");
         }
         throw new Error("카테고리 조회에 실패했습니다");
       }
@@ -81,6 +85,46 @@ export const categoryService = {
       return await response.json();
     } catch (error) {
       console.error("카테고리 조회 에러:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * 카테고리를 삭제합니다
+   * @param categoryId 삭제할 카테고리 ID
+   * @returns 삭제 결과 메시지
+   */
+  async deleteCategory(categoryId: number): Promise<string> {
+    try {
+      const accessToken = authService.getAccessToken();
+      if (!accessToken) {
+        throw new Error("로그인이 필요합니다");
+      }
+
+      const response = await fetch(
+        `${API_URL}/api/v1/category?categoryId=${categoryId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error("인증이 만료되었습니다. 다시 로그인해주세요");
+        }
+        if (response.status === 403) {
+          throw new Error("접근 권한이 없습니다. 관리자에게 문의하세요");
+        }
+        throw new Error("카테고리 삭제에 실패했습니다");
+      }
+
+      return await response.text();
+    } catch (error) {
+      console.error("카테고리 삭제 에러:", error);
       throw error;
     }
   },
