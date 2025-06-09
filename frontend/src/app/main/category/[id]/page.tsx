@@ -14,6 +14,8 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { categoryService } from "@/features/category/service/categoryService";
 import { Category } from "@/features/category/types/categoryTypes";
+import { linkService } from "@/features/link/service/linkService";
+import { LinkRequestDto } from "@/features/link/types/link";
 
 interface LinkItem {
   id: string;
@@ -34,11 +36,11 @@ export default function CategoryPage() {
   const categoryId = Number(params.id as string);
 
   const [category, setCategory] = useState<CategoryWithLinks | null>(null);
-  const [newLinkData, setNewLinkData] = useState({ title: "", url: "" });
-  const [showAddLinkForm, setShowAddLinkForm] = useState(false);
+  const [newLinkData, setNewLinkData] = useState({ title: "", url: "" });  const [showAddLinkForm, setShowAddLinkForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState(false);
   const [categoryName, setCategoryName] = useState("");
   const [loading, setLoading] = useState(true);
+  const [addingLink, setAddingLink] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // 백엔드에서 카테고리 정보 불러오기
@@ -88,11 +90,10 @@ export default function CategoryPage() {
     };
 
     loadCategory();
-  }, [categoryId, userInfo?.id]);
-
-  const addLink = () => {
+  }, [categoryId, userInfo?.id]);  const addLink = async () => {
     if (
       !category ||
+      !userInfo?.id ||
       newLinkData.title.trim() === "" ||
       newLinkData.url.trim() === ""
     )
@@ -103,26 +104,51 @@ export default function CategoryPage() {
       url = "https://" + url;
     }
 
-    const newLink: LinkItem = {
-      id: Date.now().toString(),
-      title: newLinkData.title,
-      url: url,
-    };
+    setAddingLink(true);
+    setError(null);
 
-    const updatedCategory = {
-      ...category,
-      links: [...category.links, newLink],
-    };
+    try {
+      // 백엔드 API로 링크 생성
+      const linkRequestDto: LinkRequestDto = {
+        title: newLinkData.title,
+        url: url,
+        thumbnailImageUrl: "", // 썸네일 기능이 없으면 빈 문자열
+        category: {
+          id: category.id,
+          name: category.name
+        }
+      };
 
-    setCategory(updatedCategory);
-    setNewLinkData({ title: "", url: "" });
-    setShowAddLinkForm(false);
+      await linkService.createLink(userInfo.id, linkRequestDto);
 
-    // 로컬 스토리지에 저장 (임시 - 나중에 백엔드 API로 변경)
-    localStorage.setItem(
-      `category_${categoryId}_links`,
-      JSON.stringify(updatedCategory.links)
-    );
+      // 성공 시 로컬 상태 업데이트
+      const newLink: LinkItem = {
+        id: Date.now().toString(),
+        title: newLinkData.title,
+        url: url,
+      };
+
+      const updatedCategory = {
+        ...category,
+        links: [...category.links, newLink],
+      };
+
+      setCategory(updatedCategory);
+      setNewLinkData({ title: "", url: "" });
+      setShowAddLinkForm(false);
+
+      // 로컬 스토리지에도 저장 (임시 - 추후 백엔드에서 링크 목록 가져오기로 변경)
+      localStorage.setItem(
+        `category_${categoryId}_links`,
+        JSON.stringify(updatedCategory.links)
+      );
+    } catch (error) {
+      console.error("링크 생성 실패:", error);
+      // 에러 처리 - 사용자에게 알림
+      setError("링크 생성에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setAddingLink(false);
+    }
   };
 
   const removeLink = (linkId: string) => {
@@ -156,7 +182,6 @@ export default function CategoryPage() {
     // TODO: 백엔드 API로 카테고리 이름 업데이트
     console.log("카테고리 이름 업데이트:", categoryName);
   };
-
   const handleLinkKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       addLink();
@@ -275,25 +300,32 @@ export default function CategoryPage() {
             </button>
           </>
         )}
-      </div>
-
-      {/* 링크 추가 폼 */}
+      </div>      {/* 링크 추가 폼 */}
       {showAddLinkForm && (
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <h3 className="text-lg font-semibold text-amber-900 mb-4">
             새 링크 추가
           </h3>
+          
+          {/* 에러 메시지 표시 */}
+          {error && (
+            <div className="bg-red-100 border border-red-400 rounded p-3 mb-4 flex items-center">
+              <AlertCircle size={16} className="text-red-600 mr-2" />
+              <span className="text-red-700 text-sm">{error}</span>
+            </div>
+          )}
+          
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-amber-700 mb-1">
                 제목
-              </label>
-              <input
+              </label>              <input
                 type="text"
                 value={newLinkData.title}
-                onChange={(e) =>
-                  setNewLinkData({ ...newLinkData, title: e.target.value })
-                }
+                onChange={(e) => {
+                  setNewLinkData({ ...newLinkData, title: e.target.value });
+                  setError(null);
+                }}
                 onKeyDown={handleLinkKeyPress}
                 placeholder="링크 제목을 입력하세요"
                 className="w-full p-2 border border-amber-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500"
@@ -303,32 +335,34 @@ export default function CategoryPage() {
             <div>
               <label className="block text-sm font-medium text-amber-700 mb-1">
                 URL
-              </label>
-              <input
+              </label>              <input
                 type="url"
                 value={newLinkData.url}
-                onChange={(e) =>
-                  setNewLinkData({ ...newLinkData, url: e.target.value })
-                }
+                onChange={(e) => {
+                  setNewLinkData({ ...newLinkData, url: e.target.value });
+                  setError(null);
+                }}
                 onKeyDown={handleLinkKeyPress}
                 placeholder="https://example.com"
                 className="w-full p-2 border border-amber-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
-            </div>
-            <div className="flex space-x-2">
+            </div>            <div className="flex space-x-2">
               <button
                 onClick={addLink}
-                disabled={!newLinkData.title.trim() || !newLinkData.url.trim()}
-                className="px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!newLinkData.title.trim() || !newLinkData.url.trim() || addingLink}
+                className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                추가
+                {addingLink && <Loader2 className="h-4 w-4 animate-spin" />}
+                <span>{addingLink ? "추가 중..." : "추가"}</span>
               </button>
               <button
                 onClick={() => {
                   setShowAddLinkForm(false);
                   setNewLinkData({ title: "", url: "" });
+                  setError(null);
                 }}
                 className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                disabled={addingLink}
               >
                 취소
               </button>

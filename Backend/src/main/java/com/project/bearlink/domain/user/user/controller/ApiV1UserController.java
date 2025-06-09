@@ -32,9 +32,6 @@ public class ApiV1UserController {
 
     private final Rq rq;
 
-    /**
-     * 회원가입
-     */
     @Operation(summary = "회원가입", description = "새로운 사용자를 등록합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "회원가입 성공"),

@@ -1,6 +1,6 @@
-package com.project.bearlink.domain.categoryTab.repository;
+package com.project.bearlink.domain.category.repository;
 
-import com.project.bearlink.domain.categoryTab.entity.Category;
+import com.project.bearlink.domain.category.entity.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
