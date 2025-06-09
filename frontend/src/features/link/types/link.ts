@@ -7,5 +7,10 @@ export interface LinkRequestDto {
   title: string;
   url: string;
   thumbnailImageUrl: string;
-  category: Category;
+}
+
+export interface LinkResponseDto {
+  title: string;
+  url: string;
+  thumbnailImageUrl: string;
 }

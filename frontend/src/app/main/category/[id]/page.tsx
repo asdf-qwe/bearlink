@@ -15,7 +15,7 @@ import { useAuth } from "@/context/AuthContext";
 import { categoryService } from "@/features/category/service/categoryService";
 import { Category } from "@/features/category/types/categoryTypes";
 import { linkService } from "@/features/link/service/linkService";
-import { LinkRequestDto } from "@/features/link/types/link";
+import { LinkRequestDto, LinkResponseDto } from "@/features/link/types/link";
 
 interface LinkItem {
   id: string;
@@ -36,7 +36,8 @@ export default function CategoryPage() {
   const categoryId = Number(params.id as string);
 
   const [category, setCategory] = useState<CategoryWithLinks | null>(null);
-  const [newLinkData, setNewLinkData] = useState({ title: "", url: "" });  const [showAddLinkForm, setShowAddLinkForm] = useState(false);
+  const [newLinkData, setNewLinkData] = useState({ title: "", url: "" });
+  const [showAddLinkForm, setShowAddLinkForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState(false);
   const [categoryName, setCategoryName] = useState("");
   const [loading, setLoading] = useState(true);
@@ -57,27 +58,36 @@ export default function CategoryPage() {
           userInfo.id
         );
         const currentCategory = categories.find((cat) => cat.id === categoryId);
-
         if (currentCategory) {
+          // 백엔드에서 링크 목록 가져오기
+          const backendLinks = await linkService.getLinks(
+            userInfo.id,
+            categoryId
+          );
+          // 백엔드 LinkResponseDto를 로컬 LinkItem 타입으로 변환
+          const convertedLinks: LinkItem[] = backendLinks.map(
+            (link, index) => ({
+              id: `${link.title}-${link.url}-${index}`, // title + url + index 조합으로 고유 ID 생성
+              title: link.title,
+              url: link.url,
+            })
+          );
+
           // 백엔드 카테고리를 로컬 타입으로 변환
           const categoryWithLinks: CategoryWithLinks = {
             id: currentCategory.id,
             name: currentCategory.name,
-            links: [], // 링크는 로컬 스토리지에서 가져옴 (임시)
+            links: convertedLinks,
           };
 
           setCategory(categoryWithLinks);
           setCategoryName(currentCategory.name);
 
-          // 로컬 스토리지에서 링크 데이터 불러오기 (임시)
-          const savedLinks = localStorage.getItem(
-            `category_${categoryId}_links`
+          // 백엔드에서 가져온 링크들을 로컬 스토리지에도 저장 (동기화용)
+          localStorage.setItem(
+            `category_${categoryId}_links`,
+            JSON.stringify(convertedLinks)
           );
-          if (savedLinks) {
-            const links = JSON.parse(savedLinks);
-            categoryWithLinks.links = links;
-            setCategory(categoryWithLinks);
-          }
         } else {
           setError("카테고리를 찾을 수 없습니다.");
         }
@@ -90,7 +100,8 @@ export default function CategoryPage() {
     };
 
     loadCategory();
-  }, [categoryId, userInfo?.id]);  const addLink = async () => {
+  }, [categoryId, userInfo?.id]);
+  const addLink = async () => {
     if (
       !category ||
       !userInfo?.id ||
@@ -113,34 +124,28 @@ export default function CategoryPage() {
         title: newLinkData.title,
         url: url,
         thumbnailImageUrl: "", // 썸네일 기능이 없으면 빈 문자열
-        category: {
-          id: category.id,
-          name: category.name
-        }
       };
-
-      await linkService.createLink(userInfo.id, linkRequestDto);
-
-      // 성공 시 로컬 상태 업데이트
-      const newLink: LinkItem = {
-        id: Date.now().toString(),
-        title: newLinkData.title,
-        url: url,
-      };
+      await linkService.createLink(userInfo.id, category.id, linkRequestDto); // 성공 시 백엔드에서 최신 링크 목록 다시 가져오기
+      const updatedLinks = await linkService.getLinks(userInfo.id, category.id);
+      const convertedLinks: LinkItem[] = updatedLinks.map((link, index) => ({
+        id: `${link.title}-${link.url}-${index}`, // title + url + index 조합으로 고유 ID 생성
+        title: link.title,
+        url: link.url,
+      }));
 
       const updatedCategory = {
         ...category,
-        links: [...category.links, newLink],
+        links: convertedLinks,
       };
 
       setCategory(updatedCategory);
       setNewLinkData({ title: "", url: "" });
       setShowAddLinkForm(false);
 
-      // 로컬 스토리지에도 저장 (임시 - 추후 백엔드에서 링크 목록 가져오기로 변경)
+      // 로컬 스토리지에도 업데이트된 링크 목록 저장
       localStorage.setItem(
         `category_${categoryId}_links`,
-        JSON.stringify(updatedCategory.links)
+        JSON.stringify(convertedLinks)
       );
     } catch (error) {
       console.error("링크 생성 실패:", error);
@@ -256,7 +261,8 @@ export default function CategoryPage() {
       >
         <ArrowLeft size={20} className="mr-2" />
         뒤로 가기
-      </button>      {/* 카테고리 제목 */}
+      </button>{" "}
+      {/* 카테고리 제목 */}
       <div className="flex items-center space-x-3 mb-8">
         {editingCategory ? (
           <>
@@ -300,13 +306,14 @@ export default function CategoryPage() {
             </button>
           </>
         )}
-      </div>      {/* 링크 추가 폼 */}
+      </div>{" "}
+      {/* 링크 추가 폼 */}
       {showAddLinkForm && (
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <h3 className="text-lg font-semibold text-amber-900 mb-4">
             새 링크 추가
           </h3>
-          
+
           {/* 에러 메시지 표시 */}
           {error && (
             <div className="bg-red-100 border border-red-400 rounded p-3 mb-4 flex items-center">
@@ -314,12 +321,13 @@ export default function CategoryPage() {
               <span className="text-red-700 text-sm">{error}</span>
             </div>
           )}
-          
+
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-amber-700 mb-1">
                 제목
-              </label>              <input
+              </label>{" "}
+              <input
                 type="text"
                 value={newLinkData.title}
                 onChange={(e) => {
@@ -335,7 +343,8 @@ export default function CategoryPage() {
             <div>
               <label className="block text-sm font-medium text-amber-700 mb-1">
                 URL
-              </label>              <input
+              </label>{" "}
+              <input
                 type="url"
                 value={newLinkData.url}
                 onChange={(e) => {
@@ -346,10 +355,15 @@ export default function CategoryPage() {
                 placeholder="https://example.com"
                 className="w-full p-2 border border-amber-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
-            </div>            <div className="flex space-x-2">
+            </div>{" "}
+            <div className="flex space-x-2">
               <button
                 onClick={addLink}
-                disabled={!newLinkData.title.trim() || !newLinkData.url.trim() || addingLink}
+                disabled={
+                  !newLinkData.title.trim() ||
+                  !newLinkData.url.trim() ||
+                  addingLink
+                }
                 className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {addingLink && <Loader2 className="h-4 w-4 animate-spin" />}
@@ -370,7 +384,6 @@ export default function CategoryPage() {
           </div>
         </div>
       )}
-
       {/* 링크 추가 버튼 */}
       {!showAddLinkForm && (
         <button
@@ -381,7 +394,6 @@ export default function CategoryPage() {
           <span>새 링크 추가</span>
         </button>
       )}
-
       {/* 링크 목록 */}
       <div className="space-y-4">
         {category.links.length > 0 ? (
