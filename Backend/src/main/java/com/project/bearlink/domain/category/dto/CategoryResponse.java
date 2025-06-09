@@ -1,10 +1,7 @@
-package com.project.bearlink.domain.categoryTab.dto;
+package com.project.bearlink.domain.category.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Getter

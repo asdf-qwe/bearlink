@@ -1,9 +1,9 @@
-package com.project.bearlink.domain.categoryTab.service;
+package com.project.bearlink.domain.category.service;
 
-import com.project.bearlink.domain.categoryTab.dto.CategoryRequest;
-import com.project.bearlink.domain.categoryTab.dto.CategoryResponse;
-import com.project.bearlink.domain.categoryTab.entity.Category;
-import com.project.bearlink.domain.categoryTab.repository.CategoryRepository;
+import com.project.bearlink.domain.category.dto.CategoryRequest;
+import com.project.bearlink.domain.category.dto.CategoryResponse;
+import com.project.bearlink.domain.category.entity.Category;
+import com.project.bearlink.domain.category.repository.CategoryRepository;
 import com.project.bearlink.domain.user.user.entity.User;
 import com.project.bearlink.domain.user.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

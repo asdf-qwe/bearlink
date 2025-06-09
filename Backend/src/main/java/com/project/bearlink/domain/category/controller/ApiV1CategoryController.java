@@ -1,9 +1,9 @@
-package com.project.bearlink.domain.categoryTab.controller;
+package com.project.bearlink.domain.category.controller;
 
-import com.project.bearlink.domain.categoryTab.dto.CategoryRequest;
-import com.project.bearlink.domain.categoryTab.dto.CategoryResponse;
-import com.project.bearlink.domain.categoryTab.entity.Category;
-import com.project.bearlink.domain.categoryTab.service.CategoryService;
+import com.project.bearlink.domain.category.dto.CategoryRequest;
+import com.project.bearlink.domain.category.dto.CategoryResponse;
+import com.project.bearlink.domain.category.entity.Category;
+import com.project.bearlink.domain.category.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -1,4 +1,4 @@
-package com.project.bearlink.domain.categoryTab.entity;
+package com.project.bearlink.domain.category.entity;
 
 import com.project.bearlink.domain.link.entity.Link;
 import com.project.bearlink.domain.user.user.entity.User;
