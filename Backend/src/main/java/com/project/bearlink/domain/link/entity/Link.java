@@ -1,6 +1,6 @@
 package com.project.bearlink.domain.link.entity;
 
-import com.project.bearlink.domain.categoryTab.entity.Category;
+import com.project.bearlink.domain.category.entity.Category;
 import com.project.bearlink.domain.user.user.entity.User;
 import com.project.bearlink.global.jpa.BaseEntity;
 import jakarta.persistence.*;
@@ -30,5 +30,4 @@ public class Link extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
-    private Integer displayOrder;
 }

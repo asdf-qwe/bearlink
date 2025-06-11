@@ -41,6 +41,8 @@ dependencies {
 	runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
 	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
 	implementation("com.google.code.gson:gson")
+
+	implementation ("org.jsoup:jsoup:1.17.2")
 }
 
 tasks.withType<Test> {

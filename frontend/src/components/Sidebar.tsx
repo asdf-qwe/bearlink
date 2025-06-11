@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, X, Folder, Trash2, AlertCircle, Loader2 } from "lucide-react";
+import { Plus, X, Trash2, AlertCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useSidebar } from "@/context/SidebarContext";
 import { useAuth } from "@/context/AuthContext";
@@ -19,6 +19,20 @@ export default function Sidebar() {
   const [showAddCategoryForm, setShowAddCategoryForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // 아이콘 순서 배열 (meat, fish, box, beehive, wood 순서로 반복)
+  const iconOrder = [
+    "/free-icon-no-meat-5769766.png", // meat
+    "/free-icon-fish-8047799.png", // fish
+    "/free-icon-fruit-box-5836745.png", // box
+    "/free-icon-beehive-9421133.png", // beehive
+    "/free-icon-wood-12479254.png", // wood
+  ];
+
+  // 카테고리 인덱스에 따라 아이콘을 반환하는 함수
+  const getCategoryIcon = (index: number): string => {
+    return iconOrder[index % iconOrder.length];
+  };
 
   // 백엔드에서 카테고리 목록 가져오기
   const fetchCategories = async () => {
@@ -125,7 +139,7 @@ export default function Sidebar() {
         {isOpen && (
           <>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-white">카테고리</h2>
+              <h2 className="text-xl font-bold text-white">저장공간</h2>
               <button
                 onClick={toggleAddCategoryForm}
                 className="p-1 bg-stone-600 hover:bg-stone-700 text-white rounded-full transition-colors"
@@ -135,7 +149,6 @@ export default function Sidebar() {
                 <Plus size={16} />
               </button>
             </div>
-
             {/* 오류 메시지 표시 */}
             {error && (
               <div className="mb-2 p-2 bg-red-100 border border-red-400 rounded text-red-700 text-sm flex items-center">
@@ -143,14 +156,12 @@ export default function Sidebar() {
                 <span>{error}</span>
               </div>
             )}
-
             {/* 로딩 표시 */}
             {loading && (
               <div className="flex justify-center my-2">
                 <Loader2 className="h-5 w-5 animate-spin text-amber-200" />
               </div>
             )}
-
             {showAddCategoryForm && (
               <div className="mb-4">
                 <input
@@ -166,19 +177,21 @@ export default function Sidebar() {
                 />
               </div>
             )}
-
-            <div className="space-y-1">
-              {categories.map((category) => (
+            <div className="space-y-3">
+              {categories.map((category, index) => (
                 <div
                   key={category.id}
                   className="flex justify-between items-center p-2 border border-amber-200 rounded-md hover:bg-amber-900 hover:bg-opacity-30 transition-colors group"
                 >
-                  {" "}
                   <Link
                     href={`/main/category/${category.id}`}
-                    className="flex items-center space-x-2 flex-grow"
+                    className="flex items-center space-x-3 flex-grow"
                   >
-                    <Folder size={18} className="text-amber-200" />
+                    <img
+                      src={getCategoryIcon(index)}
+                      alt={`카테고리 아이콘`}
+                      className="w-5 h-5 object-contain"
+                    />
                     <span className="font-medium text-white">
                       {category.name}
                     </span>
