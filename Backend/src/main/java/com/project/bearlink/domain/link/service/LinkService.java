@@ -4,13 +4,16 @@ import com.project.bearlink.domain.category.entity.Category;
 import com.project.bearlink.domain.category.repository.CategoryRepository;
 import com.project.bearlink.domain.link.dto.LinkRequestDto;
 import com.project.bearlink.domain.link.dto.LinkResponseDto;
+import com.project.bearlink.domain.link.dto.LinkUpdateDto;
 import com.project.bearlink.domain.link.entity.Link;
 import com.project.bearlink.domain.link.repository.LinkRepository;
 import com.project.bearlink.domain.user.user.entity.User;
 import com.project.bearlink.domain.user.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -48,11 +51,58 @@ public class LinkService {
 
         return links.stream()
                 .map(link -> new LinkResponseDto(
+                        link.getId(),
                         link.getTitle(),
                         link.getUrl(),
                         link.getThumbnailImageUrl()
                 ))
                 .collect(Collectors.toList());
+    }
+
+    public Link updateTitle (Long linkId, LinkUpdateDto dto) {
+        Link link = linkRepository.findById(linkId)
+                        .orElseThrow(()-> new IllegalArgumentException("링크를 찾을 수 없습니다"));
+
+        link.setTitle(dto.getTitle());
+        return linkRepository.save(link);
+    }
+
+    public void deleteLink (Long linkId) {
+        Link link = linkRepository.findById(linkId)
+                .orElseThrow(()->new IllegalArgumentException("링크를 찾을 수 없습니다"));
+        linkRepository.delete(link);
+    }
+
+    public String extractThumbnail(String url) {
+        try {
+            Document doc = Jsoup.connect(url).get();
+
+            Element ogImage = doc.selectFirst("meta[property=og:image]");
+            if(ogImage != null) {
+                return ogImage.attr("content");
+            }
+
+            Element twitterImage = doc.selectFirst("meta[name=twitter:image]");
+            if (twitterImage != null) {
+                return twitterImage.attr("content");
+            }
+
+            Element metaImage = doc.selectFirst("meta[name=image]");
+            if(metaImage != null) {
+                return metaImage.attr("content");
+            }
+
+            Element favicon = doc.selectFirst("link[rel=icon]");
+            if (favicon != null) {
+                return favicon.attr("href");
+            }
+
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+
+
     }
 
 }

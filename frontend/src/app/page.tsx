@@ -16,8 +16,7 @@ export default function HomePage() {
           <div className="mb-8">
             <BackgroundCard
               imageUrl="/home.png"
-              title="산속 오두막"
-              description="평화로운 산속에서 링크를 정리해보세요"
+
               className="h-[32rem]"
             />
           </div>

@@ -10,6 +10,7 @@ export interface LinkRequestDto {
 }
 
 export interface LinkResponseDto {
+  id: number;
   title: string;
   url: string;
   thumbnailImageUrl: string;
