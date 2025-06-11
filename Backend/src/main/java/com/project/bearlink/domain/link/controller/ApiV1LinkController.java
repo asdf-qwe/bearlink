@@ -1,5 +1,6 @@
 package com.project.bearlink.domain.link.controller;
 
+import com.project.bearlink.domain.link.dto.LinkPreviewDto;
 import com.project.bearlink.domain.link.dto.LinkRequestDto;
 import com.project.bearlink.domain.link.dto.LinkResponseDto;
 import com.project.bearlink.domain.link.dto.LinkUpdateDto;
@@ -37,13 +38,13 @@ public class ApiV1LinkController {
         return ResponseEntity.ok().body("링크 제목 수정 완료");
     }
 
-    @GetMapping("/thumbnail")
-    public ResponseEntity<String> getThumbnail(@RequestParam String url) {
-        String thumbnailUrl = linkService.extractThumbnail(url);
+    @GetMapping("/preview")
+    public ResponseEntity<LinkPreviewDto> getLinkPreview(@RequestParam String url) {
+        LinkPreviewDto dto = linkService.extractLinkPreview(url);
 
-        if (thumbnailUrl != null) {
-            return ResponseEntity.ok(thumbnailUrl);
-        }else {
+        if (dto != null) {
+            return ResponseEntity.ok(dto);
+        } else {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         }
     }

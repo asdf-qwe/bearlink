@@ -2,6 +2,7 @@ package com.project.bearlink.domain.link.service;
 
 import com.project.bearlink.domain.category.entity.Category;
 import com.project.bearlink.domain.category.repository.CategoryRepository;
+import com.project.bearlink.domain.link.dto.LinkPreviewDto;
 import com.project.bearlink.domain.link.dto.LinkRequestDto;
 import com.project.bearlink.domain.link.dto.LinkResponseDto;
 import com.project.bearlink.domain.link.dto.LinkUpdateDto;
@@ -15,7 +16,11 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.net.URI;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -73,36 +78,104 @@ public class LinkService {
         linkRepository.delete(link);
     }
 
-    public String extractThumbnail(String url) {
+    // 사이트 별 정보 추출 사용 메서드
+    public LinkPreviewDto extractLinkPreview(String url) {
         try {
-            Document doc = Jsoup.connect(url).get();
-
-            Element ogImage = doc.selectFirst("meta[property=og:image]");
-            if(ogImage != null) {
-                return ogImage.attr("content");
+            if (isYoutube(url)) {
+                return extractYoutubePreview(url);
             }
 
-            Element twitterImage = doc.selectFirst("meta[name=twitter:image]");
-            if (twitterImage != null) {
-                return twitterImage.attr("content");
-            }
+            // 앞으로 여기다 다른 사이트 조건 추가 가능
+            // if (isChzzk(url)) return extractChzzkPreview(url);
+            // if (isMusinsa(url)) return extractMusinsaPreview(url);
 
-            Element metaImage = doc.selectFirst("meta[name=image]");
-            if(metaImage != null) {
-                return metaImage.attr("content");
-            }
+            return extractGenericPreview(url); // 기본 처리
 
-            Element favicon = doc.selectFirst("link[rel=icon]");
-            if (favicon != null) {
-                return favicon.attr("href");
-            }
-
-            return null;
         } catch (Exception e) {
             return null;
         }
+    }
+
+    // 유튜브 추출 관련 메서드들
+    private boolean isYoutube(String url) {
+        return url.contains("youtube.com/watch") || url.contains("youtu.be/");
+    }
 
 
+    private LinkPreviewDto extractYoutubePreview(String url) throws IOException {
+        String videoId = extractYoutubeVideoId(url);
+        if (videoId == null) return null;
+
+        String thumbnailUrl = "https://img.youtube.com/vi/" + videoId + "/0.jpg";
+
+        Document doc = Jsoup.connect(url)
+                .userAgent("Mozilla/5.0")
+                .referrer("http://www.google.com")
+                .timeout(5000)
+                .get();
+
+        String title = Optional.ofNullable(doc.selectFirst("meta[property=og:title]"))
+                .map(e -> e.attr("content"))
+                .orElse("제목 없음");
+
+        return new LinkPreviewDto(title, thumbnailUrl);
+    }
+
+    private String extractYoutubeVideoId(String url) {
+        try {
+            URI uri = new URI(url);
+            String host = uri.getHost();
+            if (host == null) return null;
+
+            if (host.contains("youtu.be")) {
+                return uri.getPath().substring(1);
+            }
+
+            if (host.contains("youtube.com")) {
+                String query = uri.getQuery();
+                if (query == null) return null;
+
+                return Arrays.stream(query.split("&"))
+                        .filter(p -> p.startsWith("v="))
+                        .map(p -> p.substring(2))
+                        .findFirst()
+                        .orElse(null);
+            }
+        } catch (Exception ignored) {}
+        return null;
+    }
+    // 여기까지 유튜브 관련
+
+
+    // 일반 사이트 썸네일 추출
+    private LinkPreviewDto extractGenericPreview(String url) throws IOException {
+        Document doc = Jsoup.connect(url)
+                .userAgent("Mozilla/5.0")
+                .referrer("http://www.google.com")
+                .timeout(5000)
+                .get();
+
+        String title = Optional.ofNullable(doc.selectFirst("meta[property=og:title]"))
+                .map(e -> e.attr("content"))
+                .orElse("제목 없음");
+
+        String thumbnail = Optional.ofNullable(doc.selectFirst("meta[property=og:image]"))
+                .map(e -> e.attr("content"))
+                .orElseGet(() ->
+                        Optional.ofNullable(doc.selectFirst("meta[name=twitter:image]"))
+                                .map(e -> e.attr("content"))
+                                .orElseGet(() ->
+                                        Optional.ofNullable(doc.selectFirst("meta[name=image]"))
+                                                .map(e -> e.attr("content"))
+                                                .orElseGet(() ->
+                                                        Optional.ofNullable(doc.selectFirst("link[rel=icon]"))
+                                                                .map(e -> e.attr("href"))
+                                                                .orElse(null)
+                                                )
+                                )
+                );
+
+        return new LinkPreviewDto(title, thumbnail);
     }
 
 }
