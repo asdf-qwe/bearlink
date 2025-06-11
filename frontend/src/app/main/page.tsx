@@ -20,7 +20,7 @@ export default function Home() {
         </div>{" "}
         {/* 배경 카드 */}
         <div className="mb-8">
-          <BackgroundCard imageUrl="/main.png" className="h-[40rem]" />
+          <BackgroundCard imageUrl="/main.png" className="h-[50rem]" />
         </div>
       </div>
     </div>
