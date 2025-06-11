@@ -18,9 +18,10 @@ import { linkService } from "@/features/link/service/linkService";
 import { LinkRequestDto, LinkResponseDto } from "@/features/link/types/link";
 
 interface LinkItem {
-  id: string;
+  id: number; // 백엔드 ID를 직접 사용
   title: string;
   url: string;
+  thumbnailImageUrl?: string;
 }
 
 interface CategoryWithLinks {
@@ -37,11 +38,14 @@ export default function CategoryPage() {
 
   const [category, setCategory] = useState<CategoryWithLinks | null>(null);
   const [newLinkData, setNewLinkData] = useState({ title: "", url: "" });
+  const [extractingThumbnail, setExtractingThumbnail] = useState(false);
+  const [thumbnailUrl, setThumbnailUrl] = useState("");
   const [showAddLinkForm, setShowAddLinkForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState(false);
   const [categoryName, setCategoryName] = useState("");
   const [loading, setLoading] = useState(true);
   const [addingLink, setAddingLink] = useState(false);
+  const [deletingLinkId, setDeletingLinkId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // 백엔드에서 카테고리 정보 불러오기
@@ -63,15 +67,13 @@ export default function CategoryPage() {
           const backendLinks = await linkService.getLinks(
             userInfo.id,
             categoryId
-          );
-          // 백엔드 LinkResponseDto를 로컬 LinkItem 타입으로 변환
-          const convertedLinks: LinkItem[] = backendLinks.map(
-            (link, index) => ({
-              id: `${link.title}-${link.url}-${index}`, // title + url + index 조합으로 고유 ID 생성
-              title: link.title,
-              url: link.url,
-            })
-          );
+          ); // 백엔드 LinkResponseDto를 로컬 LinkItem 타입으로 변환
+          const convertedLinks: LinkItem[] = backendLinks.map((link) => ({
+            id: link.id, // 백엔드 ID를 직접 사용
+            title: link.title,
+            url: link.url,
+            thumbnailImageUrl: link.thumbnailImageUrl,
+          }));
 
           // 백엔드 카테고리를 로컬 타입으로 변환
           const categoryWithLinks: CategoryWithLinks = {
@@ -98,9 +100,35 @@ export default function CategoryPage() {
         setLoading(false);
       }
     };
-
     loadCategory();
   }, [categoryId, userInfo?.id]);
+
+  // URL 입력 시 썸네일 자동 추출
+  const handleUrlChange = async (url: string) => {
+    setNewLinkData((prev) => ({ ...prev, url }));
+    setError(null);
+
+    if (url && (url.startsWith("http://") || url.startsWith("https://"))) {
+      setExtractingThumbnail(true);
+      try {
+        const thumbnail = await linkService.getThumbnail(url);
+        if (thumbnail) {
+          setThumbnailUrl(thumbnail);
+          console.log("썸네일 추출 성공:", thumbnail);
+        } else {
+          setThumbnailUrl("");
+          console.log("썸네일을 찾을 수 없습니다.");
+        }
+      } catch (error) {
+        console.error("썸네일 추출 실패:", error);
+        setThumbnailUrl("");
+      } finally {
+        setExtractingThumbnail(false);
+      }
+    } else {
+      setThumbnailUrl("");
+    }
+  };
   const addLink = async () => {
     if (
       !category ||
@@ -123,23 +151,24 @@ export default function CategoryPage() {
       const linkRequestDto: LinkRequestDto = {
         title: newLinkData.title,
         url: url,
-        thumbnailImageUrl: "", // 썸네일 기능이 없으면 빈 문자열
+        thumbnailImageUrl: thumbnailUrl, // 추출된 썸네일 URL 사용
       };
       await linkService.createLink(userInfo.id, category.id, linkRequestDto); // 성공 시 백엔드에서 최신 링크 목록 다시 가져오기
       const updatedLinks = await linkService.getLinks(userInfo.id, category.id);
-      const convertedLinks: LinkItem[] = updatedLinks.map((link, index) => ({
-        id: `${link.title}-${link.url}-${index}`, // title + url + index 조합으로 고유 ID 생성
+      const convertedLinks: LinkItem[] = updatedLinks.map((link) => ({
+        id: link.id, // 백엔드 ID를 직접 사용
         title: link.title,
         url: link.url,
+        thumbnailImageUrl: link.thumbnailImageUrl,
       }));
 
       const updatedCategory = {
         ...category,
         links: convertedLinks,
       };
-
       setCategory(updatedCategory);
       setNewLinkData({ title: "", url: "" });
+      setThumbnailUrl("");
       setShowAddLinkForm(false);
 
       // 로컬 스토리지에도 업데이트된 링크 목록 저장
@@ -155,22 +184,35 @@ export default function CategoryPage() {
       setAddingLink(false);
     }
   };
+  const removeLink = async (linkId: number) => {
+    if (!category || !userInfo?.id) return;
 
-  const removeLink = (linkId: string) => {
-    if (!category) return;
+    setDeletingLinkId(linkId);
+    setError(null);
 
-    const updatedCategory = {
-      ...category,
-      links: category.links.filter((link) => link.id !== linkId),
-    };
+    try {
+      // 백엔드 API로 링크 삭제
+      await linkService.deleteLink(linkId);
 
-    setCategory(updatedCategory);
+      // 성공 시 로컬 상태에서도 제거
+      const updatedCategory = {
+        ...category,
+        links: category.links.filter((link) => link.id !== linkId),
+      };
 
-    // 로컬 스토리지에 저장 (임시 - 나중에 백엔드 API로 변경)
-    localStorage.setItem(
-      `category_${categoryId}_links`,
-      JSON.stringify(updatedCategory.links)
-    );
+      setCategory(updatedCategory);
+
+      // 로컬 스토리지도 업데이트
+      localStorage.setItem(
+        `category_${categoryId}_links`,
+        JSON.stringify(updatedCategory.links)
+      );
+    } catch (error) {
+      console.error("링크 삭제 실패:", error);
+      setError("링크 삭제에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setDeletingLinkId(null);
+    }
   };
 
   const saveCategoryName = () => {
@@ -347,13 +389,58 @@ export default function CategoryPage() {
               <input
                 type="url"
                 value={newLinkData.url}
-                onChange={(e) => {
-                  setNewLinkData({ ...newLinkData, url: e.target.value });
-                  setError(null);
-                }}
+                onChange={(e) => handleUrlChange(e.target.value)}
                 onKeyDown={handleLinkKeyPress}
                 placeholder="https://example.com"
                 className="w-full p-2 border border-amber-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500"
+                disabled={addingLink || extractingThumbnail}
+              />
+              {/* 썸네일 추출 상태 표시 */}
+              {extractingThumbnail && (
+                <div className="flex items-center text-sm text-amber-600 mt-2">
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  썸네일을 가져오는 중...
+                </div>
+              )}
+            </div>
+            {/* 썸네일 미리보기 및 수동 입력 */}
+            <div>
+              <label className="block text-sm font-medium text-amber-700 mb-1">
+                썸네일 이미지
+              </label>
+
+              {/* 썸네일 미리보기 */}
+              {thumbnailUrl && (
+                <div className="mb-3">
+                  <div className="flex items-center space-x-3">
+                    <img
+                      src={thumbnailUrl}
+                      alt="썸네일 미리보기"
+                      className="w-16 h-16 object-cover rounded border border-amber-200"
+                      onError={(e) => {
+                        console.error("썸네일 이미지 로드 실패");
+                        e.currentTarget.style.display = "none";
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setThumbnailUrl("")}
+                      className="text-sm text-red-600 hover:text-red-800"
+                    >
+                      제거
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* 썸네일 URL 수동 입력 */}
+              <input
+                type="url"
+                value={thumbnailUrl}
+                onChange={(e) => setThumbnailUrl(e.target.value)}
+                placeholder="썸네일 이미지 URL (자동 추출되지 않은 경우 직접 입력)"
+                className="w-full p-2 border border-amber-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500"
+                disabled={addingLink}
               />
             </div>{" "}
             <div className="flex space-x-2">
@@ -368,11 +455,12 @@ export default function CategoryPage() {
               >
                 {addingLink && <Loader2 className="h-4 w-4 animate-spin" />}
                 <span>{addingLink ? "추가 중..." : "추가"}</span>
-              </button>
+              </button>{" "}
               <button
                 onClick={() => {
                   setShowAddLinkForm(false);
                   setNewLinkData({ title: "", url: "" });
+                  setThumbnailUrl("");
                   setError(null);
                 }}
                 className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
@@ -403,7 +491,27 @@ export default function CategoryPage() {
               className="bg-white rounded-lg shadow-md p-4 flex justify-between items-center group hover:shadow-lg transition-shadow"
             >
               <div className="flex items-center space-x-3 flex-grow">
-                <LinkIcon size={20} className="text-amber-600 flex-shrink-0" />
+                {/* 썸네일 또는 기본 아이콘 */}
+                {link.thumbnailImageUrl ? (
+                  <img
+                    src={link.thumbnailImageUrl}
+                    alt={`${link.title} 썸네일`}
+                    className="w-12 h-12 object-cover rounded border border-amber-200 flex-shrink-0"
+                    onError={(e) => {
+                      // 썸네일 로드 실패 시 기본 아이콘으로 대체
+                      e.currentTarget.style.display = "none";
+                      e.currentTarget.nextElementSibling?.classList.remove(
+                        "hidden"
+                      );
+                    }}
+                  />
+                ) : null}
+                <LinkIcon
+                  size={20}
+                  className={`text-amber-600 flex-shrink-0 ${
+                    link.thumbnailImageUrl ? "hidden" : ""
+                  }`}
+                />
                 <div className="flex-grow min-w-0">
                   <h3 className="font-medium text-amber-900 truncate">
                     {link.title}
@@ -417,13 +525,18 @@ export default function CategoryPage() {
                     {link.url}
                   </a>
                 </div>
-              </div>
+              </div>{" "}
               <button
                 onClick={() => removeLink(link.id)}
-                className="p-2 text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                disabled={deletingLinkId === link.id}
+                className="p-2 text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
                 aria-label={`${link.title} 링크 삭제`}
               >
-                <Trash2 size={16} />
+                {deletingLinkId === link.id ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Trash2 size={16} />
+                )}
               </button>
             </div>
           ))

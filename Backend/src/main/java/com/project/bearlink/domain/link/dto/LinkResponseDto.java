@@ -9,6 +9,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class LinkResponseDto {
+    private Long id;
     private String title;
     private String url;
     private String thumbnailImageUrl;

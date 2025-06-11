@@ -2,9 +2,11 @@ package com.project.bearlink.domain.link.controller;
 
 import com.project.bearlink.domain.link.dto.LinkRequestDto;
 import com.project.bearlink.domain.link.dto.LinkResponseDto;
+import com.project.bearlink.domain.link.dto.LinkUpdateDto;
 import com.project.bearlink.domain.link.entity.Link;
 import com.project.bearlink.domain.link.service.LinkService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,4 +31,25 @@ public class ApiV1LinkController {
         return ResponseEntity.ok(links);
     }
 
+    @PutMapping
+    public ResponseEntity<String> updateTitle (@RequestBody LinkUpdateDto dto, @RequestParam Long linkId) {
+        Link link = linkService.updateTitle(linkId, dto);
+        return ResponseEntity.ok().body("링크 제목 수정 완료");
+    }
+
+    @GetMapping("/thumbnail")
+    public ResponseEntity<String> getThumbnail(@RequestParam String url) {
+        String thumbnailUrl = linkService.extractThumbnail(url);
+
+        if (thumbnailUrl != null) {
+            return ResponseEntity.ok(thumbnailUrl);
+        }else {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        }
+    }
+
+    @DeleteMapping
+    public void deleteLink(@RequestParam Long linkId) {
+        linkService.deleteLink(linkId);
+    }
 }
