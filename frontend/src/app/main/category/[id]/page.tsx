@@ -47,6 +47,21 @@ export default function CategoryPage() {
   const [addingLink, setAddingLink] = useState(false);
   const [deletingLinkId, setDeletingLinkId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [categoryIndex, setCategoryIndex] = useState<number>(0);
+
+  // 아이콘 순서 배열 (meat, fish, box, beehive, wood 순서로 반복)
+  const iconOrder = [
+    "/free-icon-no-meat-5769766.png", // meat
+    "/free-icon-fish-8047799.png", // fish
+    "/free-icon-fruit-box-5836745.png", // box
+    "/free-icon-beehive-9421133.png", // beehive
+    "/free-icon-wood-12479254.png", // wood
+  ];
+
+  // 카테고리 인덱스에 따라 아이콘을 반환하는 함수
+  const getCategoryIcon = (index: number): string => {
+    return iconOrder[index % iconOrder.length];
+  };
 
   // 백엔드에서 카테고리 정보 불러오기
   useEffect(() => {
@@ -63,6 +78,12 @@ export default function CategoryPage() {
         );
         const currentCategory = categories.find((cat) => cat.id === categoryId);
         if (currentCategory) {
+          // 카테고리 인덱스 찾기 (아이콘 표시용)
+          const categoryIdx = categories.findIndex(
+            (cat) => cat.id === categoryId
+          );
+          setCategoryIndex(categoryIdx >= 0 ? categoryIdx : 0);
+
           // 백엔드에서 링크 목록 가져오기
           const backendLinks = await linkService.getLinks(
             userInfo.id,
@@ -369,16 +390,36 @@ export default function CategoryPage() {
           <h3 className="text-lg font-semibold text-amber-900 mb-4">
             새 링크 추가
           </h3>
-
           {/* 에러 메시지 표시 */}
           {error && (
             <div className="bg-red-100 border border-red-400 rounded p-3 mb-4 flex items-center">
               <AlertCircle size={16} className="text-red-600 mr-2" />
               <span className="text-red-700 text-sm">{error}</span>
             </div>
-          )}
-
+          )}{" "}
           <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-amber-700 mb-1">
+                URL
+              </label>{" "}
+              <input
+                type="url"
+                value={newLinkData.url}
+                onChange={(e) => handleUrlChange(e.target.value)}
+                onKeyDown={handleLinkKeyPress}
+                placeholder="https://example.com"
+                className="w-full p-2 border border-amber-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500"
+                disabled={addingLink || extractingThumbnail}
+                autoFocus
+              />{" "}
+              {/* 링크 미리보기 추출 상태 표시 */}
+              {extractingThumbnail && (
+                <div className="flex items-center text-sm text-amber-600 mt-2">
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  링크 정보를 가져오는 중...
+                </div>
+              )}
+            </div>
             <div>
               <label className="block text-sm font-medium text-amber-700 mb-1">
                 제목
@@ -393,29 +434,7 @@ export default function CategoryPage() {
                 onKeyDown={handleLinkKeyPress}
                 placeholder="링크 제목을 입력하세요"
                 className="w-full p-2 border border-amber-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500"
-                autoFocus
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-amber-700 mb-1">
-                URL
-              </label>{" "}
-              <input
-                type="url"
-                value={newLinkData.url}
-                onChange={(e) => handleUrlChange(e.target.value)}
-                onKeyDown={handleLinkKeyPress}
-                placeholder="https://example.com"
-                className="w-full p-2 border border-amber-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500"
-                disabled={addingLink || extractingThumbnail}
-              />{" "}
-              {/* 링크 미리보기 추출 상태 표시 */}
-              {extractingThumbnail && (
-                <div className="flex items-center text-sm text-amber-600 mt-2">
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  링크 정보를 가져오는 중...
-                </div>
-              )}
             </div>
             {/* 썸네일 미리보기 및 수동 입력 */}
             <div>
@@ -456,7 +475,7 @@ export default function CategoryPage() {
                 className="w-full p-2 border border-amber-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500"
                 disabled={addingLink}
               />
-            </div>{" "}
+            </div>
             <div className="flex space-x-2">
               <button
                 onClick={addLink}
@@ -469,7 +488,7 @@ export default function CategoryPage() {
               >
                 {addingLink && <Loader2 className="h-4 w-4 animate-spin" />}
                 <span>{addingLink ? "추가 중..." : "추가"}</span>
-              </button>{" "}
+              </button>
               <button
                 onClick={() => {
                   setShowAddLinkForm(false);
@@ -516,8 +535,7 @@ export default function CategoryPage() {
                 ) : (
                   <Trash2 size={16} />
                 )}
-              </button>
-
+              </button>{" "}
               {/* 썸네일 */}
               <div className="w-full h-48 bg-gray-100 flex items-center justify-center">
                 {link.thumbnailImageUrl ? (
@@ -526,25 +544,28 @@ export default function CategoryPage() {
                     alt={`${link.title} 썸네일`}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      // 썸네일 로드 실패 시 기본 아이콘으로 대체
+                      // 썸네일 로드 실패 시 카테고리 아이콘으로 대체
                       e.currentTarget.style.display = "none";
                       const parent = e.currentTarget.parentElement;
                       if (parent) {
                         parent.innerHTML = `
                           <div class="flex items-center justify-center w-full h-full">
-                            <svg class="w-12 h-12 text-amber-300" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7h-4c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
-                            </svg>
+                            <img src="${getCategoryIcon(
+                              categoryIndex
+                            )}" alt="카테고리 아이콘" class="w-24 h-24 object-contain" />
                           </div>
                         `;
                       }
                     }}
                   />
                 ) : (
-                  <LinkIcon size={48} className="text-amber-300" />
+                  <img
+                    src={getCategoryIcon(categoryIndex)}
+                    alt="카테고리 아이콘"
+                    className="w-24 h-24 object-contain"
+                  />
                 )}
               </div>
-
               {/* 카드 내용 */}
               <div className="p-4">
                 {/* 제목 */}
@@ -563,7 +584,6 @@ export default function CategoryPage() {
                   {link.url}
                 </a>
               </div>
-
               {/* 클릭 영역 (전체 카드) */}
               <a
                 href={link.url}

@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface LinkRepository extends JpaRepository<Link, Long> {
     List<Link> findByCategoryUserIdAndCategoryId(Long userId, Long CategoryId);
+    List<Link> findByCategoryId(Long categoryId);
 }
