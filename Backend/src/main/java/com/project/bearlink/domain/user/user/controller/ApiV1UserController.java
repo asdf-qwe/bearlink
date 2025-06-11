@@ -62,25 +62,6 @@ public class ApiV1UserController {
         String refreshCookie = "refreshToken=" + tokenDto.getRefreshToken()
                 + "; HttpOnly; Path=/; Max-Age=" + (60 * 60 * 24 * 7) + "; SameSite=Lax"; // refreshToken 7일
 
-//        // accessToken을 쿠키로 설정
-//        ResponseCookie accessCookie = ResponseCookie.from("accessToken", tokenDto.getAccessToken())
-//                .httpOnly(true) // JS에서 접근 불가 (보안상 안전)
-//                .secure(false) // https 환경에서는 true, 로컬에선 false
-//                .path("/")
-//                .sameSite("Lax")
-//                .maxAge(60 * 60) // 1시간
-//                .build();
-//
-//        // refreshToken도 쿠키로 설정
-//        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", tokenDto.getRefreshToken())
-//                .httpOnly(true)
-//                .secure(false)
-//                .path("/")
-//                .sameSite("Lax")
-//                .maxAge(60 * 60 * 24 * 7) // 7일
-//                .build();
-
-        // 헤더에 쿠키 추가
         response.addHeader("Set-Cookie", accessCookie);
         response.addHeader("Set-Cookie", refreshCookie);
 
