@@ -10,14 +10,13 @@ export default function HomePage() {
       <div className="min-h-screen bg-amber-50 p-8">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-4xl font-bold text-center text-amber-900 mb-8">
-            BearLink에 오신 것을 환영합니다
-          </h1>{" "}
+            링크를 모아 곰돌이의 겨울잠 준비를 도와주세요
+          </h1>
           {/* 메인 배경 카드 */}
           <div className="mb-8">
             <BackgroundCard
               imageUrl="/home.png"
-              title="산속 오두막"
-              description="평화로운 산속에서 링크를 정리해보세요"
+
               className="h-[32rem]"
             />
           </div>

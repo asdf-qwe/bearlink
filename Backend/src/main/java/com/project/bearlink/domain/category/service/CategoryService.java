@@ -1,22 +1,27 @@
-package com.project.bearlink.domain.categoryTab.service;
+package com.project.bearlink.domain.category.service;
 
-import com.project.bearlink.domain.categoryTab.dto.CategoryRequest;
-import com.project.bearlink.domain.categoryTab.dto.CategoryResponse;
-import com.project.bearlink.domain.categoryTab.entity.Category;
-import com.project.bearlink.domain.categoryTab.repository.CategoryRepository;
+import com.project.bearlink.domain.category.dto.CategoryRequest;
+import com.project.bearlink.domain.category.dto.CategoryResponse;
+import com.project.bearlink.domain.category.entity.Category;
+import com.project.bearlink.domain.category.repository.CategoryRepository;
+import com.project.bearlink.domain.link.entity.Link;
+import com.project.bearlink.domain.link.repository.LinkRepository;
 import com.project.bearlink.domain.user.user.entity.User;
 import com.project.bearlink.domain.user.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final LinkRepository linkRepository;
 
     //기본 카테고리 생성
     public Category createCategory(CategoryRequest req, Long userId) {
@@ -62,7 +67,9 @@ public class CategoryService {
     public void deleteCategory (Long categoryId) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(()-> new IllegalArgumentException("카테고리가 없습니다"));
+        List<Link> links = linkRepository.findByCategoryId(categoryId);
 
+        linkRepository.deleteAll(links);
         categoryRepository.delete(category);
     }
 

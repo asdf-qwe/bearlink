@@ -1,4 +1,4 @@
-package com.project.bearlink.domain.categoryTab.dto;
+package com.project.bearlink.domain.category.dto;
 
 
 import lombok.Getter;
