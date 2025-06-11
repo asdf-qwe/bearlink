@@ -1,4 +1,4 @@
-import { LinkRequestDto, LinkResponseDto } from "../types/link";
+import { LinkRequestDto, LinkResponseDto, LinkPreviewDto } from "../types/link";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
@@ -81,6 +81,33 @@ class LinkService {
       }
     } catch (error) {
       console.error("썸네일 추출 중 오류:", error);
+      return null;
+    }
+  }
+
+  async getLinkPreview(url: string): Promise<LinkPreviewDto | null> {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/v1/link/preview?url=${encodeURIComponent(url)}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const preview = await response.json();
+        return preview;
+      } else if (response.status === 204) {
+        // NO_CONTENT - 미리보기를 찾을 수 없음
+        return null;
+      } else {
+        throw new Error(`링크 미리보기 추출 실패: ${response.status}`);
+      }
+    } catch (error) {
+      console.error("링크 미리보기 추출 중 오류:", error);
       return null;
     }
   }

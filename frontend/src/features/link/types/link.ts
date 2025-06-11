@@ -15,3 +15,8 @@ export interface LinkResponseDto {
   url: string;
   thumbnailImageUrl: string;
 }
+
+export interface LinkPreviewDto {
+  title: string;
+  thumbnailImageUrl: string;
+}

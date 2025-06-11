@@ -102,8 +102,7 @@ export default function CategoryPage() {
     };
     loadCategory();
   }, [categoryId, userInfo?.id]);
-
-  // URL 입력 시 썸네일 자동 추출
+  // URL 입력 시 링크 미리보기 자동 추출
   const handleUrlChange = async (url: string) => {
     setNewLinkData((prev) => ({ ...prev, url }));
     setError(null);
@@ -111,16 +110,21 @@ export default function CategoryPage() {
     if (url && (url.startsWith("http://") || url.startsWith("https://"))) {
       setExtractingThumbnail(true);
       try {
-        const thumbnail = await linkService.getThumbnail(url);
-        if (thumbnail) {
-          setThumbnailUrl(thumbnail);
-          console.log("썸네일 추출 성공:", thumbnail);
+        const preview = await linkService.getLinkPreview(url);
+        if (preview) {
+          // 제목이 비어있으면 미리보기에서 가져온 제목 사용
+          if (!newLinkData.title.trim() && preview.title) {
+            setNewLinkData((prev) => ({ ...prev, title: preview.title }));
+          }
+          // 썸네일 설정
+          setThumbnailUrl(preview.thumbnailImageUrl || "");
+          console.log("링크 미리보기 추출 성공:", preview);
         } else {
           setThumbnailUrl("");
-          console.log("썸네일을 찾을 수 없습니다.");
+          console.log("링크 미리보기를 찾을 수 없습니다.");
         }
       } catch (error) {
-        console.error("썸네일 추출 실패:", error);
+        console.error("링크 미리보기 추출 실패:", error);
         setThumbnailUrl("");
       } finally {
         setExtractingThumbnail(false);
@@ -186,6 +190,16 @@ export default function CategoryPage() {
   };
   const removeLink = async (linkId: number) => {
     if (!category || !userInfo?.id) return;
+
+    // 삭제 확인 메시지
+    const linkToDelete = category.links.find((link) => link.id === linkId);
+    const confirmMessage = linkToDelete
+      ? `"${linkToDelete.title}" 링크를 삭제하시겠습니까?`
+      : "이 링크를 삭제하시겠습니까?";
+
+    if (!window.confirm(confirmMessage)) {
+      return; // 사용자가 취소를 누른 경우 삭제하지 않음
+    }
 
     setDeletingLinkId(linkId);
     setError(null);
@@ -394,12 +408,12 @@ export default function CategoryPage() {
                 placeholder="https://example.com"
                 className="w-full p-2 border border-amber-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500"
                 disabled={addingLink || extractingThumbnail}
-              />
-              {/* 썸네일 추출 상태 표시 */}
+              />{" "}
+              {/* 링크 미리보기 추출 상태 표시 */}
               {extractingThumbnail && (
                 <div className="flex items-center text-sm text-amber-600 mt-2">
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  썸네일을 가져오는 중...
+                  링크 정보를 가져오는 중...
                 </div>
               )}
             </div>
@@ -481,55 +495,20 @@ export default function CategoryPage() {
           <Plus size={20} />
           <span>새 링크 추가</span>
         </button>
-      )}
+      )}{" "}
       {/* 링크 목록 */}
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {category.links.length > 0 ? (
           category.links.map((link) => (
             <div
               key={link.id}
-              className="bg-white rounded-lg shadow-md p-4 flex justify-between items-center group hover:shadow-lg transition-shadow"
+              className="bg-white rounded-lg shadow-md overflow-hidden group hover:shadow-lg transition-shadow relative"
             >
-              <div className="flex items-center space-x-3 flex-grow">
-                {/* 썸네일 또는 기본 아이콘 */}
-                {link.thumbnailImageUrl ? (
-                  <img
-                    src={link.thumbnailImageUrl}
-                    alt={`${link.title} 썸네일`}
-                    className="w-12 h-12 object-cover rounded border border-amber-200 flex-shrink-0"
-                    onError={(e) => {
-                      // 썸네일 로드 실패 시 기본 아이콘으로 대체
-                      e.currentTarget.style.display = "none";
-                      e.currentTarget.nextElementSibling?.classList.remove(
-                        "hidden"
-                      );
-                    }}
-                  />
-                ) : null}
-                <LinkIcon
-                  size={20}
-                  className={`text-amber-600 flex-shrink-0 ${
-                    link.thumbnailImageUrl ? "hidden" : ""
-                  }`}
-                />
-                <div className="flex-grow min-w-0">
-                  <h3 className="font-medium text-amber-900 truncate">
-                    {link.title}
-                  </h3>
-                  <a
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-amber-600 hover:text-amber-800 hover:underline truncate block"
-                  >
-                    {link.url}
-                  </a>
-                </div>
-              </div>{" "}
+              {/* 삭제 버튼 */}
               <button
                 onClick={() => removeLink(link.id)}
                 disabled={deletingLinkId === link.id}
-                className="p-2 text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
+                className="absolute top-2 right-2 z-10 p-2 bg-white bg-opacity-80 rounded-full text-red-500 hover:text-red-700 hover:bg-opacity-100 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
                 aria-label={`${link.title} 링크 삭제`}
               >
                 {deletingLinkId === link.id ? (
@@ -538,10 +517,65 @@ export default function CategoryPage() {
                   <Trash2 size={16} />
                 )}
               </button>
+
+              {/* 썸네일 */}
+              <div className="w-full h-48 bg-gray-100 flex items-center justify-center">
+                {link.thumbnailImageUrl ? (
+                  <img
+                    src={link.thumbnailImageUrl}
+                    alt={`${link.title} 썸네일`}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      // 썸네일 로드 실패 시 기본 아이콘으로 대체
+                      e.currentTarget.style.display = "none";
+                      const parent = e.currentTarget.parentElement;
+                      if (parent) {
+                        parent.innerHTML = `
+                          <div class="flex items-center justify-center w-full h-full">
+                            <svg class="w-12 h-12 text-amber-300" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7h-4c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
+                            </svg>
+                          </div>
+                        `;
+                      }
+                    }}
+                  />
+                ) : (
+                  <LinkIcon size={48} className="text-amber-300" />
+                )}
+              </div>
+
+              {/* 카드 내용 */}
+              <div className="p-4">
+                {/* 제목 */}
+                <h3 className="font-semibold text-amber-900 text-lg mb-2 line-clamp-2">
+                  {link.title}
+                </h3>
+
+                {/* URL */}
+                <a
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-amber-600 hover:text-amber-800 hover:underline block truncate"
+                  title={link.url}
+                >
+                  {link.url}
+                </a>
+              </div>
+
+              {/* 클릭 영역 (전체 카드) */}
+              <a
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="absolute inset-0 z-0"
+                aria-label={`${link.title} 링크로 이동`}
+              />
             </div>
           ))
         ) : (
-          <div className="text-center py-12">
+          <div className="col-span-full text-center py-12">
             <LinkIcon size={48} className="text-amber-300 mx-auto mb-4" />
             <p className="text-amber-600">첫 번째 링크를 추가해보세요!</p>
           </div>
