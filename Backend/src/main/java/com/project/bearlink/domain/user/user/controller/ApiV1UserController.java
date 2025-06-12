@@ -44,6 +44,30 @@ public class ApiV1UserController {
                 .body(UserResponseDto.fromEntity(user));
     }
 
+    @GetMapping("/check-email")
+    public ResponseEntity<?> checkEmail(@RequestParam String email) {
+        boolean exists = userService.existsByEmail(email);
+
+        if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+            return ResponseEntity.badRequest().body("유효하지 않은 이메일 형식입니다");
+        }
+
+        if (exists) {
+            return ResponseEntity.status(409).body("이미 사용 중인 이메일입니다");
+        }
+        return ResponseEntity.ok("사용 가능한 이메일입니다");
+    }
+
+    @GetMapping("/check-loginId")
+    public ResponseEntity<?> checkLoginId(@RequestParam String loginId){
+        boolean exists = userService.existsByLoginId(loginId);
+
+        if (exists) {
+            return ResponseEntity.status(409).body("이미 사용 중인 아이디입니다");
+        }
+        return ResponseEntity.ok("사용 가능한 아이디입니다");
+    }
+
     @Operation(summary = "로그인", description = "로그인 ID 또는 이메일과 비밀번호를 입력해 accessToken을 발급받습니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "로그인 성공"),
@@ -55,7 +79,7 @@ public class ApiV1UserController {
             HttpServletResponse response) {
         TokenResponseDto tokenDto = authLoginService.login(request);
 
-        // ✅ ResponseCookie 대신 직접 Set-Cookie 헤더 문자열 작성
+        //ResponseCookie 대신 직접 Set-Cookie 헤더 문자열 작성
         String accessCookie = "accessToken=" + tokenDto.getAccessToken()
                 + "; HttpOnly; Path=/; Max-Age=3600; SameSite=Lax"; // accessToken 1시간
 
@@ -83,9 +107,6 @@ public class ApiV1UserController {
         return ResponseEntity.ok("로그아웃 되었습니다.");
     }
 
-    /**
-     * refreshToken을 이용해 accessToken 재발급
-     */
     @Operation(summary = "AccessToken 재발급", description = "쿠키에 저장된 refreshToken을 이용해 새로운 accessToken을 발급합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "AccessToken 재발급 성공"),
@@ -97,9 +118,6 @@ public class ApiV1UserController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * 내 정보 조회
-     */
     @Operation(summary = "내 정보 조회", description = "현재 로그인한 사용자의 정보를 조회합니다.")
     @ApiResponse(responseCode = "200", description = "조회 성공")
     @GetMapping("/me")

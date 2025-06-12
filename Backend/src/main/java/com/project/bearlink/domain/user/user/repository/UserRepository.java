@@ -16,6 +16,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // → UserService.login()에서 입력값이 일반 ID일 때 사용됨
     Optional<User> findByLoginId(String loginId);
 
+    boolean existsByEmail(String email);
+
+    boolean existsByLoginId(String loginId);
     // refreshToken으로 사용자 조회
     Optional<User> findByRefreshToken(String refreshToken);
 
