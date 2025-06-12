@@ -111,6 +111,42 @@ export const categoryService = {
       throw error;
     }
   },
+  /**
+   * 카테고리를 수정합니다
+   * @param req 수정할 카테고리 요청 DTO (name만 포함)
+   * @param categoryId 수정할 카테고리 ID
+   * @returns 수정 결과 메시지
+   */
+  async updateCategory(req: CategoryRequest, categoryId: number): Promise<string> {
+    try {
+      const response = await fetch(
+        `${API_URL}/api/v1/category?categoryId=${categoryId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include", // 쿠키를 포함하여 요청
+          body: JSON.stringify(req),
+        }
+      );
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error("인증이 만료되었습니다. 다시 로그인해주세요");
+        }
+        if (response.status === 403) {
+          throw new Error("접근 권한이 없습니다. 관리자에게 문의하세요");
+        }
+        throw new Error("카테고리 수정에 실패했습니다");
+      }
+
+      return await response.text();
+    } catch (error) {
+      console.error("카테고리 수정 에러:", error);
+      throw error;
+    }
+  },
 };
 
 export default categoryService;
