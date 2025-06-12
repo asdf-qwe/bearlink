@@ -21,11 +21,6 @@ public class UserService {
      */
     @Transactional
     public User signup(SignupRequestDto request) {
-        // 이메일 자동 복사: loginId가 이메일 형식인데 email이 비어 있으면 복사
-        if ((request.getEmail() == null || request.getEmail().isBlank())
-                && request.getLoginId().contains("@")) {
-            request.setEmail(request.getLoginId());
-        }
 
         // 이메일 중복 체크
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -45,6 +40,11 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
+    public boolean existsByLoginId(String loginId) {return userRepository.existsByLoginId(loginId);}
 
     @Transactional(readOnly = true)
     public User findById(Long id) {

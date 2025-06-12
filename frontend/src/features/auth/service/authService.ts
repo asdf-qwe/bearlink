@@ -161,6 +161,80 @@ export const authService = {
       return false;
     }
   },
+
+  /**
+   * 이메일 중복 체크
+   * @param email 확인할 이메일 주소
+   * @returns 이메일 사용 가능 여부와 메시지
+   */
+  async checkEmail(
+    email: string
+  ): Promise<{ available: boolean; message: string }> {
+    try {
+      const response = await fetch(
+        `${API_URL}/api/v1/users/check-email?email=${encodeURIComponent(
+          email
+        )}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const message = await response.text();
+
+      if (response.ok) {
+        return { available: true, message };
+      } else if (response.status === 409) {
+        return { available: false, message };
+      } else if (response.status === 400) {
+        return { available: false, message };
+      } else {
+        throw new Error(message || "이메일 확인에 실패했습니다");
+      }
+    } catch (error) {
+      console.error("이메일 중복 체크 에러:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * 로그인 ID 중복 체크
+   * @param loginId 확인할 로그인 ID
+   * @returns 로그인 ID 사용 가능 여부와 메시지
+   */
+  async checkLoginId(
+    loginId: string
+  ): Promise<{ available: boolean; message: string }> {
+    try {
+      const response = await fetch(
+        `${API_URL}/api/v1/users/check-loginId?loginId=${encodeURIComponent(
+          loginId
+        )}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const message = await response.text();
+
+      if (response.ok) {
+        return { available: true, message };
+      } else if (response.status === 409) {
+        return { available: false, message };
+      } else {
+        throw new Error(message || "로그인 ID 확인에 실패했습니다");
+      }
+    } catch (error) {
+      console.error("로그인 ID 중복 체크 에러:", error);
+      throw error;
+    }
+  },
 };
 
 export default authService;
