@@ -7,9 +7,10 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class LinkPreviewDto {
     private String title;
     private String thumbnailImageUrl;
+    private String price;
 }

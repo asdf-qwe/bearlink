@@ -15,13 +15,19 @@ import { useAuth } from "@/context/AuthContext";
 import { categoryService } from "@/features/category/service/categoryService";
 import { Category } from "@/features/category/types/categoryTypes";
 import { linkService } from "@/features/link/service/linkService";
-import { LinkRequestDto, LinkResponseDto } from "@/features/link/types/link";
+import {
+  LinkRequestDto,
+  LinkResponseDto,
+  PreviewStatus,
+} from "@/features/link/types/link";
 
 interface LinkItem {
   id: number; // 백엔드 ID를 직접 사용
   title: string;
   url: string;
   thumbnailImageUrl?: string;
+  price?: string;
+  previewStatus: PreviewStatus;
 }
 
 interface CategoryWithLinks {
@@ -35,11 +41,8 @@ export default function CategoryPage() {
   const router = useRouter();
   const { userInfo } = useAuth();
   const categoryId = Number(params.id as string);
-
   const [category, setCategory] = useState<CategoryWithLinks | null>(null);
   const [newLinkData, setNewLinkData] = useState({ title: "", url: "" });
-  const [extractingThumbnail, setExtractingThumbnail] = useState(false);
-  const [thumbnailUrl, setThumbnailUrl] = useState("");
   const [showAddLinkForm, setShowAddLinkForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState(false);
   const [categoryName, setCategoryName] = useState("");
@@ -48,6 +51,9 @@ export default function CategoryPage() {
   const [deletingLinkId, setDeletingLinkId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [categoryIndex, setCategoryIndex] = useState<number>(0);
+  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(
+    null
+  );
 
   // 아이콘 순서 배열 (meat, fish, box, beehive, wood 순서로 반복)
   const iconOrder = [
@@ -94,6 +100,8 @@ export default function CategoryPage() {
             title: link.title,
             url: link.url,
             thumbnailImageUrl: link.thumbnailImageUrl,
+            price: link.price,
+            previewStatus: link.previewStatus,
           }));
 
           // 백엔드 카테고리를 로컬 타입으로 변환
@@ -122,46 +130,19 @@ export default function CategoryPage() {
       }
     };
     loadCategory();
-  }, [categoryId, userInfo?.id]);
-  // URL 입력 시 링크 미리보기 자동 추출
+  }, [categoryId, userInfo?.id]); // URL 입력 시 기본 처리 (비동기 미리보기는 백엔드에서 처리)
   const handleUrlChange = async (url: string) => {
     setNewLinkData((prev) => ({ ...prev, url }));
     setError(null);
 
     if (url && (url.startsWith("http://") || url.startsWith("https://"))) {
-      setExtractingThumbnail(true);
-      try {
-        const preview = await linkService.getLinkPreview(url);
-        if (preview) {
-          // 제목이 비어있으면 미리보기에서 가져온 제목 사용
-          if (!newLinkData.title.trim() && preview.title) {
-            setNewLinkData((prev) => ({ ...prev, title: preview.title }));
-          }
-          // 썸네일 설정
-          setThumbnailUrl(preview.thumbnailImageUrl || "");
-          console.log("링크 미리보기 추출 성공:", preview);
-        } else {
-          setThumbnailUrl("");
-          console.log("링크 미리보기를 찾을 수 없습니다.");
-        }
-      } catch (error) {
-        console.error("링크 미리보기 추출 실패:", error);
-        setThumbnailUrl("");
-      } finally {
-        setExtractingThumbnail(false);
-      }
-    } else {
-      setThumbnailUrl("");
+      // 기존 미리보기 추출 로직 제거
+      // 비동기 처리는 백엔드에서 담당하므로 여기서는 URL만 저장
+      console.log("URL 입력됨:", url);
     }
   };
   const addLink = async () => {
-    if (
-      !category ||
-      !userInfo?.id ||
-      newLinkData.title.trim() === "" ||
-      newLinkData.url.trim() === ""
-    )
-      return;
+    if (!category || !userInfo?.id || newLinkData.url.trim() === "") return;
 
     let url = newLinkData.url;
     if (!url.startsWith("http://") && !url.startsWith("https://")) {
@@ -174,9 +155,9 @@ export default function CategoryPage() {
     try {
       // 백엔드 API로 링크 생성
       const linkRequestDto: LinkRequestDto = {
-        title: newLinkData.title,
         url: url,
-        thumbnailImageUrl: thumbnailUrl, // 추출된 썸네일 URL 사용
+        // 제목이 입력되었으면 포함, 비어있으면 제외 (백엔드에서 자동 추출)
+        ...(newLinkData.title.trim() && { title: newLinkData.title.trim() }),
       };
       await linkService.createLink(userInfo.id, category.id, linkRequestDto); // 성공 시 백엔드에서 최신 링크 목록 다시 가져오기
       const updatedLinks = await linkService.getLinks(userInfo.id, category.id);
@@ -185,15 +166,15 @@ export default function CategoryPage() {
         title: link.title,
         url: link.url,
         thumbnailImageUrl: link.thumbnailImageUrl,
+        price: link.price,
+        previewStatus: link.previewStatus,
       }));
-
       const updatedCategory = {
         ...category,
         links: convertedLinks,
       };
       setCategory(updatedCategory);
       setNewLinkData({ title: "", url: "" });
-      setThumbnailUrl("");
       setShowAddLinkForm(false);
 
       // 로컬 스토리지에도 업데이트된 링크 목록 저장
@@ -281,6 +262,74 @@ export default function CategoryPage() {
       setCategoryName(category?.name || "");
     }
   };
+
+  // 미리보기 상태가 PENDING인 링크들을 주기적으로 확인하는 폴링 함수
+  const pollPendingLinks = async () => {
+    if (!category || !userInfo?.id) return;
+
+    const pendingLinks = category.links.filter(
+      (link) => link.previewStatus === "PENDING"
+    );
+    if (pendingLinks.length === 0) return;
+
+    try {
+      let hasUpdates = false;
+      const updatedLinks = [...category.links];
+
+      for (const pendingLink of pendingLinks) {
+        const updatedLink = await linkService.checkLinkStatus(pendingLink.id);
+        if (updatedLink && updatedLink.previewStatus !== "PENDING") {
+          const linkIndex = updatedLinks.findIndex(
+            (l) => l.id === pendingLink.id
+          );
+          if (linkIndex !== -1) {
+            updatedLinks[linkIndex] = {
+              ...pendingLink,
+              title: updatedLink.title,
+              thumbnailImageUrl: updatedLink.thumbnailImageUrl,
+              price: updatedLink.price,
+              previewStatus: updatedLink.previewStatus,
+            };
+            hasUpdates = true;
+          }
+        }
+      }
+
+      if (hasUpdates) {
+        setCategory((prev) => (prev ? { ...prev, links: updatedLinks } : null));
+      }
+    } catch (error) {
+      console.error("폴링 중 오류:", error);
+    }
+  };
+
+  // 폴링 시작/중지 관리
+  useEffect(() => {
+    if (category) {
+      const hasPendingLinks = category.links.some(
+        (link) => link.previewStatus === "PENDING"
+      );
+
+      if (hasPendingLinks) {
+        // 폴링 시작 (5초마다)
+        const interval = setInterval(pollPendingLinks, 5000);
+        setPollingInterval(interval);
+      } else {
+        // 폴링 중지
+        if (pollingInterval) {
+          clearInterval(pollingInterval);
+          setPollingInterval(null);
+        }
+      }
+    }
+
+    // 컴포넌트 언마운트 시 폴링 정리
+    return () => {
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+      }
+    };
+  }, [category]);
 
   if (loading) {
     return (
@@ -401,7 +450,7 @@ export default function CategoryPage() {
             <div>
               <label className="block text-sm font-medium text-amber-700 mb-1">
                 URL
-              </label>{" "}
+              </label>
               <input
                 type="url"
                 value={newLinkData.url}
@@ -409,21 +458,15 @@ export default function CategoryPage() {
                 onKeyDown={handleLinkKeyPress}
                 placeholder="https://example.com"
                 className="w-full p-2 border border-amber-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500"
-                disabled={addingLink || extractingThumbnail}
+                disabled={addingLink}
                 autoFocus
-              />{" "}
-              {/* 링크 미리보기 추출 상태 표시 */}
-              {extractingThumbnail && (
-                <div className="flex items-center text-sm text-amber-600 mt-2">
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  링크 정보를 가져오는 중...
-                </div>
-              )}
+              />
             </div>
+
             <div>
               <label className="block text-sm font-medium text-amber-700 mb-1">
-                제목
-              </label>{" "}
+                제목 (선택사항)
+              </label>
               <input
                 type="text"
                 value={newLinkData.title}
@@ -432,68 +475,29 @@ export default function CategoryPage() {
                   setError(null);
                 }}
                 onKeyDown={handleLinkKeyPress}
-                placeholder="링크 제목을 입력하세요"
-                className="w-full p-2 border border-amber-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500"
-              />
-            </div>
-            {/* 썸네일 미리보기 및 수동 입력 */}
-            <div>
-              <label className="block text-sm font-medium text-amber-700 mb-1">
-                썸네일 이미지
-              </label>
-
-              {/* 썸네일 미리보기 */}
-              {thumbnailUrl && (
-                <div className="mb-3">
-                  <div className="flex items-center space-x-3">
-                    <img
-                      src={thumbnailUrl}
-                      alt="썸네일 미리보기"
-                      className="w-16 h-16 object-cover rounded border border-amber-200"
-                      onError={(e) => {
-                        console.error("썸네일 이미지 로드 실패");
-                        e.currentTarget.style.display = "none";
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setThumbnailUrl("")}
-                      className="text-sm text-red-600 hover:text-red-800"
-                    >
-                      제거
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* 썸네일 URL 수동 입력 */}
-              <input
-                type="url"
-                value={thumbnailUrl}
-                onChange={(e) => setThumbnailUrl(e.target.value)}
-                placeholder="썸네일 이미지 URL (자동 추출되지 않은 경우 직접 입력)"
+                placeholder="제목을 입력하지 않으면 자동으로 추출됩니다"
                 className="w-full p-2 border border-amber-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500"
                 disabled={addingLink}
               />
+              <p className="text-sm text-amber-600 mt-1">
+                제목을 입력하면 입력한 제목이 사용되고, 비워두면 자동으로 추출된
+                제목이 사용됩니다.
+              </p>
             </div>
+
             <div className="flex space-x-2">
               <button
                 onClick={addLink}
-                disabled={
-                  !newLinkData.title.trim() ||
-                  !newLinkData.url.trim() ||
-                  addingLink
-                }
+                disabled={!newLinkData.url.trim() || addingLink}
                 className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {addingLink && <Loader2 className="h-4 w-4 animate-spin" />}
                 <span>{addingLink ? "추가 중..." : "추가"}</span>
-              </button>
+              </button>{" "}
               <button
                 onClick={() => {
                   setShowAddLinkForm(false);
                   setNewLinkData({ title: "", url: "" });
-                  setThumbnailUrl("");
                   setError(null);
                 }}
                 className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
@@ -565,13 +569,37 @@ export default function CategoryPage() {
                     className="w-24 h-24 object-contain"
                   />
                 )}
-              </div>
+              </div>{" "}
               {/* 카드 내용 */}
               <div className="p-4">
                 {/* 제목 */}
                 <h3 className="font-semibold text-amber-900 text-lg mb-2 line-clamp-2">
                   {link.title}
                 </h3>
+
+                {/* 가격 정보 */}
+                {link.price && (
+                  <div className="text-lg font-bold text-green-600 mb-2">
+                    {link.price}
+                  </div>
+                )}
+
+                {/* 미리보기 상태 */}
+                <div className="flex items-center mb-2">
+                  <span
+                    className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                      link.previewStatus === "COMPLETED"
+                        ? "bg-green-100 text-green-800"
+                        : link.previewStatus === "PENDING"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    {link.previewStatus === "COMPLETED" && "✓ 완료"}
+                    {link.previewStatus === "PENDING" && "⏳ 처리중"}
+                    {link.previewStatus === "FAILED" && "✗ 실패"}
+                  </span>
+                </div>
 
                 {/* URL */}
                 <a
