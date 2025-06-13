@@ -84,9 +84,16 @@ class LinkService {
       return null;
     }
   }
-
   async getLinkPreview(url: string): Promise<LinkPreviewDto | null> {
     try {
+      // URL 유효성 검사
+      try {
+        new URL(url);
+      } catch (urlError) {
+        console.error("유효하지 않은 URL:", url);
+        return null;
+      }
+
       const response = await fetch(
         `${API_BASE_URL}/api/v1/link/preview?url=${encodeURIComponent(url)}`,
         {
@@ -98,8 +105,19 @@ class LinkService {
       );
 
       if (response.ok) {
-        const preview = await response.json();
-        return preview;
+        // 응답이 비어있는지 확인
+        const text = await response.text();
+        if (!text.trim()) {
+          return null;
+        }
+
+        try {
+          const preview = JSON.parse(text);
+          return preview;
+        } catch (parseError) {
+          console.error("JSON 파싱 오류:", parseError);
+          return null;
+        }
       } else if (response.status === 204) {
         // NO_CONTENT - 미리보기를 찾을 수 없음
         return null;
@@ -107,7 +125,13 @@ class LinkService {
         throw new Error(`링크 미리보기 추출 실패: ${response.status}`);
       }
     } catch (error) {
-      console.error("링크 미리보기 추출 중 오류:", error);
+      if (error instanceof TypeError && error.message.includes("fetch")) {
+        console.error("네트워크 오류:", error);
+      } else if (error instanceof SyntaxError) {
+        console.error("JSON 파싱 오류:", error);
+      } else {
+        console.error("링크 미리보기 추출 중 오류:", error);
+      }
       return null;
     }
   }
