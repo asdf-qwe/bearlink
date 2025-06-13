@@ -12,7 +12,7 @@ import java.time.Duration;
 @RequiredArgsConstructor
 public class LinkPreviewCacheService {
     private final RedisTemplate<String, LinkPreviewDto> redisTemplate;
-    private final Duration ttl = Duration.ofDays(60);
+    private final Duration ttl = Duration.ofDays(120);
 
     public LinkPreviewDto get(String key) {
         return redisTemplate.opsForValue().get(key);
