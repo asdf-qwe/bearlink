@@ -152,7 +152,8 @@ export default function CategoryPage() {
     setAddingLink(true);
     setError(null);
 
-    try {      // 백엔드 API로 링크 생성
+    try {
+      // 백엔드 API로 링크 생성
       const linkRequestDto: LinkRequestDto = {
         url: url,
         // 제목이 입력되었으면 포함, 비어있으면 제외 (백엔드에서 자동 추출)
@@ -170,7 +171,8 @@ export default function CategoryPage() {
       }));
       const updatedCategory = {
         ...category,
-        links: convertedLinks,      };
+        links: convertedLinks,
+      };
       setCategory(updatedCategory);
       setNewLinkData({ title: "", url: "" });
       setShowAddLinkForm(false);
@@ -245,7 +247,8 @@ export default function CategoryPage() {
   };
   const handleLinkKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
-      addLink();    } else if (e.key === "Escape") {
+      addLink();
+    } else if (e.key === "Escape") {
       setShowAddLinkForm(false);
       setNewLinkData({ title: "", url: "" });
     }
@@ -442,7 +445,8 @@ export default function CategoryPage() {
               <AlertCircle size={16} className="text-red-600 mr-2" />
               <span className="text-red-700 text-sm">{error}</span>
             </div>
-          )}{" "}          <div className="space-y-4">
+          )}{" "}
+          <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-amber-700 mb-1">
                 URL
@@ -458,7 +462,7 @@ export default function CategoryPage() {
                 autoFocus
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-amber-700 mb-1">
                 제목 (선택사항)
@@ -476,7 +480,8 @@ export default function CategoryPage() {
                 disabled={addingLink}
               />
               <p className="text-sm text-amber-600 mt-1">
-                제목을 입력하면 입력한 제목이 사용되고, 비워두면 자동으로 추출된 제목이 사용됩니다.
+                제목을 입력하면 입력한 제목이 사용되고, 비워두면 자동으로 추출된
+                제목이 사용됩니다.
               </p>
             </div>
 
@@ -488,7 +493,8 @@ export default function CategoryPage() {
               >
                 {addingLink && <Loader2 className="h-4 w-4 animate-spin" />}
                 <span>{addingLink ? "추가 중..." : "추가"}</span>
-              </button>{" "}              <button
+              </button>{" "}
+              <button
                 onClick={() => {
                   setShowAddLinkForm(false);
                   setNewLinkData({ title: "", url: "" });
