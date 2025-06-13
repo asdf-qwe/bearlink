@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, X, Trash2, AlertCircle, Loader2 } from "lucide-react";
+import { Plus, X, Trash2, AlertCircle, Loader2, Edit2 } from "lucide-react";
 import Link from "next/link";
 import { useSidebar } from "@/context/SidebarContext";
 import { useAuth } from "@/context/AuthContext";
@@ -19,6 +19,10 @@ export default function Sidebar() {
   const [showAddCategoryForm, setShowAddCategoryForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [editingCategoryId, setEditingCategoryId] = useState<number | null>(
+    null
+  );
+  const [editingCategoryName, setEditingCategoryName] = useState("");
 
   // 아이콘 순서 배열 (meat, fish, box, beehive, wood 순서로 반복)
   const iconOrder = [
@@ -109,6 +113,53 @@ export default function Sidebar() {
     }
   };
 
+  // 카테고리 수정 모드 활성화
+  const startEditCategory = (category: Category) => {
+    setEditingCategoryId(category.id);
+    setEditingCategoryName(category.name);
+    setError(null);
+  };
+
+  // 카테고리 수정 취소
+  const cancelEditCategory = () => {
+    setEditingCategoryId(null);
+    setEditingCategoryName("");
+    setError(null);
+  };
+
+  // 카테고리 수정 저장
+  const saveEditCategory = async () => {
+    if (!editingCategoryId || editingCategoryName.trim() === "") return;
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const categoryRequest: CategoryRequest = {
+        name: editingCategoryName,
+      };
+
+      await categoryService.updateCategory(categoryRequest, editingCategoryId);
+      await fetchCategories(); // 카테고리 목록 다시 불러오기
+      setEditingCategoryId(null);
+      setEditingCategoryName("");
+    } catch (err) {
+      console.error("카테고리 수정 실패:", err);
+      setError("카테고리 수정에 실패했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 카테고리 수정 시 키 이벤트 처리
+  const handleEditKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      saveEditCategory();
+    } else if (e.key === "Escape") {
+      cancelEditCategory();
+    }
+  };
+
   const handleCategoryKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       addCategory();
@@ -183,27 +234,78 @@ export default function Sidebar() {
                   key={category.id}
                   className="flex justify-between items-center p-2 border border-amber-200 rounded-md hover:bg-amber-900 hover:bg-opacity-30 transition-colors group"
                 >
-                  <Link
-                    href={`/main/category/${category.id}`}
-                    className="flex items-center space-x-3 flex-grow"
-                  >
-                    <img
-                      src={getCategoryIcon(index)}
-                      alt={`카테고리 아이콘`}
-                      className="w-5 h-5 object-contain"
-                    />
-                    <span className="font-medium text-white">
-                      {category.name}
-                    </span>
-                  </Link>{" "}
-                  <button
-                    onClick={() => removeCategory(category.id, category.name)}
-                    className="p-1 text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
-                    aria-label={`${category.name} 카테고리 삭제`}
-                    disabled={loading}
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                  {editingCategoryId === category.id ? (
+                    <div className="flex-grow mr-2">
+                      <input
+                        type="text"
+                        value={editingCategoryName}
+                        onChange={(e) => setEditingCategoryName(e.target.value)}
+                        onKeyDown={handleEditKeyPress}
+                        className="w-full p-1 bg-white rounded border border-stone-300 text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-500"
+                        aria-label="카테고리 이름 수정"
+                        autoFocus
+                        disabled={loading}
+                      />
+                    </div>
+                  ) : (
+                    <Link
+                      href={`/main/category/${category.id}`}
+                      className="flex items-center space-x-3 flex-grow"
+                    >
+                      <img
+                        src={getCategoryIcon(index)}
+                        alt={`카테고리 아이콘`}
+                        className="w-5 h-5 object-contain"
+                      />
+                      <span className="font-medium text-white">
+                        {category.name}
+                      </span>
+                    </Link>
+                  )}
+
+                  <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {editingCategoryId === category.id ? (
+                      <>
+                        <button
+                          onClick={saveEditCategory}
+                          className="p-1 text-green-400 hover:text-green-600 transition-colors"
+                          aria-label="저장"
+                          disabled={loading}
+                        >
+                          ✓
+                        </button>
+                        <button
+                          onClick={cancelEditCategory}
+                          className="p-1 text-red-400 hover:text-red-600 transition-colors"
+                          aria-label="취소"
+                          disabled={loading}
+                        >
+                          ✕
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => startEditCategory(category)}
+                          className="p-1 text-blue-400 hover:text-blue-600 transition-colors"
+                          aria-label={`${category.name} 카테고리 수정`}
+                          disabled={loading}
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                        <button
+                          onClick={() =>
+                            removeCategory(category.id, category.name)
+                          }
+                          className="p-1 text-red-500 hover:text-red-700 transition-colors"
+                          aria-label={`${category.name} 카테고리 삭제`}
+                          disabled={loading}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               ))}
 

@@ -13,24 +13,132 @@ export default function SignupPage() {
   const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
-  const [role, setRole] = useState("USER"); // 기본값을 USER로 설정
+  // role 상태를 제거하고 자동으로 USER로 설정
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [emailValidation, setEmailValidation] = useState<{
+    isChecking: boolean;
+    isValid: boolean | null;
+    message: string;
+  }>({
+    isChecking: false,
+    isValid: null,
+    message: "",
+  });
+  const [loginIdValidation, setLoginIdValidation] = useState<{
+    checked: boolean;
+    available: boolean;
+    message: string;
+  }>({
+    checked: false,
+    available: false,
+    message: "",
+  });
+  const [loginIdChecking, setLoginIdChecking] = useState(false);
   const router = useRouter();
+
+  // 로그인 ID 중복 체크 함수
+  const handleLoginIdCheck = async () => {
+    if (!loginId.trim()) {
+      setError("로그인 ID를 입력해주세요.");
+      return;
+    }
+
+    try {
+      setLoginIdChecking(true);
+      setError(null);
+
+      const result = await authService.checkLoginId(loginId);
+      setLoginIdValidation({
+        checked: true,
+        available: result.available,
+        message: result.message,
+      });
+    } catch (err: any) {
+      setLoginIdValidation({
+        checked: true,
+        available: false,
+        message: err.message || "로그인 ID 확인에 실패했습니다.",
+      });
+    } finally {
+      setLoginIdChecking(false);
+    }
+  };
+
+  // 로그인 ID 입력값이 변경되면 중복 체크 결과 초기화
+  const handleLoginIdChange = (value: string) => {
+    setLoginId(value);
+    setLoginIdValidation({ checked: false, available: false, message: "" });
+  };
+
+  // 이메일 중복 체크 함수
+  const handleEmailBlur = async () => {
+    if (!email.trim()) {
+      setEmailValidation({ isChecking: false, isValid: null, message: "" });
+      return;
+    }
+
+    // 이메일 형식 체크
+    const emailRegex = /^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailValidation({
+        isChecking: false,
+        isValid: false,
+        message: "유효하지 않은 이메일 형식입니다",
+      });
+      return;
+    }
+
+    try {
+      setEmailValidation({ isChecking: true, isValid: null, message: "" });
+
+      const result = await authService.checkEmail(email);
+      setEmailValidation({
+        isChecking: false,
+        isValid: result.available,
+        message: result.message,
+      });
+    } catch (err: any) {
+      setEmailValidation({
+        isChecking: false,
+        isValid: false,
+        message: err.message || "이메일 확인에 실패했습니다.",
+      });
+    }
+  };
+
+  // 이메일 입력값이 변경되면 검증 상태 초기화
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    if (emailValidation.isValid !== null) {
+      setEmailValidation({ isChecking: false, isValid: null, message: "" });
+    }
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
-    setSuccess(null);
-
-    // 기본 유효성 검사
-    if (!loginId.trim() || !password.trim() || !role.trim()) {
-      setError("로그인 ID, 비밀번호, 역할은 필수 입력값입니다.");
+    setSuccess(null); // 기본 유효성 검사
+    if (!loginId.trim() || !email.trim() || !password.trim()) {
+      setError("로그인 ID, 이메일, 비밀번호는 필수 입력값입니다.");
       return;
     }
 
     if (password !== passwordConfirm) {
       setError("비밀번호가 일치하지 않습니다.");
+      return;
+    }
+
+    // 로그인 ID 중복 체크 완료 여부 확인
+    if (!loginIdValidation.checked || !loginIdValidation.available) {
+      setError("로그인 ID 중복 체크를 완료해주세요.");
+      return;
+    }
+
+    // 이메일 중복 체크 완료 여부 확인
+    if (emailValidation.isValid !== true) {
+      setError("이메일 중복 체크를 완료해주세요.");
       return;
     }
 
@@ -40,9 +148,9 @@ export default function SignupPage() {
       const signupData: SignupRequestDto = {
         loginId,
         password,
-        role,
-        nickname: nickname.trim() || undefined,
-        email: email.trim() || undefined,
+        role: "USER", // 자동으로 USER 역할 할당
+        nickname: nickname.trim() || loginId, // 닉네임이 없으면 로그인 ID 사용
+        email: email.trim(),
       };
 
       await authService.signup(signupData);
@@ -92,35 +200,76 @@ export default function SignupPage() {
                 >
                   로그인 ID <span className="text-red-500">*</span>
                 </label>
-                <input
-                  id="loginId"
-                  name="loginId"
-                  type="text"
-                  autoComplete="username"
-                  required
-                  value={loginId}
-                  onChange={(e) => setLoginId(e.target.value)}
-                  className="relative block w-full appearance-none rounded-md border border-stone-300 px-3 py-2 text-stone-900 placeholder-stone-400 focus:z-10 focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm"
-                  placeholder="로그인 ID (이메일도 가능)"
-                />
-              </div>
+                <div className="flex space-x-2">
+                  <input
+                    id="loginId"
+                    name="loginId"
+                    type="text"
+                    autoComplete="username"
+                    required
+                    value={loginId}
+                    onChange={(e) => handleLoginIdChange(e.target.value)}
+                    className="flex-1 relative block w-full appearance-none rounded-md border border-stone-300 px-3 py-2 text-stone-900 placeholder-stone-400 focus:z-10 focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm"
+                    placeholder="로그인 ID (이메일도 가능)"
+                  />
+                  {loginId.trim() && (
+                    <button
+                      type="button"
+                      onClick={handleLoginIdCheck}
+                      disabled={loginIdChecking || loading}
+                      className="px-4 py-2 bg-amber-600 text-white text-sm rounded-md hover:bg-amber-700 disabled:bg-amber-400 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {loginIdChecking ? "확인중..." : "중복체크"}
+                    </button>
+                  )}
+                </div>
+                {/* 로그인 ID 중복 체크 결과 표시 */}
+                {loginIdValidation.checked && (
+                  <div
+                    className={`mt-1 text-sm ${
+                      loginIdValidation.available
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }`}
+                  >
+                    {loginIdValidation.message}
+                  </div>
+                )}
+              </div>{" "}
               <div>
                 <label
                   htmlFor="email"
                   className="block text-sm font-medium text-stone-700"
                 >
-                  이메일
+                  이메일 <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="email"
                   name="email"
                   type="email"
                   autoComplete="email"
+                  required
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => handleEmailChange(e.target.value)}
+                  onBlur={handleEmailBlur}
                   className="relative block w-full appearance-none rounded-md border border-stone-300 px-3 py-2 text-stone-900 placeholder-stone-400 focus:z-10 focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm"
-                  placeholder="example@email.com (선택사항)"
+                  placeholder="example@email.com"
                 />
+                {emailValidation.isChecking && (
+                  <p className="mt-2 text-sm text-stone-500">
+                    이메일 중복 확인 중...
+                  </p>
+                )}
+                {emailValidation.isValid === false && (
+                  <p className="mt-2 text-sm text-red-600">
+                    {emailValidation.message}
+                  </p>
+                )}
+                {emailValidation.isValid === true && (
+                  <p className="mt-2 text-sm text-green-600">
+                    {emailValidation.message}
+                  </p>
+                )}
               </div>
               <div>
                 <label
@@ -139,25 +288,7 @@ export default function SignupPage() {
                   placeholder="닉네임 (선택사항)"
                 />
               </div>
-              <div>
-                <label
-                  htmlFor="role"
-                  className="block text-sm font-medium text-stone-700"
-                >
-                  역할 <span className="text-red-500">*</span>
-                </label>
-                <select
-                  id="role"
-                  name="role"
-                  required
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  className="relative block w-full appearance-none rounded-md border border-stone-300 px-3 py-2 text-stone-900 focus:z-10 focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm"
-                >
-                  <option value="USER">사용자</option>
-                  <option value="ADMIN">관리자</option>
-                </select>{" "}
-              </div>
+              {/* 역할 선택 필드 제거 */}
               <div>
                 <label
                   htmlFor="password"

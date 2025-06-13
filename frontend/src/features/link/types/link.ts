@@ -4,9 +4,8 @@ export interface Category {
 }
 
 export interface LinkRequestDto {
-  title: string;
+  title?: string;
   url: string;
-  thumbnailImageUrl: string;
 }
 
 export interface LinkResponseDto {
@@ -14,9 +13,18 @@ export interface LinkResponseDto {
   title: string;
   url: string;
   thumbnailImageUrl: string;
+  price: string;
+  previewStatus: PreviewStatus;
 }
 
 export interface LinkPreviewDto {
   title: string;
   thumbnailImageUrl: string;
+  price: string;
+}
+
+export enum PreviewStatus {
+  PENDING = "PENDING",
+  COMPLETED = "COMPLETED",
+  FAILED = "FAILED",
 }
