@@ -38,16 +38,16 @@ public class ApiV1LinkController {
         return ResponseEntity.ok().body("링크 제목 수정 완료");
     }
 
-    @GetMapping("/preview")
-    public ResponseEntity<LinkPreviewDto> getLinkPreview(@RequestParam String url) {
-        LinkPreviewDto dto = linkService.extractLinkPreview(url);
-
-        if (dto != null) {
-            return ResponseEntity.ok(dto);
-        } else {
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        }
-    }
+//    @GetMapping("/preview")
+//    public ResponseEntity<LinkPreviewDto> getLinkPreview(@RequestParam String url) {
+//        LinkPreviewDto dto = linkService.extractLinkPreview(url);
+//
+//        if (dto != null) {
+//            return ResponseEntity.ok(dto);
+//        } else {
+//            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+//        }
+//    }
 
     @DeleteMapping
     public void deleteLink(@RequestParam Long linkId) {

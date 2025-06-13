@@ -9,5 +9,4 @@ import lombok.Setter;
 public class LinkRequestDto {
     private String title;
     private String url;
-    private String thumbnailImageUrl;
 }
