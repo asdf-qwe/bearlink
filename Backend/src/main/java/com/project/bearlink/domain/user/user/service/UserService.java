@@ -34,7 +34,7 @@ public class UserService {
                 .nickname(request.getNickname())
                 .email(request.getEmail())
                 .imageUrl(request.getImageUrl())
-                .role(UserRole.valueOf(request.getRole()))
+                .role(UserRole.USER)
                 .build();
 
         return userRepository.save(user);

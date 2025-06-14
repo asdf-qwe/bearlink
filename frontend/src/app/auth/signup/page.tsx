@@ -6,14 +6,13 @@ import { SignupRequestDto } from "@/features/auth/types/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
+import { validatePassword, validatePasswordConfirm } from "@/utils/passwordValidation";
 
 export default function SignupPage() {
   const [loginId, setLoginId] = useState("");
   const [email, setEmail] = useState("");
   const [nickname, setNickname] = useState("");
-  const [password, setPassword] = useState("");
-  const [passwordConfirm, setPasswordConfirm] = useState("");
-  // role 상태를 제거하고 자동으로 USER로 설정
+  const [password, setPassword] = useState("");  const [passwordConfirm, setPasswordConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -34,8 +33,21 @@ export default function SignupPage() {
     checked: false,
     available: false,
     message: "",
+  });  const [loginIdChecking, setLoginIdChecking] = useState(false);
+  const [passwordValidation, setPasswordValidation] = useState<{
+    isValid: boolean;
+    message: string;
+  }>({
+    isValid: false,
+    message: "",
   });
-  const [loginIdChecking, setLoginIdChecking] = useState(false);
+  const [passwordConfirmValidation, setPasswordConfirmValidation] = useState<{
+    isValid: boolean;
+    message: string;
+  }>({
+    isValid: false,
+    message: "",
+  });
   const router = useRouter();
 
   // 로그인 ID 중복 체크 함수
@@ -116,16 +128,47 @@ export default function SignupPage() {
     }
   };
 
+  // 비밀번호 변경 핸들러
+  const handlePasswordChange = (value: string) => {
+    setPassword(value);
+    const validation = validatePassword(value);
+    setPasswordValidation({
+      isValid: validation.isValid,
+      message: validation.message,
+    });
+    
+    // 비밀번호 확인도 다시 검증
+    if (passwordConfirm) {
+      const confirmValidation = validatePasswordConfirm(value, passwordConfirm);
+      setPasswordConfirmValidation(confirmValidation);
+    }
+  };
+
+  // 비밀번호 확인 변경 핸들러
+  const handlePasswordConfirmChange = (value: string) => {
+    setPasswordConfirm(value);
+    const validation = validatePasswordConfirm(password, value);
+    setPasswordConfirmValidation(validation);
+  };
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
-    setSuccess(null); // 기본 유효성 검사
+    setSuccess(null); 
+    
+    // 기본 유효성 검사
     if (!loginId.trim() || !email.trim() || !password.trim()) {
       setError("로그인 ID, 이메일, 비밀번호는 필수 입력값입니다.");
       return;
     }
 
-    if (password !== passwordConfirm) {
+    // 비밀번호 복잡성 검사
+    if (!passwordValidation.isValid) {
+      setError("비밀번호 조건을 만족해주세요.");
+      return;
+    }
+
+    // 비밀번호 확인 검사
+    if (!passwordConfirmValidation.isValid) {
       setError("비밀번호가 일치하지 않습니다.");
       return;
     }
@@ -143,12 +186,9 @@ export default function SignupPage() {
     }
 
     try {
-      setLoading(true);
-
-      const signupData: SignupRequestDto = {
+      setLoading(true);      const signupData: SignupRequestDto = {
         loginId,
         password,
-        role: "USER", // 자동으로 USER 역할 할당
         nickname: nickname.trim() || loginId, // 닉네임이 없으면 로그인 ID 사용
         email: email.trim(),
       };
@@ -288,8 +328,7 @@ export default function SignupPage() {
                   placeholder="닉네임 (선택사항)"
                 />
               </div>
-              {/* 역할 선택 필드 제거 */}
-              <div>
+              {/* 역할 선택 필드 제거 */}              <div>
                 <label
                   htmlFor="password"
                   className="block text-sm font-medium text-stone-700"
@@ -302,11 +341,25 @@ export default function SignupPage() {
                   type="password"
                   required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="relative block w-full appearance-none rounded-md border border-stone-300 px-3 py-2 text-stone-900 placeholder-stone-400 focus:z-10 focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm"
-                  placeholder="비밀번호 입력"
+                  onChange={(e) => handlePasswordChange(e.target.value)}
+                  className={`relative block w-full appearance-none rounded-md border px-3 py-2 text-stone-900 placeholder-stone-400 focus:z-10 focus:outline-none sm:text-sm ${
+                    password && passwordValidation.isValid
+                      ? "border-green-500 focus:border-green-500 focus:ring-green-500"
+                      : password && !passwordValidation.isValid
+                      ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                      : "border-stone-300 focus:border-amber-500 focus:ring-amber-500"
+                  }`}
+                  placeholder="영문, 숫자, 특수문자 중 2종류 이상, 10자 이상"
                 />
-              </div>{" "}
+                {password && (
+                  <p className={`mt-1 text-xs ${
+                    passwordValidation.isValid ? "text-green-600" : "text-red-600"
+                  }`}>
+                    {passwordValidation.message}
+                  </p>
+                )}
+              </div>
+              
               <div>
                 <label
                   htmlFor="passwordConfirm"
@@ -320,11 +373,23 @@ export default function SignupPage() {
                   type="password"
                   required
                   value={passwordConfirm}
-                  onChange={(e) => setPasswordConfirm(e.target.value)}
-                  className="relative block w-full appearance-none rounded-md border border-stone-300 px-3 py-2 text-stone-900 placeholder-stone-400 focus:z-10 focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm"
+                  onChange={(e) => handlePasswordConfirmChange(e.target.value)}
+                  className={`relative block w-full appearance-none rounded-md border px-3 py-2 text-stone-900 placeholder-stone-400 focus:z-10 focus:outline-none sm:text-sm ${
+                    passwordConfirm && passwordConfirmValidation.isValid
+                      ? "border-green-500 focus:border-green-500 focus:ring-green-500"
+                      : passwordConfirm && !passwordConfirmValidation.isValid
+                      ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                      : "border-stone-300 focus:border-amber-500 focus:ring-amber-500"
+                  }`}
                   placeholder="비밀번호 재입력"
                 />
-              </div>
+                {passwordConfirm && (
+                  <p className={`mt-1 text-xs ${
+                    passwordConfirmValidation.isValid ? "text-green-600" : "text-red-600"
+                  }`}>
+                    {passwordConfirmValidation.message}
+                  </p>
+                )}              </div>
             </div>
             {error && (
               <div className="p-3 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm">
