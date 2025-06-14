@@ -262,7 +262,6 @@ export default function CategoryPage() {
       setCategoryName(category?.name || "");
     }
   };
-
   // 미리보기 상태가 PENDING인 링크들을 주기적으로 확인하는 폴링 함수
   const pollPendingLinks = async () => {
     if (!category || !userInfo?.id) return;
@@ -273,30 +272,33 @@ export default function CategoryPage() {
     if (pendingLinks.length === 0) return;
 
     try {
-      let hasUpdates = false;
-      const updatedLinks = [...category.links];
+      // 전체 링크 목록을 다시 가져와서 업데이트된 상태 확인
+      const updatedLinks = await linkService.getLinks(userInfo.id, category.id);
+      const convertedLinks: LinkItem[] = updatedLinks.map((link) => ({
+        id: link.id,
+        title: link.title,
+        url: link.url,
+        thumbnailImageUrl: link.thumbnailImageUrl,
+        price: link.price,
+        previewStatus: link.previewStatus,
+      }));
 
-      for (const pendingLink of pendingLinks) {
-        const updatedLink = await linkService.checkLinkStatus(pendingLink.id);
-        if (updatedLink && updatedLink.previewStatus !== "PENDING") {
-          const linkIndex = updatedLinks.findIndex(
-            (l) => l.id === pendingLink.id
-          );
-          if (linkIndex !== -1) {
-            updatedLinks[linkIndex] = {
-              ...pendingLink,
-              title: updatedLink.title,
-              thumbnailImageUrl: updatedLink.thumbnailImageUrl,
-              price: updatedLink.price,
-              previewStatus: updatedLink.previewStatus,
-            };
-            hasUpdates = true;
-          }
-        }
-      }
+      // 상태가 변경된 링크가 있는지 확인
+      const hasUpdates = convertedLinks.some((newLink) => {
+        const currentLink = category.links.find((l) => l.id === newLink.id);
+        return (
+          currentLink &&
+          (currentLink.previewStatus !== newLink.previewStatus ||
+            currentLink.title !== newLink.title ||
+            currentLink.thumbnailImageUrl !== newLink.thumbnailImageUrl ||
+            currentLink.price !== newLink.price)
+        );
+      });
 
       if (hasUpdates) {
-        setCategory((prev) => (prev ? { ...prev, links: updatedLinks } : null));
+        setCategory((prev) =>
+          prev ? { ...prev, links: convertedLinks } : null
+        );
       }
     } catch (error) {
       console.error("폴링 중 오류:", error);
