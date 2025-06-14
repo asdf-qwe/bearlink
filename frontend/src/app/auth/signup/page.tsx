@@ -6,13 +6,17 @@ import { SignupRequestDto } from "@/features/auth/types/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
-import { validatePassword, validatePasswordConfirm } from "@/utils/passwordValidation";
+import {
+  validatePassword,
+  validatePasswordConfirm,
+} from "@/utils/passwordValidation";
 
 export default function SignupPage() {
   const [loginId, setLoginId] = useState("");
   const [email, setEmail] = useState("");
   const [nickname, setNickname] = useState("");
-  const [password, setPassword] = useState("");  const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -33,7 +37,8 @@ export default function SignupPage() {
     checked: false,
     available: false,
     message: "",
-  });  const [loginIdChecking, setLoginIdChecking] = useState(false);
+  });
+  const [loginIdChecking, setLoginIdChecking] = useState(false);
   const [passwordValidation, setPasswordValidation] = useState<{
     isValid: boolean;
     message: string;
@@ -136,7 +141,7 @@ export default function SignupPage() {
       isValid: validation.isValid,
       message: validation.message,
     });
-    
+
     // 비밀번호 확인도 다시 검증
     if (passwordConfirm) {
       const confirmValidation = validatePasswordConfirm(value, passwordConfirm);
@@ -153,8 +158,8 @@ export default function SignupPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
-    setSuccess(null); 
-    
+    setSuccess(null);
+
     // 기본 유효성 검사
     if (!loginId.trim() || !email.trim() || !password.trim()) {
       setError("로그인 ID, 이메일, 비밀번호는 필수 입력값입니다.");
@@ -186,7 +191,8 @@ export default function SignupPage() {
     }
 
     try {
-      setLoading(true);      const signupData: SignupRequestDto = {
+      setLoading(true);
+      const signupData: SignupRequestDto = {
         loginId,
         password,
         nickname: nickname.trim() || loginId, // 닉네임이 없으면 로그인 ID 사용
@@ -328,7 +334,8 @@ export default function SignupPage() {
                   placeholder="닉네임 (선택사항)"
                 />
               </div>
-              {/* 역할 선택 필드 제거 */}              <div>
+              {/* 역할 선택 필드 제거 */}{" "}
+              <div>
                 <label
                   htmlFor="password"
                   className="block text-sm font-medium text-stone-700"
@@ -352,14 +359,17 @@ export default function SignupPage() {
                   placeholder="영문, 숫자, 특수문자 중 2종류 이상, 10자 이상"
                 />
                 {password && (
-                  <p className={`mt-1 text-xs ${
-                    passwordValidation.isValid ? "text-green-600" : "text-red-600"
-                  }`}>
+                  <p
+                    className={`mt-1 text-xs ${
+                      passwordValidation.isValid
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }`}
+                  >
                     {passwordValidation.message}
                   </p>
                 )}
               </div>
-              
               <div>
                 <label
                   htmlFor="passwordConfirm"
@@ -384,12 +394,17 @@ export default function SignupPage() {
                   placeholder="비밀번호 재입력"
                 />
                 {passwordConfirm && (
-                  <p className={`mt-1 text-xs ${
-                    passwordConfirmValidation.isValid ? "text-green-600" : "text-red-600"
-                  }`}>
+                  <p
+                    className={`mt-1 text-xs ${
+                      passwordConfirmValidation.isValid
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }`}
+                  >
                     {passwordConfirmValidation.message}
                   </p>
-                )}              </div>
+                )}{" "}
+              </div>
             </div>
             {error && (
               <div className="p-3 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm">
