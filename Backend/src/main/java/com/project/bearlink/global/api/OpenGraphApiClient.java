@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
@@ -21,11 +22,13 @@ public class OpenGraphApiClient {
 
     public LinkPreviewDto fetchPreview(String url) {
         try {
-            String encodedUrl = URLEncoder.encode(url, StandardCharsets.UTF_8);
-            String api = "https://opengraph.io/api/1.1/site/" + encodedUrl + "?app_id=" + appId;
+            String encodedUrl = URLEncoder.encode(url, StandardCharsets.UTF_8); // 한 번만 인코딩
+            String fullUrl = "https://opengraph.io/api/1.1/site/" + encodedUrl + "?app_id=" + appId;
+
+            URI uri = URI.create(fullUrl);  // 이미 인코딩됐기 때문에 따로 UriBuilder 필요 없음
 
             RestTemplate rest = new RestTemplate();
-            ResponseEntity<JsonNode> response = rest.getForEntity(api, JsonNode.class);
+            ResponseEntity<JsonNode> response = rest.getForEntity(uri, JsonNode.class);
             JsonNode og = response.getBody().path("openGraph");
 
             String title = og.path("title").asText(null);

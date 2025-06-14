@@ -15,10 +15,12 @@ import lombok.RequiredArgsConstructor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.net.URI;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +32,7 @@ public class LinkService {
     private final LinkRepository linkRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
+    private final RedisTemplate<String, String> redisStringTemplate;
 
     public Link createLink(LinkRequestDto req, Long userId, Long categoryId) {
         User user = userRepository.findById(userId)
@@ -43,11 +46,24 @@ public class LinkService {
                 .url(req.getUrl())
                 .category(category)
                 .user(user)
-                .previewStatus(PreviewStatus.PENDING) // ✅ 비동기 처리를 위한 상태값
+                .previewStatus(PreviewStatus.PENDING)
                 .build();
 
-        return linkRepository.save(link);
+        Link savedLink = linkRepository.save(link);
+
+        // ✅ 동일 URL 중복 큐 등록 방지
+        String processingKey = "preview:processing:" + savedLink.getUrl();
+        Boolean alreadyQueued = redisStringTemplate.hasKey(processingKey);
+
+        if (!Boolean.TRUE.equals(alreadyQueued)) {
+            // 중복 큐 등록 방지 키 저장 (TTL 10분 등)
+            redisStringTemplate.opsForValue().set(processingKey, "1", Duration.ofMinutes(10));
+            redisStringTemplate.opsForList().rightPush("link-preview-queue", savedLink.getId().toString());
+        }
+
+        return savedLink;
     }
+
 
 
     public List<LinkResponseDto> getLinks(Long userId, Long categoryId) {

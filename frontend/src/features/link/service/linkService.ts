@@ -57,11 +57,10 @@ class LinkService {
       console.error("링크 조회 중 오류:", error);
       throw error;
     }
-  }
-  async getThumbnail(url: string): Promise<string | null> {
+  }  async getThumbnail(url: string): Promise<string | null> {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/v1/link/thumbnail?url=${encodeURIComponent(url)}`,
+        `${API_BASE_URL}/api/v1/link/thumbnail?url=${url}`,
         {
           method: "GET",
           headers: {

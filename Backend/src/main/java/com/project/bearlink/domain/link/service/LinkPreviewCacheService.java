@@ -11,14 +11,17 @@ import java.time.Duration;
 @Service
 @RequiredArgsConstructor
 public class LinkPreviewCacheService {
+
     private final RedisTemplate<String, LinkPreviewDto> redisTemplate;
     private final Duration ttl = Duration.ofDays(120);
 
-    public LinkPreviewDto get(String key) {
-        return redisTemplate.opsForValue().get(key);
+    private static final String PREFIX = "preview:";
+
+    public LinkPreviewDto get(String url) {
+        return redisTemplate.opsForValue().get(PREFIX + url);
     }
 
-    public void set(String key, LinkPreviewDto preview) {
-        redisTemplate.opsForValue().set(key, preview, ttl);
+    public void set(String url, LinkPreviewDto preview) {
+        redisTemplate.opsForValue().set(PREFIX + url, preview, ttl);
     }
 }
