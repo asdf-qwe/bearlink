@@ -61,7 +61,7 @@ class LinkService {
   async getThumbnail(url: string): Promise<string | null> {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/v1/link/thumbnail?url=${encodeURIComponent(url)}`,
+        `${API_BASE_URL}/api/v1/link/thumbnail?url=${url}`,
         {
           method: "GET",
           headers: {
@@ -81,29 +81,6 @@ class LinkService {
       }
     } catch (error) {
       console.error("썸네일 추출 중 오류:", error);
-      return null;
-    }
-  }
-
-  // 링크의 미리보기 상태를 확인하는 메서드 (폴링용)
-  async checkLinkStatus(linkId: number): Promise<LinkResponseDto | null> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/link/${linkId}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response.ok) {
-        return await response.json();
-      } else if (response.status === 404) {
-        return null;
-      } else {
-        throw new Error(`링크 상태 확인 실패: ${response.status}`);
-      }
-    } catch (error) {
-      console.error("링크 상태 확인 중 오류:", error);
       return null;
     }
   }
