@@ -34,19 +34,17 @@ export interface LoginRequestDto {
  * 회원가입 요청 DTO - 백엔드의 SignupRequestDto 클래스와 매핑됨
  *
  * @interface SignupRequestDto
- * @property {string} loginId - 사용자 로그인 ID (이메일도 가능)
- * @property {string} password - 사용자 비밀번호
- * @property {string} role - 사용자 역할 (ADMIN, USER)
+ * @property {string} loginId - 사용자 로그인 ID
+ * @property {string} password - 사용자 비밀번호 (영문, 숫자, 특수문자 중 2종류 이상, 10자 이상)
+ * @property {string} email - 사용자 이메일
  * @property {string} [nickname] - 사용자 닉네임 (선택사항)
- * @property {string} [email] - 사용자 이메일 (선택사항)
  * @property {string} [imageUrl] - 사용자 이미지 URL (선택사항)
  */
 export interface SignupRequestDto {
   loginId: string;
   password: string;
-  role: string;
+  email: string;
   nickname?: string;
-  email?: string;
   imageUrl?: string;
 }
 
