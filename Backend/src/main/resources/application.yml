@@ -1,0 +1,57 @@
+server:
+  port: 8080
+
+spring:
+  output:
+    ansi:
+      enabled: ALWAYS
+  profiles:
+    active: dev
+    include: secret
+  config:
+    import: optional:application-secret.yml  # ✅ 명시적 로딩 추가!
+  datasource:
+    url: jdbc:mysql://localhost:3306/bearLinkDB
+    username: bear
+    password: link
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  redis:
+    host: redis
+    port: 6379
+
+logging:
+  level:
+    com.dd.blog: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+    org.hibernate.orm.jdbc.extract: TRACE
+    org.springframework.transaction.interceptor: TRACE
+
+custom:
+  dev:
+    cookieDomain: localhost
+    frontUrl: "http://${custom.dev.cookieDomain}:3000"
+    backUrl: "http://${custom.dev.cookieDomain}:${server.port}"
+  prod:
+    cookieDomain: mingleservice.site
+    frontUrl: "https://www.${custom.prod.cookieDomain}"
+    backUrl: "https://api.blog.${custom.prod.cookieDomain}"
+  site:
+    name: "MINGLE DEV"
+    cookie:
+      secure: false
+      sameSite: Lax
+    cookieDomain: "${custom.dev.cookieDomain}"
+    frontUrl: "${custom.dev.frontUrl}"
+    backUrl: "${custom.dev.backUrl}"
