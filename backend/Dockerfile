@@ -11,7 +11,7 @@ COPY settings.gradle.kts .
 # 설정 파일 복사 (여기 중요!)
 COPY application.yml .
 COPY application-prod.yml .
-COPY application-secret.yml .
+
 
 # 종속성 설치
 RUN gradle dependencies --no-daemon
