@@ -5,7 +5,6 @@ spring:
     ansi:
       enabled: ALWAYS
   profiles:
-    active: dev
     include: secret
   config:
     import: optional:application-secret.yml  # ✅ 명시적 로딩 추가!
