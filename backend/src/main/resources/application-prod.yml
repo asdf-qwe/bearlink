@@ -16,9 +16,9 @@ spring:
         format_sql: false
         highlight_sql: false
         use_sql_comments: false
-    redis:
-      host: redis_1
-      port: 6379
+  redis:
+    host: redis_1
+    port: 6379
 management:
   endpoints:
     web:
