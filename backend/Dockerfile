@@ -8,10 +8,6 @@ WORKDIR /app
 COPY build.gradle.kts .
 COPY settings.gradle.kts .
 
-# 설정 파일 복사 (여기 중요!)
-COPY src/main/resources/application.yml src/main/resources/
-COPY src/main/resources/application-prod.yml src/main/resources/
-
 # 종속성 설치
 RUN gradle dependencies --no-daemon
 
