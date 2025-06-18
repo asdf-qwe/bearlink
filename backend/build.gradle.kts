@@ -45,13 +45,6 @@ dependencies {
 	implementation ("org.jsoup:jsoup:1.17.2")
 }
 
-sourceSets {
-	main {
-		resources {
-			srcDirs("src/main/resources")
-		}
-	}
-}
 
 tasks.withType<Test> {
 	useJUnitPlatform()
