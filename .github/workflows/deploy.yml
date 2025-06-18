@@ -101,15 +101,22 @@ jobs:
           working-directory: /
           comment: Deploy
           command: |
+            # 최신 Docker 이미지 풀
             docker pull ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest
-            docker stop app1 2>/dev/null
-            docker rm app1 2>/dev/null
-            # 여기서 -e 옵션을 추가합니다.
-            docker run -d \
-              --network common \
-              --name app1 \
-              -p 8080:8080 \
-              -e SPRING_DATA_REDIS_HOST=redis_1 \ # 이 라인을 추가
-              -e SPRING_DATA_REDIS_PORT=6379 \ # Redis 포트도 명시적으로 전달 (필요시)
-              ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest
-            docker rmi $(docker images -f "dangling=true" -q)
+            # 기존 app1 컨테이너 중지 (에러 무시)
+            docker stop app1 2>/dev/null || true
+            # 기존 app1 컨테이너 삭제 (에러 무시)
+            docker rm app1 2>/dev/null || true
+            # 새 app1 컨테이너 실행
+            # --network common: redis_1 컨테이너와 동일한 네트워크에 연결
+            # -e SPRING_DATA_REDIS_HOST=redis_1: Spring 앱이 Redis를 찾을 호스트 이름 설정
+            # -e SPRING_DATA_REDIS_PORT=6379: Spring 앱이 Redis를 찾을 포트 설정
+            docker run -d \
+              --network common \
+              --name app1 \
+              -p 8080:8080 \
+              -e SPRING_DATA_REDIS_HOST=redis_1 \
+              -e SPRING_DATA_REDIS_PORT=6379 \
+              ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest
+            # 사용되지 않는(dangling) Docker 이미지 정리
+            docker rmi $(docker images -f "dangling=true" -q) || true
