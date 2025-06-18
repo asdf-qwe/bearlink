@@ -1,33 +1,28 @@
 # 첫 번째 스테이지: 빌드 스테이지
 FROM gradle:jdk-21-and-23-graal-jammy AS builder
 
-# 작업 디렉토리 설정
 WORKDIR /app
 
-# 소스 코드와 Gradle 래퍼 복사
+# 빌드 파일 복사
 COPY build.gradle.kts .
 COPY settings.gradle.kts .
 
-# 설정 파일 복사
-COPY src/main/resources/ src/main/resources/
-
-# 종속성 설치
+# 종속성 캐시
 RUN gradle dependencies --no-daemon
 
-# 소스 코드 복사
+# 전체 소스 코드 복사 (리소스 포함)
 COPY src src
 
-# 애플리케이션 빌드
+# 빌드 실행
 RUN gradle build --no-daemon -x test
 
 # 두 번째 스테이지: 실행 스테이지
 FROM container-registry.oracle.com/graalvm/jdk:23
 
-# 작업 디렉토리 설정
 WORKDIR /app
 
-# 첫 번째 스테이지에서 빌드된 JAR 파일 복사
+# 빌드 결과물 복사
 COPY --from=builder /app/build/libs/*.jar app.jar
 
-# 실행할 JAR 파일 지정
+# 애플리케이션 실행
 ENTRYPOINT ["java", "-jar", "-Dspring.profiles.active=prod", "app.jar"]
