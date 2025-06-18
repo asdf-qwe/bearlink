@@ -207,7 +207,7 @@ docker run -d \
   -v /dockerProjects/npm_1/volumes/etc/letsencrypt:/etc/letsencrypt \
   jc21/nginx-proxy-manager:latest
 
-# redis 설치
+# redis 설치 (비밀번호 없음)
 docker run -d \
   --name=redis_1 \
   --restart unless-stopped \
@@ -215,7 +215,15 @@ docker run -d \
   -p 6379:6379 \
   -e TZ=Asia/Seoul \
   -v /dockerProjects/redis_1/volumes/data:/data \
-  redis --requirepass ${var.password_1}
+  redis # <-- --requirepass 옵션 제거
+
+# Redis 컨테이너가 준비될 때까지 대기
+echo "Redis가 기동될 때까지 대기 중..."
+until docker exec redis_1 redis-cli ping &> /dev/null; do # <-- -a ${var.password_1} 옵션 제거
+  echo "Redis가 아직 준비되지 않음. 5초 후 재시도..."
+  sleep 5
+done
+echo "Redis가 준비됨."
 
 # mysql 설치
 docker run -d \
