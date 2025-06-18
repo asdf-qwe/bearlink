@@ -49,7 +49,6 @@ sourceSets {
 	main {
 		resources {
 			srcDirs("src/main/resources")
-			includes.add("**/*.yml")
 		}
 	}
 }
