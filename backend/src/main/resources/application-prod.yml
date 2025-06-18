@@ -8,9 +8,6 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       auto-commit: false
-  redis:
-    host: redis_1
-    port: 6379
   jpa:
     hibernate:
       ddl-auto: update
