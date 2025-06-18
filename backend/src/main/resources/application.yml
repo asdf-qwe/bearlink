@@ -5,6 +5,7 @@ spring:
     ansi:
       enabled: ALWAYS
   profiles:
+    active: prod
     include: secret
   config:
     import: optional:application-secret.yml  # ✅ 명시적 로딩 추가!
@@ -20,9 +21,6 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
-  redis:
-    host: redis_1
-    port: 6379
   servlet:
     multipart:
       max-file-size: 10MB
