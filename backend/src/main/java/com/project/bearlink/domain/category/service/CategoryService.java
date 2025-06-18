@@ -40,7 +40,7 @@ public class CategoryService {
     public Category readCategory(Long categoryId) {
 
         return categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다"));
+                .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다r"));
     }
 
     // 특정 사용자의 카테고리 목록 조회 (사이드바 메뉴로 보여줄 리스트)
