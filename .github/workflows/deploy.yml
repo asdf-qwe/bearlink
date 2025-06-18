@@ -104,5 +104,12 @@ jobs:
             docker pull ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest
             docker stop app1 2>/dev/null
             docker rm app1 2>/dev/null
-            docker run -d --network common --name app1 -p 8080:8080 ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest
-            docker rmi $(docker images -f "dangling=true" -q)
+            # 여기서 -e 옵션을 추가합니다.
+            docker run -d \
+              --network common \
+              --name app1 \
+              -p 8080:8080 \
+              -e SPRING_DATA_REDIS_HOST=redis_1 \ # 이 라인을 추가
+              -e SPRING_DATA_REDIS_PORT=6379 \ # Redis 포트도 명시적으로 전달 (필요시)
+              ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest
+            docker rmi $(docker images -f "dangling=true" -q)
