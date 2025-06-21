@@ -23,7 +23,7 @@ public class ApiV1LinkController {
     @PostMapping
     public ResponseEntity<String> createLink (@RequestParam Long userId, @RequestBody LinkRequestDto req, @RequestParam Long categoryId) {
            Link link = linkService.createLink(req, userId, categoryId);
-        return ResponseEntity.ok().body("링크 생성 성공");
+        return ResponseEntity.ok().body("링크 생성 성공r");
     }
 
     @GetMapping
