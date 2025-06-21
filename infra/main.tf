@@ -264,7 +264,7 @@ docker run \
   --name ha_proxy_1 \
   haproxy
 
-# redis 설치 (비밀번호 추가됨)
+# redis 설치 (비밀번호 없음)
 docker run -d \
   --name=redis_1 \
   --restart unless-stopped \
@@ -272,11 +272,11 @@ docker run -d \
   -p 6379:6379 \
   -e TZ=Asia/Seoul \
   -v /dockerProjects/redis_1/volumes/data:/data \
-  redis --requirepass ${var.password_1} # <-- 비밀번호 옵션 추가
+  redis
 
 # Redis 컨테이너가 준비될 때까지 대기
 echo "Redis가 기동될 때까지 대기 중..."
-until docker exec redis_1 redis-cli ping &> /dev/null; do # <-- -a ${var.password_1} 옵션 제거 (이전 주석에 있던 내용)
+until docker exec redis_1 redis-cli ping &> /dev/null; do # 비밀번호가 없으므로 `-a ${var.password_1}` 옵션 삭제 유지
   echo "Redis가 아직 준비되지 않음. 5초 후 재시도..."
   sleep 5
 done
