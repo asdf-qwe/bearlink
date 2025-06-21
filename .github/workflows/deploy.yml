@@ -138,17 +138,14 @@ jobs:
               --network "$NETWORK" \
               --name "$NEXT" \
               -p "$NEXT_PORT":8080 \
-              -e SPRING_DATA_REDIS_HOST=redis_1 \ # Redis 호스트 환경 변수 추가
-              -e SPRING_DATA_REDIS_PORT=6379 \ # Redis 포트 환경 변수 추가
+              -e SPRING_DATA_REDIS_HOST=redis_1 \
+              -e SPRING_DATA_REDIS_PORT=6379 \
               "$IMAGE"
 
             # 헬스체크 대기
             echo "Waiting for health check of $NEXT..."
             START_TIME=$(date +%s)
             while true; do
-              # curl이 없으면 설치 필요할 수 있음
-              # Ubuntu/Debian: apt-get update && apt-get install -y curl
-              # Alpine: apk add curl
               CONTENT=$(curl -s "http://localhost:$NEXT_PORT$HEALTH_ENDPOINT")
 
               if [[ "$CONTENT" == *'"status":"UP"'* ]]; then
