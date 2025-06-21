@@ -1,19 +1,21 @@
 server:
-  port: 8090
+  port: 8080
 spring:
   output:
     ansi:
       enabled: ALWAYS
   profiles:
-    active: prod
+    active:
     include: secret
   config:
     import: optional:application-secret.yml  # ✅ 명시적 로딩 추가!
   datasource:
-    url: jdbc:mysql://localhost:3306/bearLinkDB
+    url: jdbc:mysql://localhost:3306/bearlinkdb
     username: bear
     password: link
     driver-class-name: com.mysql.cj.jdbc.Driver
+  redis : redis
+  port : 6379
   jpa:
     open-in-view: false
     hibernate:

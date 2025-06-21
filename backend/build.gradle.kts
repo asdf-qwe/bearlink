@@ -42,7 +42,9 @@ dependencies {
 	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
 	implementation("com.google.code.gson:gson")
 
-	implementation ("org.jsoup:jsoup:1.17.2")
+	implementation("org.jsoup:jsoup:1.17.2")
+
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
 }
 
 

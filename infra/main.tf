@@ -207,7 +207,64 @@ docker run -d \
   -v /dockerProjects/npm_1/volumes/etc/letsencrypt:/etc/letsencrypt \
   jc21/nginx-proxy-manager:latest
 
-# redis 설치 (비밀번호 없음)
+# ha proxy 설치
+## 설정파일을 위한 디렉토리 생성
+mkdir -p /dockerProjects/ha_proxy_1/volumes/usr/local/etc/haproxy/lua
+
+cat << 'EOF' > /dockerProjects/ha_proxy_1/volumes/usr/local/etc/haproxy/lua/retry_on_502_504.lua
+core.register_action("retry_on_502_504", { "http-res" }, function(txn)
+  local status = txn.sf:status()
+  if status == 502 or status == 504 then
+    txn:Done()
+  end
+end)
+EOF
+
+## 설정파일 생성
+echo -e "
+global
+    lua-load /usr/local/etc/haproxy/lua/retry_on_502_504.lua
+
+resolvers docker
+    nameserver dns1 127.0.0.11:53
+    resolve_retries       3
+    timeout retry         1s
+    hold valid            10s
+
+defaults
+    mode http
+    timeout connect 5s
+    timeout client 60s
+    timeout server 60s
+
+## api.blog.sik2.site => 프로젝트 API 서버 도메인
+frontend http_front
+    bind *:80
+    acl host_app1 hdr_beg(host) -i api.bearlink.kr
+
+    use_backend http_back_1 if host_app1
+
+backend http_back_1
+    balance roundrobin
+    option httpchk GET /actuator/health
+    default-server inter 2s rise 1 fall 1 init-addr last,libc,none resolvers docker
+    option redispatch
+    http-response lua.retry_on_502_504
+
+    server app_server_1_1 app1_1:8080 check
+    server app_server_1_2 app1_2:8080 check
+" > /dockerProjects/ha_proxy_1/volumes/usr/local/etc/haproxy/haproxy.cfg
+
+docker run \
+  -d \
+  --network common \
+  -p 8090:80 \
+  -v /dockerProjects/ha_proxy_1/volumes/usr/local/etc/haproxy:/usr/local/etc/haproxy \
+  -e TZ=Asia/Seoul \
+  --name ha_proxy_1 \
+  haproxy
+
+# redis 설치 (비밀번호 추가됨)
 docker run -d \
   --name=redis_1 \
   --restart unless-stopped \
@@ -215,11 +272,11 @@ docker run -d \
   -p 6379:6379 \
   -e TZ=Asia/Seoul \
   -v /dockerProjects/redis_1/volumes/data:/data \
-  redis # <-- --requirepass 옵션 제거
+  redis --requirepass ${var.password_1} # <-- 비밀번호 옵션 추가
 
 # Redis 컨테이너가 준비될 때까지 대기
 echo "Redis가 기동될 때까지 대기 중..."
-until docker exec redis_1 redis-cli ping &> /dev/null; do # <-- -a ${var.password_1} 옵션 제거
+until docker exec redis_1 redis-cli ping &> /dev/null; do # <-- -a ${var.password_1} 옵션 제거 (이전 주석에 있던 내용)
   echo "Redis가 아직 준비되지 않음. 5초 후 재시도..."
   sleep 5
 done
@@ -254,7 +311,7 @@ GRANT ALL PRIVILEGES ON *.* TO 'll_local'@'127.0.0.1';
 GRANT ALL PRIVILEGES ON *.* TO 'll_local'@'172.18.%.%';
 GRANT ALL PRIVILEGES ON *.* TO 'll'@'%';
 
-CREATE DATABASE mingle_prod;
+CREATE DATABASE blog_prod; # <-- 데이터베이스 이름 변경
 
 FLUSH PRIVILEGES;
 "
