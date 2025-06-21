@@ -2,7 +2,6 @@ package com.project.bearlink.domain.link.service;
 
 import com.project.bearlink.domain.category.entity.Category;
 import com.project.bearlink.domain.category.repository.CategoryRepository;
-import com.project.bearlink.domain.link.dto.LinkPreviewDto;
 import com.project.bearlink.domain.link.dto.LinkRequestDto;
 import com.project.bearlink.domain.link.dto.LinkResponseDto;
 import com.project.bearlink.domain.link.dto.LinkUpdateDto;
@@ -12,18 +11,11 @@ import com.project.bearlink.domain.link.repository.LinkRepository;
 import com.project.bearlink.domain.user.user.entity.User;
 import com.project.bearlink.domain.user.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.net.URI;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
