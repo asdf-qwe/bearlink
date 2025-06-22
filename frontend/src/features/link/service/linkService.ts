@@ -18,7 +18,7 @@ class LinkService {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(linkRequest),
-          credentials: "include", // ✅ 쿠키 포함!
+          credentials: "include", // ✅ 쿠키 포함
         }
       );
 
@@ -32,6 +32,7 @@ class LinkService {
       throw error;
     }
   }
+
   async getLinks(
     userId: number,
     categoryId: number
@@ -43,23 +44,25 @@ class LinkService {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            credentials: "include", // ✅ 쿠키 포함!
           },
+          credentials: "include", // ✅ 쿠키 포함
         }
       );
 
       if (!response.ok) {
         throw new Error(`링크 조회 실패: ${response.status}`);
       }
+
       const result = await response.json();
       console.log("백엔드에서 받은 링크 데이터:", result);
-      // 결과가 배열이 아닌 경우 빈 배열 반환
+
       return Array.isArray(result) ? result : [];
     } catch (error) {
       console.error("링크 조회 중 오류:", error);
       throw error;
     }
   }
+
   async getThumbnail(url: string): Promise<string | null> {
     try {
       const response = await fetch(
@@ -68,8 +71,8 @@ class LinkService {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            credentials: "include", // ✅ 쿠키 포함!
           },
+          credentials: "include", // ✅ 쿠키 포함
         }
       );
 
@@ -77,8 +80,7 @@ class LinkService {
         const thumbnailUrl = await response.text();
         return thumbnailUrl || null;
       } else if (response.status === 204) {
-        // NO_CONTENT - 썸네일을 찾을 수 없음
-        return null;
+        return null; // 썸네일 없음
       } else {
         throw new Error(`썸네일 추출 실패: ${response.status}`);
       }
@@ -96,8 +98,8 @@ class LinkService {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            credentials: "include", // ✅ 쿠키 포함!
           },
+          credentials: "include", // ✅ 쿠키 포함
         }
       );
 
