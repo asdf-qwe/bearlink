@@ -50,6 +50,7 @@ export default function Header() {
         backgroundImage: "url('/namu.jpg')",
         backgroundSize: "cover",
         backgroundPosition: "center",
+        backgroundColor: "#8B5A3C", // BackgroundCard와 동일한 폴백 색상
       }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
