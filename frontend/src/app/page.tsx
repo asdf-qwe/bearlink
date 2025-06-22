@@ -10,7 +10,7 @@ export default function HomePage() {
       <div className="min-h-screen bg-amber-50 p-8">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-4xl font-bold text-center text-amber-900 mb-8">
-            링크를 모아 곰돌이의 겨울잠 준비를 도와주세요
+            산속 오두막에 링크를 모아보세요
           </h1>
           {/* 메인 배경 카드 */}
           <div className="mb-8">
