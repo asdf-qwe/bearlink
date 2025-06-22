@@ -18,6 +18,7 @@ class LinkService {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(linkRequest),
+          credentials: "include", // ✅ 쿠키 포함!
         }
       );
 
@@ -42,6 +43,7 @@ class LinkService {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
+            credentials: "include", // ✅ 쿠키 포함!
           },
         }
       );
@@ -66,6 +68,7 @@ class LinkService {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
+            credentials: "include", // ✅ 쿠키 포함!
           },
         }
       );
@@ -93,6 +96,7 @@ class LinkService {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
+            credentials: "include", // ✅ 쿠키 포함!
           },
         }
       );
