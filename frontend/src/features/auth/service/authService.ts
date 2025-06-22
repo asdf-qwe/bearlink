@@ -39,8 +39,7 @@ export const authService = {
       console.error("회원가입 에러:", error);
       throw error;
     }
-  },
-  /**
+  },  /**
    * 로그인 기능
    * @param requestDto 로그인 요청 DTO (로그인 ID, 비밀번호 포함)
    * @returns JWT 토큰 (액세스 토큰, 리프레시 토큰)
@@ -56,8 +55,38 @@ export const authService = {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || "로그인에 실패했습니다");
+        let errorMessage = "로그인에 실패했습니다";
+        
+        try {
+          const errorData = await response.json();
+          // 서버에서 JSON 형태로 에러 메시지를 보내는 경우
+          if (errorData.message && 
+              !errorData.message.includes("Internal Server Error") &&
+              !errorData.message.includes("IllegalArgumentException")) {
+            errorMessage = errorData.message;
+          } else {
+            // Internal Server Error나 예외 메시지인 경우 상태코드별 처리
+            if (response.status === 500) {
+              // 백엔드에서 비밀번호 불일치 시 500 에러를 보내므로
+              errorMessage = "아이디 또는 비밀번호가 올바르지 않습니다";
+            } else if (response.status === 401) {
+              errorMessage = "아이디 또는 비밀번호가 올바르지 않습니다";
+            } else if (response.status === 400) {
+              errorMessage = "잘못된 요청입니다. 입력 정보를 확인해주세요";
+            }
+          }
+        } catch (jsonError) {
+          // JSON 파싱 실패 시 status에 따른 기본 메시지
+          if (response.status === 500 || response.status === 401) {
+            errorMessage = "아이디 또는 비밀번호가 올바르지 않습니다";
+          } else if (response.status === 400) {
+            errorMessage = "잘못된 요청입니다. 입력 정보를 확인해주세요";
+          } else if (response.status >= 500) {
+            errorMessage = "서버에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요";
+          }
+        }
+        
+        throw new Error(errorMessage);
       }
 
       const tokens: TokenResponseDto = await response.json();
