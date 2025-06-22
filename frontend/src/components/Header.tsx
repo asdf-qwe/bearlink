@@ -66,7 +66,6 @@ export default function Header() {
               </Link>
             </div>
             <nav className="ml-10 flex items-center space-x-8">
-              {" "}
               <Link
                 href="/"
                 className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${isActive(
@@ -74,7 +73,7 @@ export default function Header() {
                 )}`}
               >
                 홈
-              </Link>{" "}
+              </Link>
               <button
                 onClick={handleLinkRoomClick}
                 className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
@@ -94,7 +93,7 @@ export default function Header() {
                 마이페이지
               </Link>
             </nav>
-          </div>{" "}
+          </div>
           <div className="flex items-center">
             <button className="p-2 rounded-full text-amber-100 hover:text-white focus:outline-none">
               <svg
