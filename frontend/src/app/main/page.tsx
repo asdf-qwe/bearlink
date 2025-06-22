@@ -14,10 +14,7 @@ export default function Home() {
           <h1 className="text-4xl font-bold text-center text-amber-900 mb-4">
             링크 관리 메인 페이지
           </h1>
-          <p className="text-center text-amber-700 text-lg">
-            카테고리를 선택하여 링크를 관리해보세요
-          </p>
-        </div>{" "}
+        </div>
         {/* 배경 카드 */}
         <div className="mb-8">
           <BackgroundCard imageUrl="/main.png" className="h-[50rem]" />

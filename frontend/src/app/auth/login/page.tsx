@@ -20,16 +20,20 @@ export default function LoginPage() {
     if (!loginId.trim() || !password.trim()) {
       setError("로그인 ID와 비밀번호를 모두 입력해주세요.");
       return;
-    }
-    try {
+    }    try {
       // AuthContext의 login 함수 사용 (로그인 성공 시 자동으로 카테고리 페이지로 이동)
       await login(loginId, password);
     } catch (err: any) {
       console.error("로그인 에러:", err);
-      setError(
-        err.message ||
-          "로그인에 실패했습니다. 로그인 ID와 비밀번호를 확인해주세요."
-      );
+      
+      // 더 구체적인 에러 메시지 처리
+      let errorMessage = "로그인에 실패했습니다. 로그인 ID와 비밀번호를 확인해주세요.";
+      
+      if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
     }
   };
   return (
@@ -93,10 +97,23 @@ export default function LoginPage() {
                   placeholder="비밀번호 입력"
                 />
               </div>
-            </div>
-            {error && (
-              <div className="p-3 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm">
-                {error}
+            </div>            {error && (
+              <div className="rounded-md bg-red-50 border border-red-200 p-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-red-800">
+                      로그인 실패
+                    </h3>
+                    <div className="mt-2 text-sm text-red-700">
+                      {error}
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
             <div className="flex items-center justify-between">
