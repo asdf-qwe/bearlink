@@ -55,11 +55,11 @@ public class OpenGraphApiClient {
 
             // 배포시 url 바꿔줘야 함 ex) http://bearlink.site/static/**
             if (host.contains("youtube.com")) {
-                return "https://localhost:8080/thumbs/youtube-default.png";
+                return "https://www.bearlink.kr/thumbs/youtube-default.png";
             } else if (host.contains("naver.com")) {
-                return "https://localhost:8080/thumbs/naver-default.jpeg";
+                return "https://www.bearlink.kr/thumbs/naver-default.jpeg";
             } else if (host.contains("daum.net")) {
-                return "https://localhost:8080/thumbs/daum-default.png";
+                return "https://www.bearlink.kr/thumbs/daum-default.png";
             } else {
                 return getFallbackImage();
             }
