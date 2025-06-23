@@ -615,11 +615,15 @@ export default function CategoryPage() {
                 </a>
               </div>
               {/* 클릭 영역 (전체 카드) */}
-              <a
-                href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="absolute inset-0 z-0"
+              <div
+                onClick={() => {
+                  if (window.electronAPI?.openExternal) {
+                    window.electronAPI.openExternal(link.url);
+                  } else {
+                    window.open(link.url, "_blank");
+                  }
+                }}
+                className="absolute inset-0 z-0 cursor-pointer"
                 aria-label={`${link.title} 링크로 이동`}
               />
             </div>
