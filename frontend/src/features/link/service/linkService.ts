@@ -108,6 +108,33 @@ class LinkService {
       throw error;
     }
   }
+
+  async getYoutubeVideoIds(categoryId: number): Promise<string[]> {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/v1/link/youtube-ids/${categoryId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include", // ✅ 쿠키 포함
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`YouTube 비디오 ID 조회 실패: ${response.status}`);
+      }
+
+      const videoIds: string[] = await response.json();
+      console.log("백엔드에서 받은 YouTube 비디오 ID:", videoIds);
+
+      return Array.isArray(videoIds) ? videoIds : [];
+    } catch (error) {
+      console.error("YouTube 비디오 ID 조회 중 오류:", error);
+      throw error;
+    }
+  }
 }
 
 export const linkService = new LinkService();
