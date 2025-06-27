@@ -5,6 +5,7 @@ import com.project.bearlink.domain.link.dto.LinkRequestDto;
 import com.project.bearlink.domain.link.dto.LinkResponseDto;
 import com.project.bearlink.domain.link.dto.LinkUpdateDto;
 import com.project.bearlink.domain.link.entity.Link;
+import com.project.bearlink.domain.link.service.LinkPreviewService;
 import com.project.bearlink.domain.link.service.LinkService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,7 +19,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ApiV1LinkController {
     private final LinkService linkService;
-
 
     @PostMapping
     public ResponseEntity<String> createLink (@RequestParam Long userId, @RequestBody LinkRequestDto req, @RequestParam Long categoryId) {
@@ -37,17 +37,6 @@ public class ApiV1LinkController {
         Link link = linkService.updateTitle(linkId, dto);
         return ResponseEntity.ok().body("링크 제목 수정 완료");
     }
-
-//    @GetMapping("/preview")
-//    public ResponseEntity<LinkPreviewDto> getLinkPreview(@RequestParam String url) {
-//        LinkPreviewDto dto = linkService.extractLinkPreview(url);
-//
-//        if (dto != null) {
-//            return ResponseEntity.ok(dto);
-//        } else {
-//            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-//        }
-//    }
 
     @DeleteMapping
     public void deleteLink(@RequestParam Long linkId) {

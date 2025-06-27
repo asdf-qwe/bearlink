@@ -4,10 +4,44 @@ import {
   SignupRequestDto,
   UserResponseDto,
 } from "../types/auth";
+import { apiClient } from "../../../lib/api";
 
 // API 기본 URL - 환경에 맞게 설정
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 const AUTH_API = `${API_URL}/api/v1/auth`;
+
+/**
+ * 자동 토큰 갱신을 포함한 fetch wrapper
+ */
+async function fetchWithTokenRefresh(
+  url: string,
+  options: RequestInit = {}
+): Promise<Response> {
+  const response = await fetch(url, {
+    ...options,
+    credentials: "include",
+  });
+
+  // 401 에러 시 토큰 갱신 시도
+  if (response.status === 401) {
+    try {
+      // 토큰 갱신 시도
+      await authService.refreshToken();
+
+      // 갱신 성공 시 원래 요청 재시도
+      return await fetch(url, {
+        ...options,
+        credentials: "include",
+      });
+    } catch (refreshError) {
+      console.error("토큰 갱신 실패:", refreshError);
+      // 갱신 실패 시 로그인 페이지로 리다이렉트하거나 에러 처리
+      throw new Error("인증이 만료되었습니다. 다시 로그인해주세요");
+    }
+  }
+
+  return response;
+}
 
 /**
  * 인증 관련 서비스
@@ -39,7 +73,8 @@ export const authService = {
       console.error("회원가입 에러:", error);
       throw error;
     }
-  },  /**
+  },
+  /**
    * 로그인 기능
    * @param requestDto 로그인 요청 DTO (로그인 ID, 비밀번호 포함)
    * @returns JWT 토큰 (액세스 토큰, 리프레시 토큰)
@@ -56,13 +91,15 @@ export const authService = {
 
       if (!response.ok) {
         let errorMessage = "로그인에 실패했습니다";
-        
+
         try {
           const errorData = await response.json();
           // 서버에서 JSON 형태로 에러 메시지를 보내는 경우
-          if (errorData.message && 
-              !errorData.message.includes("Internal Server Error") &&
-              !errorData.message.includes("IllegalArgumentException")) {
+          if (
+            errorData.message &&
+            !errorData.message.includes("Internal Server Error") &&
+            !errorData.message.includes("IllegalArgumentException")
+          ) {
             errorMessage = errorData.message;
           } else {
             // Internal Server Error나 예외 메시지인 경우 상태코드별 처리
@@ -82,10 +119,11 @@ export const authService = {
           } else if (response.status === 400) {
             errorMessage = "잘못된 요청입니다. 입력 정보를 확인해주세요";
           } else if (response.status >= 500) {
-            errorMessage = "서버에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요";
+            errorMessage =
+              "서버에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요";
           }
         }
-        
+
         throw new Error(errorMessage);
       }
 
@@ -99,22 +137,14 @@ export const authService = {
     }
   },
   /**
-   * 현재 로그인한 사용자 정보 가져오기
+   * 현재 로그인한 사용자 정보 가져오기 (자동 토큰 갱신 포함)
    * @returns 사용자 정보 (UserResponseDto)
-   */ async getCurrentUser(): Promise<UserResponseDto> {
+   */
+  async getCurrentUser(): Promise<UserResponseDto> {
     try {
-      const response = await fetch(`${API_URL}/api/v1/users/me`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include", // 쿠키를 포함하여 요청
-      });
+      const response = await apiClient.request("/api/v1/users/me");
 
       if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error("인증이 만료되었습니다. 다시 로그인해주세요");
-        }
         const errorText = await response.text();
         throw new Error(errorText || "사용자 정보를 가져오는데 실패했습니다");
       }
@@ -171,18 +201,21 @@ export const authService = {
     }
   },
   /**
-   * 사용자가 로그인 상태인지 확인
+   * 사용자가 로그인 상태인지 확인 (토큰 자동 갱신 포함)
    * 서버에 요청하여 실제 인증 상태를 확인
    * @returns 로그인 상태 여부
-   */ async isLoggedIn(): Promise<boolean> {
+   */
+  async isLoggedIn(): Promise<boolean> {
     try {
-      const response = await fetch(`${API_URL}/api/v1/users/me`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include", // 쿠키를 포함하여 요청
-      });
+      const response = await fetchWithTokenRefresh(
+        `${API_URL}/api/v1/users/me`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       return response.ok;
     } catch (error) {
