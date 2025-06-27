@@ -19,6 +19,7 @@ import {
 } from "@/features/category/types/categoryTypes";
 import { linkService } from "@/features/link/service/linkService";
 import { LinkRequestDto, LinkResponseDto } from "@/features/link/types/link";
+import YouTubePlayer from "@/components/YouTubePlayer";
 
 interface LinkItem {
   id: number; // 백엔드 ID를 직접 사용
@@ -51,6 +52,7 @@ export default function CategoryPage() {
   const [categoryIndex, setCategoryIndex] = useState<number>(0);
   const [editingLinkId, setEditingLinkId] = useState<number | null>(null);
   const [editingLinkTitle, setEditingLinkTitle] = useState<string>("");
+  const [videoIds, setVideoIds] = useState<string[]>([]);
 
   // 아이콘 순서 배열 (meat, fish, box, beehive, wood 순서로 반복)
   const iconOrder = [
@@ -109,6 +111,15 @@ export default function CategoryPage() {
 
           setCategory(categoryWithLinks);
           setCategoryName(currentCategory.name);
+
+          // YouTube 비디오 ID 가져오기
+          try {
+            const youtubeIds = await linkService.getYoutubeVideoIds(categoryId);
+            setVideoIds(youtubeIds);
+          } catch (err) {
+            console.warn("YouTube 비디오 ID 가져오기 실패:", err);
+            // YouTube 데이터 로딩 실패는 치명적이지 않으므로 경고만 출력
+          }
 
           // 백엔드에서 가져온 링크들을 로컬 스토리지에도 저장 (동기화용)
           localStorage.setItem(
@@ -458,7 +469,13 @@ export default function CategoryPage() {
             <span className="text-red-700 text-sm">{error}</span>
           </div>
         )}
-      </div>{" "}
+      </div>
+      {/* YouTube 플레이어 */}
+      {videoIds.length > 0 && (
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <YouTubePlayer videoIds={videoIds} />
+        </div>
+      )}
       {/* 링크 추가 폼 */}
       {showAddLinkForm && (
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
