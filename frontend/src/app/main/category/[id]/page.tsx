@@ -13,7 +13,10 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { categoryService } from "@/features/category/service/categoryService";
-import { Category } from "@/features/category/types/categoryTypes";
+import {
+  Category,
+  CategoryRequest,
+} from "@/features/category/types/categoryTypes";
 import { linkService } from "@/features/link/service/linkService";
 import { LinkRequestDto, LinkResponseDto } from "@/features/link/types/link";
 
@@ -281,19 +284,37 @@ export default function CategoryPage() {
     setError(null);
   };
 
-  const saveCategoryName = () => {
-    if (!category || categoryName.trim() === "") return;
+  const saveCategoryName = async () => {
+    if (!category || categoryName.trim() === "" || !userInfo?.id) return;
 
-    const updatedCategory = {
-      ...category,
-      name: categoryName,
-    };
+    try {
+      setError(null);
 
-    setCategory(updatedCategory);
-    setEditingCategory(false);
+      // 백엔드 API로 카테고리 이름 업데이트
+      await categoryService.updateCategory(
+        { name: categoryName.trim() },
+        category.id
+      );
 
-    // TODO: 백엔드 API로 카테고리 이름 업데이트
-    console.log("카테고리 이름 업데이트:", categoryName);
+      // 성공 시 로컬 상태 업데이트
+      const updatedCategory = {
+        ...category,
+        name: categoryName.trim(),
+      };
+
+      setCategory(updatedCategory);
+      setEditingCategory(false);
+
+      // 사이드바에 카테고리 업데이트 알림
+      window.dispatchEvent(new CustomEvent("categoryUpdated"));
+
+      console.log("카테고리 이름 업데이트 완료:", categoryName.trim());
+    } catch (error) {
+      console.error("카테고리 이름 업데이트 실패:", error);
+      setError("카테고리 이름 수정에 실패했습니다. 다시 시도해주세요.");
+      // 실패 시 원래 이름으로 복원
+      setCategoryName(category.name);
+    }
   };
   const handleLinkTitleKeyPress = (e: React.KeyboardEvent, linkId: number) => {
     if (e.key === "Enter") {
@@ -318,6 +339,7 @@ export default function CategoryPage() {
     } else if (e.key === "Escape") {
       setEditingCategory(false);
       setCategoryName(category?.name || "");
+      setError(null);
     }
   };
 
@@ -379,48 +401,62 @@ export default function CategoryPage() {
         뒤로 가기
       </button>{" "}
       {/* 카테고리 제목 */}
-      <div className="flex items-center space-x-3 mb-8">
-        {editingCategory ? (
-          <>
-            <input
-              type="text"
-              value={categoryName}
-              onChange={(e) => setCategoryName(e.target.value)}
-              onKeyDown={handleCategoryKeyPress}
-              className="text-3xl font-bold text-amber-900 bg-amber-50 border border-amber-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500"
-              autoFocus
-            />
-            <div className="flex space-x-2">
-              <button
-                onClick={saveCategoryName}
-                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-              >
-                저장
-              </button>
-              <button
-                onClick={() => {
-                  setEditingCategory(false);
-                  setCategoryName(category.name);
+      <div className="mb-8">
+        <div className="flex items-center space-x-3 mb-2">
+          {editingCategory ? (
+            <>
+              <input
+                type="text"
+                value={categoryName}
+                onChange={(e) => {
+                  setCategoryName(e.target.value);
+                  setError(null);
                 }}
-                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                onKeyDown={handleCategoryKeyPress}
+                className="text-3xl font-bold text-amber-900 bg-amber-50 border border-amber-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                autoFocus
+              />
+              <div className="flex space-x-2">
+                <button
+                  onClick={saveCategoryName}
+                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                >
+                  저장
+                </button>
+                <button
+                  onClick={() => {
+                    setEditingCategory(false);
+                    setCategoryName(category.name);
+                    setError(null);
+                  }}
+                  className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                >
+                  취소
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <h1 className="text-3xl font-bold text-amber-900">
+                {category.name}
+              </h1>
+              <button
+                onClick={() => setEditingCategory(true)}
+                className="p-2 text-amber-600 hover:text-amber-800 hover:bg-amber-100 rounded"
+                aria-label="카테고리 이름 편집"
               >
-                취소
+                <Edit size={20} />
               </button>
-            </div>
-          </>
-        ) : (
-          <>
-            <h1 className="text-3xl font-bold text-amber-900">
-              {category.name}
-            </h1>
-            <button
-              onClick={() => setEditingCategory(true)}
-              className="p-2 text-amber-600 hover:text-amber-800 hover:bg-amber-100 rounded"
-              aria-label="카테고리 이름 편집"
-            >
-              <Edit size={20} />
-            </button>
-          </>
+            </>
+          )}
+        </div>
+
+        {/* 카테고리 편집 중 에러 메시지 */}
+        {error && editingCategory && (
+          <div className="bg-red-100 border border-red-400 rounded p-3 flex items-center">
+            <AlertCircle size={16} className="text-red-600 mr-2" />
+            <span className="text-red-700 text-sm">{error}</span>
+          </div>
         )}
       </div>{" "}
       {/* 링크 추가 폼 */}

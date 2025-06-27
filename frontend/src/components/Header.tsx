@@ -14,7 +14,7 @@ export default function Header() {
   const router = useRouter();
   const isActive = (path: string) => {
     return pathname === path
-      ? "text-white border-b-[2px] border-amber-200"
+      ? "text-white border-b-[3px] border-amber-200"
       : "text-amber-100 hover:text-white";
   };
   // 링크룸 클릭 핸들러 - 메인 페이지로 이동
@@ -78,7 +78,8 @@ export default function Header() {
               <button
                 onClick={handleLinkRoomClick}
                 className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
-                  pathname.startsWith("/main")
+                  pathname.startsWith("/main") &&
+                  !pathname.startsWith("/main/myPage")
                     ? "text-white border-b-[3px] border-amber-200"
                     : "text-amber-100 hover:text-white"
                 }`}
@@ -86,9 +87,9 @@ export default function Header() {
                 링크룸
               </button>
               <Link
-                href="/myPage"
+                href="/main/myPage"
                 className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${isActive(
-                  "/myPage"
+                  "/main/myPage"
                 )}`}
               >
                 마이페이지
@@ -140,7 +141,7 @@ export default function Header() {
                   className="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 z-50"
                 >
                   <Link
-                    href="/myPage"
+                    href="/main/myPage"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     프로필
