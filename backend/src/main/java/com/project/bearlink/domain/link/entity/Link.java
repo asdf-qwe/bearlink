@@ -32,6 +32,4 @@ public class Link extends BaseEntity {
 
     private String price;
 
-    @Enumerated(EnumType.STRING)
-    private PreviewStatus previewStatus;
 }

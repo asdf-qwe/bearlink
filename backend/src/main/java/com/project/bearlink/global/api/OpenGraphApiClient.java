@@ -2,6 +2,7 @@ package com.project.bearlink.global.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.project.bearlink.domain.link.dto.LinkPreviewDto;
+import com.project.bearlink.domain.link.dto.LinkRequestDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -17,28 +18,11 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 public class OpenGraphApiClient {
 
-    @Value("${opengraph.api.key}")
-    private String appId;
-
     public LinkPreviewDto fetchPreview(String url) {
         try {
-            String encodedUrl = URLEncoder.encode(url, StandardCharsets.UTF_8);
-            String fullUrl = "https://opengraph.io/api/1.1/site/" + encodedUrl + "?app_id=" + appId;
+            String image = getFixedFaviconForUrl(url);
 
-            URI uri = URI.create(fullUrl);
-
-            RestTemplate rest = new RestTemplate();
-            ResponseEntity<JsonNode> response = rest.getForEntity(uri, JsonNode.class);
-            JsonNode og = response.getBody().path("openGraph");
-
-            String title = og.path("title").asText(null);
-            String image = og.path("image").asText(null);
-
-            if (image == null || image.isEmpty()) {
-                image = getDefaultImageForDomain(url);
-            }
-
-            return new LinkPreviewDto(title, image, null);
+            return new LinkPreviewDto(null, image);
 
         } catch (Exception e) {
             log.warn("❌ OpenGraph API 실패: {}", url, e);
@@ -46,31 +30,46 @@ public class OpenGraphApiClient {
         }
     }
 
-    private String getDefaultImageForDomain(String url) {
-        try {
-            URI uri = new URI(url);
-            String host = uri.getHost();
-
-            if (host == null) return getFallbackImage();
-
-            // 배포시 url 바꿔줘야 함 ex) http://bearlink.site/static/**
-            if (host.contains("youtube.com")) {
-                return "https://www.bearlink.kr/thumbs/youtube-default.png";
-            } else if (host.contains("naver.com")) {
-                return "https://www.bearlink.kr/thumbs/naver-default.jpeg";
-            } else if (host.contains("daum.net")) {
-                return "https://www.bearlink.kr/thumbs/daum-default.png";
-            } else {
-                return getFallbackImage();
-            }
-
-        } catch (Exception e) {
-            log.warn("🌐 도메인 파싱 실패: {}", url, e);
-            return getFallbackImage();
+    public String getFixedFaviconForUrl(String url) {
+        if (url.contains("naver.com")) {
+            return "https://ssl.pstatic.net/sstatic/search/common/og_v3.png";
+        } else if (url.contains("kakao.com")) {
+            return "https://www.kakaocorp.com/favicon.ico";
+        } else if (url.contains("google.com")) {
+            return "https://www.google.com/favicon.ico";
+        } else if (url.contains("coupang.com")) {
+            return "https://image10.coupangcdn.com/image/op/displayitem/displayitem_coupang.png";
+        } else if (url.contains("github.com")) {
+            return "https://github.githubassets.com/favicons/favicon-dark.png";
         }
+        // fallback
+        return null;
     }
 
-    private String getFallbackImage() {
+    public String getFixedTitleForUrl(String url) {
+        if (url.contains("naver.com")) {
+            return "네이버";
+        } else if (url.contains("kakao.com")) {
+            return "카카오";
+        } else if (url.contains("google.com")) {
+            return "구글";
+        } else if (url.contains("youtube.com")) {
+            return "유튜브";
+        } else if (url.contains("instagram.com")) {
+            return "인스타그램";
+        }
+
+        return null; // fallback
+    }
+
+    private String getDefaultImage() {
         return "https://yourdomain.com/static/thumbs/default.png";
     }
+
+
+
 }
+
+
+
+
