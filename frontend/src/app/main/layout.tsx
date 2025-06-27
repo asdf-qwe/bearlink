@@ -2,7 +2,6 @@
 
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
-import { SidebarProvider } from "@/context/SidebarContext";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -35,14 +34,12 @@ export default function MainLayout({
   }
 
   return (
-    <SidebarProvider>
-      <div className="flex flex-col min-h-screen">
-        <Header />
-        <div className="flex flex-1">
-          <Sidebar />
-          <MainContent>{children}</MainContent>
-        </div>
+    <div className="flex flex-col min-h-screen">
+      <Header />
+      <div className="flex flex-1">
+        <Sidebar />
+        <MainContent>{children}</MainContent>
       </div>
-    </SidebarProvider>
+    </div>
   );
 }

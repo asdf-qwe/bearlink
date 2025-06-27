@@ -1,9 +1,19 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, X, Trash2, AlertCircle, Loader2, Edit2 } from "lucide-react";
+import {
+  Plus,
+  X,
+  Trash2,
+  AlertCircle,
+  Loader2,
+  Edit2,
+  User,
+  Settings,
+  LogOut,
+} from "lucide-react";
 import Link from "next/link";
-import { useSidebar } from "@/context/SidebarContext";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { categoryService } from "@/features/category/service/categoryService";
 import {
@@ -12,8 +22,9 @@ import {
 } from "@/features/category/types/categoryTypes";
 
 export default function Sidebar() {
-  const { isOpen, setIsOpen } = useSidebar();
-  const { userInfo } = useAuth();
+  const { userInfo, logout } = useAuth();
+  const pathname = usePathname();
+  const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [showAddCategoryForm, setShowAddCategoryForm] = useState(false);
@@ -23,6 +34,9 @@ export default function Sidebar() {
     null
   );
   const [editingCategoryName, setEditingCategoryName] = useState("");
+
+  // 마이페이지 여부 확인
+  const isMyPage = pathname === "/main/myPage";
 
   // 아이콘 순서 배열 (meat, fish, box, beehive, wood 순서로 반복)
   const iconOrder = [
@@ -63,8 +77,23 @@ export default function Sidebar() {
     }
   }, [userInfo?.id]);
 
+  // 카테고리 업데이트 이벤트 리스너 등록
+  useEffect(() => {
+    const handleCategoryUpdate = () => {
+      if (userInfo?.id) {
+        fetchCategories();
+      }
+    };
+
+    window.addEventListener("categoryUpdated", handleCategoryUpdate);
+
+    return () => {
+      window.removeEventListener("categoryUpdated", handleCategoryUpdate);
+    };
+  }, [userInfo?.id]);
+
   const toggleSidebar = () => {
-    setIsOpen(!isOpen);
+    // 토글 기능 제거됨
   };
 
   const toggleAddCategoryForm = () => {
@@ -170,153 +199,174 @@ export default function Sidebar() {
 
   return (
     <div
-      className={`sidebar-container ${
-        isOpen ? "w-52" : "w-16"
-      } text-white transition-all duration-300 border-r border-stone-300 z-40 overflow-y-auto flex-shrink-0`}
-      style={{ backgroundColor: isOpen ? "#907761" : "#907761" }}
+      className="sidebar-container w-52 text-white transition-all duration-300 border-r border-stone-300 z-40 overflow-y-auto flex-shrink-0"
+      style={{ backgroundColor: "#907761" }}
     >
       <div className="p-3">
-        <button
-          onClick={toggleSidebar}
-          className={`mb-4 transition-all duration-200 ${
-            isOpen
-              ? "text-white hover:text-amber-200"
-              : "text-stone-800 hover:text-stone-600"
-          }`}
-          aria-label={isOpen ? "접기" : "펼치기"}
-        >
-          {isOpen ? "◀" : "▶"}
-        </button>
-        {isOpen && (
-          <>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-white">저장공간</h2>
-              <button
-                onClick={toggleAddCategoryForm}
-                className="p-1 bg-stone-600 hover:bg-stone-700 text-white rounded-full transition-colors"
-                aria-label="카테고리 추가 폼 열기"
-                disabled={loading}
-              >
-                <Plus size={16} />
-              </button>
-            </div>
-            {/* 오류 메시지 표시 */}
-            {error && (
-              <div className="mb-2 p-2 bg-red-100 border border-red-400 rounded text-red-700 text-sm flex items-center">
-                <AlertCircle size={16} className="mr-1" />
-                <span>{error}</span>
-              </div>
-            )}
-            {/* 로딩 표시 */}
-            {loading && (
-              <div className="flex justify-center my-2">
-                <Loader2 className="h-5 w-5 animate-spin text-amber-200" />
-              </div>
-            )}
-            {showAddCategoryForm && (
+        <>
+          {isMyPage ? (
+            // 마이페이지용 사이드바
+            <>
               <div className="mb-4">
-                <input
-                  type="text"
-                  value={newCategoryName}
-                  onChange={(e) => setNewCategoryName(e.target.value)}
-                  onKeyDown={handleCategoryKeyPress}
-                  placeholder="새 카테고리 이름 입력 후 Enter"
-                  className="w-full p-2 bg-white rounded border border-stone-300 text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
-                  aria-label="새 카테고리 이름 입력"
-                  autoFocus
-                  disabled={loading}
-                />
+                <h2 className="text-xl font-bold text-white">마이페이지</h2>
               </div>
-            )}
-            <div className="space-y-3">
-              {categories.map((category, index) => (
-                <div
-                  key={category.id}
-                  className="flex justify-between items-center p-2 border border-amber-200 rounded-md hover:bg-amber-900 hover:bg-opacity-30 transition-colors group"
+              <div className="space-y-3">
+                <Link
+                  href="/main/myPage"
+                  className="flex items-center space-x-3 p-3 border border-amber-200 rounded-md bg-amber-900 bg-opacity-30"
                 >
-                  {editingCategoryId === category.id ? (
-                    <div className="flex-grow mr-2">
-                      <input
-                        type="text"
-                        value={editingCategoryName}
-                        onChange={(e) => setEditingCategoryName(e.target.value)}
-                        onKeyDown={handleEditKeyPress}
-                        className="w-full p-1 bg-white rounded border border-stone-300 text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-500"
-                        aria-label="카테고리 이름 수정"
-                        autoFocus
-                        disabled={loading}
-                      />
-                    </div>
-                  ) : (
-                    <Link
-                      href={`/main/category/${category.id}`}
-                      className="flex items-center space-x-3 flex-grow"
-                    >
-                      <img
-                        src={getCategoryIcon(index)}
-                        alt={`카테고리 아이콘`}
-                        className="w-5 h-5 object-contain"
-                      />
-                      <span className="font-medium text-white">
-                        {category.name}
-                      </span>
-                    </Link>
-                  )}
-
-                  <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {editingCategoryId === category.id ? (
-                      <>
-                        <button
-                          onClick={saveEditCategory}
-                          className="p-1 text-green-400 hover:text-green-600 transition-colors"
-                          aria-label="저장"
-                          disabled={loading}
-                        >
-                          ✓
-                        </button>
-                        <button
-                          onClick={cancelEditCategory}
-                          className="p-1 text-red-400 hover:text-red-600 transition-colors"
-                          aria-label="취소"
-                          disabled={loading}
-                        >
-                          ✕
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => startEditCategory(category)}
-                          className="p-1 text-blue-400 hover:text-blue-600 transition-colors"
-                          aria-label={`${category.name} 카테고리 수정`}
-                          disabled={loading}
-                        >
-                          <Edit2 size={16} />
-                        </button>
-                        <button
-                          onClick={() =>
-                            removeCategory(category.id, category.name)
-                          }
-                          className="p-1 text-red-500 hover:text-red-700 transition-colors"
-                          aria-label={`${category.name} 카테고리 삭제`}
-                          disabled={loading}
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </>
-                    )}
-                  </div>
+                  <User size={20} className="text-amber-200" />
+                  <span className="font-medium text-white">프로필</span>
+                </Link>
+                <button className="w-full flex items-center space-x-3 p-3 border border-amber-200 rounded-md hover:bg-amber-900 hover:bg-opacity-30 transition-colors">
+                  <Settings size={20} className="text-amber-200" />
+                  <span className="font-medium text-white">설정</span>
+                </button>
+                <Link
+                  href="/main"
+                  className="flex items-center space-x-3 p-3 border border-amber-200 rounded-md hover:bg-amber-900 hover:bg-opacity-30 transition-colors"
+                >
+                  <Plus size={20} className="text-amber-200" />
+                  <span className="font-medium text-white">
+                    링크룸으로 돌아가기
+                  </span>
+                </Link>
+              </div>
+            </>
+          ) : (
+            // 일반 페이지용 사이드바 (기존 코드)
+            <>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-white">저장공간</h2>
+                <button
+                  onClick={toggleAddCategoryForm}
+                  className="p-1 bg-stone-600 hover:bg-stone-700 text-white rounded-full transition-colors"
+                  aria-label="카테고리 추가 폼 열기"
+                  disabled={loading}
+                >
+                  <Plus size={16} />
+                </button>
+              </div>
+              {/* 오류 메시지 표시 */}
+              {error && (
+                <div className="mb-2 p-2 bg-red-100 border border-red-400 rounded text-red-700 text-sm flex items-center">
+                  <AlertCircle size={16} className="mr-1" />
+                  <span>{error}</span>
                 </div>
-              ))}
-
-              {!loading && categories.length === 0 && (
-                <p className="text-center text-amber-200 p-4">
-                  카테고리가 없습니다. 새 카테고리를 추가해보세요!
-                </p>
               )}
-            </div>
-          </>
-        )}
+              {/* 로딩 표시 */}
+              {loading && (
+                <div className="flex justify-center my-2">
+                  <Loader2 className="h-5 w-5 animate-spin text-amber-200" />
+                </div>
+              )}
+              {showAddCategoryForm && (
+                <div className="mb-4">
+                  <input
+                    type="text"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    onKeyDown={handleCategoryKeyPress}
+                    placeholder="새 카테고리 이름 입력 후 Enter"
+                    className="w-full p-2 bg-white rounded border border-stone-300 text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
+                    aria-label="새 카테고리 이름 입력"
+                    autoFocus
+                    disabled={loading}
+                  />
+                </div>
+              )}
+              <div className="space-y-3">
+                {categories.map((category, index) => (
+                  <div
+                    key={category.id}
+                    className="flex justify-between items-center p-2 border border-amber-200 rounded-md hover:bg-amber-900 hover:bg-opacity-30 transition-colors group"
+                  >
+                    {editingCategoryId === category.id ? (
+                      <div className="flex-grow mr-2">
+                        <input
+                          type="text"
+                          value={editingCategoryName}
+                          onChange={(e) =>
+                            setEditingCategoryName(e.target.value)
+                          }
+                          onKeyDown={handleEditKeyPress}
+                          className="w-full p-1 bg-white rounded border border-stone-300 text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-500"
+                          aria-label="카테고리 이름 수정"
+                          autoFocus
+                          disabled={loading}
+                        />
+                      </div>
+                    ) : (
+                      <Link
+                        href={`/main/category/${category.id}`}
+                        className="flex items-center space-x-3 flex-grow min-w-0"
+                      >
+                        <img
+                          src={getCategoryIcon(index)}
+                          alt={`카테고리 아이콘`}
+                          className="w-5 h-5 object-contain flex-shrink-0"
+                        />
+                        <span className="font-medium text-white break-all word-break-all overflow-hidden">
+                          {category.name}
+                        </span>
+                      </Link>
+                    )}
+
+                    <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {editingCategoryId === category.id ? (
+                        <>
+                          <button
+                            onClick={saveEditCategory}
+                            className="p-1 text-green-400 hover:text-green-600 transition-colors"
+                            aria-label="저장"
+                            disabled={loading}
+                          >
+                            ✓
+                          </button>
+                          <button
+                            onClick={cancelEditCategory}
+                            className="p-1 text-red-400 hover:text-red-600 transition-colors"
+                            aria-label="취소"
+                            disabled={loading}
+                          >
+                            ✕
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => startEditCategory(category)}
+                            className="p-1 text-blue-400 hover:text-blue-600 transition-colors"
+                            aria-label={`${category.name} 카테고리 수정`}
+                            disabled={loading}
+                          >
+                            <Edit2 size={16} />
+                          </button>
+                          <button
+                            onClick={() =>
+                              removeCategory(category.id, category.name)
+                            }
+                            className="p-1 text-red-500 hover:text-red-700 transition-colors"
+                            aria-label={`${category.name} 카테고리 삭제`}
+                            disabled={loading}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+                {!loading && categories.length === 0 && (
+                  <p className="text-center text-amber-200 p-4">
+                    카테고리가 없습니다. 새 카테고리를 추가해보세요!
+                  </p>
+                )}
+              </div>
+            </>
+          )}
+        </>
       </div>
     </div>
   );
