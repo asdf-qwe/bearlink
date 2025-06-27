@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.time.Duration;
 import java.util.List;
@@ -38,9 +39,10 @@ public class LinkService {
                 .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다"));
 
         LinkPreviewDto preview = linkPreviewService.extract(req.getUrl());
+        String title = StringUtils.hasText(req.getTitle()) ? req.getTitle() : preview.getTitle();
 
         Link link = Link.builder()
-                .title(req.getTitle())
+                .title(title)
                 .url(req.getUrl())
                 .thumbnailImageUrl(preview.getThumbnailImageUrl())
                 .category(category)
