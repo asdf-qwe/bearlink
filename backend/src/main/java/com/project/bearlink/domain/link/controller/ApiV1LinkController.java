@@ -7,12 +7,15 @@ import com.project.bearlink.domain.link.dto.LinkUpdateDto;
 import com.project.bearlink.domain.link.entity.Link;
 import com.project.bearlink.domain.link.service.LinkPreviewService;
 import com.project.bearlink.domain.link.service.LinkService;
+import com.project.bearlink.global.security.auth.SecurityUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/v1/link")
@@ -41,5 +44,11 @@ public class ApiV1LinkController {
     @DeleteMapping
     public void deleteLink(@RequestParam Long linkId) {
         linkService.deleteLink(linkId);
+    }
+
+    @GetMapping("/youtube-ids/{categoryId}")
+    public List<String> getYoutubeVideoIds(@PathVariable Long categoryId,
+                                           @AuthenticationPrincipal SecurityUser user) {
+        return linkService.getYoutubeVideoIds(user.getId(), categoryId);
     }
 }

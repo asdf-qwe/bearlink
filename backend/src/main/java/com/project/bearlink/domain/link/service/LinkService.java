@@ -17,8 +17,11 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.net.URI;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -81,4 +84,37 @@ public class LinkService {
         linkRepository.delete(link);
     }
 
+    public List<String> getYoutubeVideoIds(Long userId, Long categoryId) {
+        return linkRepository.findYoutubeLinksByUserAndCategory(userId, categoryId).stream()
+                .map(Link::getUrl)
+                .map(this::extractYoutubeVideoId)
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    private String extractYoutubeVideoId(String url) {
+        // 예: https://www.youtube.com/watch?v=Dmt2dzRCA0 또는 https://youtu.be/Dmt2dzRCA0
+        try {
+            URI uri = new URI(url);
+            String host = uri.getHost();
+            if (host.contains("youtube.com")) {
+                String query = uri.getQuery();
+                if (query != null && query.contains("v=")) {
+                    return Arrays.stream(query.split("&"))
+                            .filter(p -> p.startsWith("v="))
+                            .map(p -> p.substring(2))
+                            .findFirst()
+                            .orElse(null);
+                }
+            } else if (host.contains("youtu.be")) {
+                return uri.getPath().substring(1); // /Dmt2dzRCA0
+            }
+        } catch (Exception e) {
+            // 로깅만 하고 무시
+        }
+        return null;
+    }
+
+
 }
+

@@ -14,4 +14,9 @@ public interface LinkRepository extends JpaRepository<Link, Long> {
     List<Link> findByCategoryId(Long categoryId);
     @Query("SELECT l.title FROM Link l WHERE l.id = :linkId")
     Optional<String> findTitleById(@Param("linkId") Long linkId);
+
+    @Query("SELECT l FROM Link l WHERE l.user.id = :userId AND l.category.id = :categoryId AND " +
+            "(l.url LIKE '%youtube.com/watch%' OR l.url LIKE '%youtu.be/%')")
+    List<Link> findYoutubeLinksByUserAndCategory(@Param("userId") Long userId, @Param("categoryId") Long categoryId);
+
 }
