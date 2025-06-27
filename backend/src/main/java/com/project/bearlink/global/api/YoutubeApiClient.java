@@ -2,6 +2,7 @@ package com.project.bearlink.global.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.project.bearlink.domain.link.dto.LinkPreviewDto;
+import com.project.bearlink.domain.link.dto.YoutubeLinkDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -29,7 +30,7 @@ public class YoutubeApiClient {
 
             String title = item.path("title").asText(null);
             String thumbnail = item.path("thumbnails").path("high").path("url").asText(null);
-            return new LinkPreviewDto(title, thumbnail, null);
+            return new LinkPreviewDto(title, thumbnail);
         } catch (Exception e) {
             log.warn("유튜브 API 실패: {}", url);
             return null;

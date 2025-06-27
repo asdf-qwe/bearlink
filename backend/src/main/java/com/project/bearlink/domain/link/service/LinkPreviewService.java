@@ -1,16 +1,10 @@
 package com.project.bearlink.domain.link.service;
 
 import com.project.bearlink.domain.link.dto.LinkPreviewDto;
-import com.project.bearlink.global.api.OpenGraphApiClient;
 import com.project.bearlink.global.api.YoutubeApiClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.springframework.stereotype.Service;
-
-import java.io.IOException;
-import java.util.Optional;
 
 // 3. 메인 미리보기 추출 서비스
 @Service
@@ -20,7 +14,6 @@ public class LinkPreviewService {
 
     private final LinkPreviewCacheService cache;
     private final YoutubeApiClient youtubeApiClient;
-    private final OpenGraphApiClient openGraphApiClient;
 
     public LinkPreviewDto extract(String url) {
         // 1. 캐시 먼저 확인
@@ -35,12 +28,8 @@ public class LinkPreviewService {
                 preview = youtubeApiClient.fetchPreview(url);
             } else {
                 // 3. 일반 OpenGraph API 시도
-                preview = openGraphApiClient.fetchPreview(url);
+                preview = extractLinkPreview(url);
 
-                // 4. OpenGraph API 실패 시 Jsoup fallback 시도
-                if (preview == null || preview.getThumbnailImageUrl() == null) {
-                    preview = extractGenericPreview(url);
-                }
             }
 
             // 5. 캐시에 저장
@@ -59,29 +48,33 @@ public class LinkPreviewService {
         return url.contains("youtube.com/watch") || url.contains("youtu.be");
     }
 
-    private LinkPreviewDto extractGenericPreview(String url) throws IOException {
-        Document doc = Jsoup.connect(url)
-                .userAgent("Mozilla/5.0")
-                .referrer("http://www.google.com")
-                .timeout(5000)
-                .get();
+    public LinkPreviewDto extractLinkPreview(String url) {
+        try {
+            String image = getFixedFaviconForUrl(url);
 
-        String title = Optional.ofNullable(doc.selectFirst("meta[property=og:title]"))
-                .map(e -> e.attr("content"))
-                .orElse(doc.title());
+            return new LinkPreviewDto(null, image);
 
-        String thumbnail = Optional.ofNullable(doc.selectFirst("meta[property=og:image]"))
-                .map(e -> e.attr("content"))
-                .orElseGet(() ->
-                        Optional.ofNullable(doc.selectFirst("meta[name=twitter:image]"))
-                                .map(e -> e.attr("content"))
-                                .orElseGet(() ->
-                                        Optional.ofNullable(doc.selectFirst("link[rel=icon]"))
-                                                .map(e -> e.attr("href"))
-                                                .orElse(null)
-                                )
-                );
-
-        return new LinkPreviewDto(title, thumbnail, null);
+        } catch (Exception e) {
+            log.warn("❌ OpenGraph API 실패: {}", url, e);
+            return null;
+        }
     }
+
+    public String getFixedFaviconForUrl(String url) {
+        if (url.contains("naver.com")) {
+            return "https://ssl.pstatic.net/sstatic/search/common/og_v3.png";
+        } else if (url.contains("kakao.com")) {
+            return "https://www.kakaocorp.com/favicon.ico";
+        } else if (url.contains("google.com")) {
+            return "https://www.google.com/favicon.ico";
+        } else if (url.contains("coupang.com")) {
+            return "https://image10.coupangcdn.com/image/op/displayitem/displayitem_coupang.png";
+        } else if (url.contains("github.com")) {
+            return "https://github.githubassets.com/favicons/favicon-dark.png";
+        }
+        // fallback
+        return null;
+    }
+
+
 }

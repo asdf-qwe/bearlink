@@ -15,11 +15,7 @@ import { useAuth } from "@/context/AuthContext";
 import { categoryService } from "@/features/category/service/categoryService";
 import { Category } from "@/features/category/types/categoryTypes";
 import { linkService } from "@/features/link/service/linkService";
-import {
-  LinkRequestDto,
-  LinkResponseDto,
-  PreviewStatus,
-} from "@/features/link/types/link";
+import { LinkRequestDto, LinkResponseDto } from "@/features/link/types/link";
 
 interface LinkItem {
   id: number; // 백엔드 ID를 직접 사용
@@ -27,7 +23,6 @@ interface LinkItem {
   url: string;
   thumbnailImageUrl?: string;
   price?: string;
-  previewStatus: PreviewStatus;
 }
 
 interface CategoryWithLinks {
@@ -51,9 +46,8 @@ export default function CategoryPage() {
   const [deletingLinkId, setDeletingLinkId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [categoryIndex, setCategoryIndex] = useState<number>(0);
-  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(
-    null
-  );
+  const [editingLinkId, setEditingLinkId] = useState<number | null>(null);
+  const [editingLinkTitle, setEditingLinkTitle] = useState<string>("");
 
   // 아이콘 순서 배열 (meat, fish, box, beehive, wood 순서로 반복)
   const iconOrder = [
@@ -101,7 +95,6 @@ export default function CategoryPage() {
             url: link.url,
             thumbnailImageUrl: link.thumbnailImageUrl,
             price: link.price,
-            previewStatus: link.previewStatus,
           }));
 
           // 백엔드 카테고리를 로컬 타입으로 변환
@@ -159,7 +152,13 @@ export default function CategoryPage() {
         // 제목이 입력되었으면 포함, 비어있으면 제외 (백엔드에서 자동 추출)
         ...(newLinkData.title.trim() && { title: newLinkData.title.trim() }),
       };
-      await linkService.createLink(userInfo.id, category.id, linkRequestDto); // 성공 시 백엔드에서 최신 링크 목록 다시 가져오기
+      const linkId = await linkService.createLink(
+        userInfo.id,
+        category.id,
+        linkRequestDto
+      );
+
+      // 성공 시 백엔드에서 최신 링크 목록 다시 가져오기
       const updatedLinks = await linkService.getLinks(userInfo.id, category.id);
       const convertedLinks: LinkItem[] = updatedLinks.map((link) => ({
         id: link.id, // 백엔드 ID를 직접 사용
@@ -167,7 +166,6 @@ export default function CategoryPage() {
         url: link.url,
         thumbnailImageUrl: link.thumbnailImageUrl,
         price: link.price,
-        previewStatus: link.previewStatus,
       }));
       const updatedCategory = {
         ...category,
@@ -231,6 +229,58 @@ export default function CategoryPage() {
     }
   };
 
+  const updateLinkTitle = async (linkId: number, newTitle: string) => {
+    if (!category || !userInfo?.id || !newTitle || newTitle.trim() === "")
+      return;
+
+    try {
+      setError(null);
+
+      // 백엔드 API로 링크 제목 수정
+      await linkService.updateTitle(linkId, { title: newTitle.trim() });
+
+      // 성공 시 백엔드에서 최신 링크 목록 다시 가져오기
+      const updatedLinks = await linkService.getLinks(userInfo.id, category.id);
+      const convertedLinks: LinkItem[] = updatedLinks.map((link) => ({
+        id: link.id,
+        title: link.title,
+        url: link.url,
+        thumbnailImageUrl: link.thumbnailImageUrl,
+        price: link.price,
+      }));
+
+      const updatedCategory = {
+        ...category,
+        links: convertedLinks,
+      };
+
+      setCategory(updatedCategory);
+      setEditingLinkId(null);
+      setEditingLinkTitle("");
+
+      // 로컬 스토리지도 업데이트
+      localStorage.setItem(
+        `category_${categoryId}_links`,
+        JSON.stringify(convertedLinks)
+      );
+    } catch (error) {
+      console.error("링크 제목 수정 실패:", error);
+      setError("링크 제목 수정에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
+
+  const startEditingLink = (linkId: number, currentTitle: string) => {
+    setEditingLinkId(linkId);
+    setEditingLinkTitle(currentTitle);
+    setError(null);
+  };
+
+  const cancelEditingLink = () => {
+    setEditingLinkId(null);
+    setEditingLinkTitle("");
+    setError(null);
+  };
+
   const saveCategoryName = () => {
     if (!category || categoryName.trim() === "") return;
 
@@ -245,6 +295,14 @@ export default function CategoryPage() {
     // TODO: 백엔드 API로 카테고리 이름 업데이트
     console.log("카테고리 이름 업데이트:", categoryName);
   };
+  const handleLinkTitleKeyPress = (e: React.KeyboardEvent, linkId: number) => {
+    if (e.key === "Enter") {
+      updateLinkTitle(linkId, editingLinkTitle);
+    } else if (e.key === "Escape") {
+      cancelEditingLink();
+    }
+  };
+
   const handleLinkKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       addLink();
@@ -262,76 +320,6 @@ export default function CategoryPage() {
       setCategoryName(category?.name || "");
     }
   };
-  // 미리보기 상태가 PENDING인 링크들을 주기적으로 확인하는 폴링 함수
-  const pollPendingLinks = async () => {
-    if (!category || !userInfo?.id) return;
-
-    const pendingLinks = category.links.filter(
-      (link) => link.previewStatus === "PENDING"
-    );
-    if (pendingLinks.length === 0) return;
-
-    try {
-      // 전체 링크 목록을 다시 가져와서 업데이트된 상태 확인
-      const updatedLinks = await linkService.getLinks(userInfo.id, category.id);
-      const convertedLinks: LinkItem[] = updatedLinks.map((link) => ({
-        id: link.id,
-        title: link.title,
-        url: link.url,
-        thumbnailImageUrl: link.thumbnailImageUrl,
-        price: link.price,
-        previewStatus: link.previewStatus,
-      }));
-
-      // 상태가 변경된 링크가 있는지 확인
-      const hasUpdates = convertedLinks.some((newLink) => {
-        const currentLink = category.links.find((l) => l.id === newLink.id);
-        return (
-          currentLink &&
-          (currentLink.previewStatus !== newLink.previewStatus ||
-            currentLink.title !== newLink.title ||
-            currentLink.thumbnailImageUrl !== newLink.thumbnailImageUrl ||
-            currentLink.price !== newLink.price)
-        );
-      });
-
-      if (hasUpdates) {
-        setCategory((prev) =>
-          prev ? { ...prev, links: convertedLinks } : null
-        );
-      }
-    } catch (error) {
-      console.error("폴링 중 오류:", error);
-    }
-  };
-
-  // 폴링 시작/중지 관리
-  useEffect(() => {
-    if (category) {
-      const hasPendingLinks = category.links.some(
-        (link) => link.previewStatus === "PENDING"
-      );
-
-      if (hasPendingLinks) {
-        // 폴링 시작 (5초마다)
-        const interval = setInterval(pollPendingLinks, 5000);
-        setPollingInterval(interval);
-      } else {
-        // 폴링 중지
-        if (pollingInterval) {
-          clearInterval(pollingInterval);
-          setPollingInterval(null);
-        }
-      }
-    }
-
-    // 컴포넌트 언마운트 시 폴링 정리
-    return () => {
-      if (pollingInterval) {
-        clearInterval(pollingInterval);
-      }
-    };
-  }, [category]);
 
   if (loading) {
     return (
@@ -531,7 +519,10 @@ export default function CategoryPage() {
             >
               {/* 삭제 버튼 */}
               <button
-                onClick={() => removeLink(link.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeLink(link.id);
+                }}
                 disabled={deletingLinkId === link.id}
                 className="absolute top-2 right-2 z-10 p-2 bg-white bg-opacity-80 rounded-full text-red-500 hover:text-red-700 hover:bg-opacity-100 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
                 aria-label={`${link.title} 링크 삭제`}
@@ -541,6 +532,17 @@ export default function CategoryPage() {
                 ) : (
                   <Trash2 size={16} />
                 )}
+              </button>
+              {/* 편집 버튼 */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  startEditingLink(link.id, link.title);
+                }}
+                className="absolute top-2 right-12 z-10 p-2 bg-white bg-opacity-80 rounded-full text-amber-500 hover:text-amber-700 hover:bg-opacity-100 opacity-0 group-hover:opacity-100 transition-opacity"
+                aria-label={`${link.title} 링크 제목 편집`}
+              >
+                <Edit size={16} />
               </button>{" "}
               {/* 썸네일 */}
               <div className="w-full h-48 bg-gray-100 flex items-center justify-center">
@@ -575,9 +577,42 @@ export default function CategoryPage() {
               {/* 카드 내용 */}
               <div className="p-4">
                 {/* 제목 */}
-                <h3 className="font-semibold text-amber-900 text-lg mb-2 line-clamp-2">
-                  {link.title}
-                </h3>
+                {editingLinkId === link.id ? (
+                  <div className="mb-2">
+                    <input
+                      type="text"
+                      value={editingLinkTitle || ""}
+                      onChange={(e) => setEditingLinkTitle(e.target.value)}
+                      onKeyDown={(e) => handleLinkTitleKeyPress(e, link.id)}
+                      className="w-full text-lg font-semibold text-amber-900 bg-amber-50 border border-amber-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      autoFocus
+                    />
+                    <div className="flex space-x-2 mt-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          updateLinkTitle(link.id, editingLinkTitle);
+                        }}
+                        className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+                      >
+                        저장
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          cancelEditingLink();
+                        }}
+                        className="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700"
+                      >
+                        취소
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <h3 className="font-semibold text-amber-900 text-lg mb-2 line-clamp-2">
+                    {link.title}
+                  </h3>
+                )}
 
                 {/* 가격 정보 */}
                 {link.price && (
@@ -585,23 +620,6 @@ export default function CategoryPage() {
                     {link.price}
                   </div>
                 )}
-
-                {/* 미리보기 상태 */}
-                <div className="flex items-center mb-2">
-                  <span
-                    className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      link.previewStatus === "COMPLETED"
-                        ? "bg-green-100 text-green-800"
-                        : link.previewStatus === "PENDING"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : "bg-red-100 text-red-800"
-                    }`}
-                  >
-                    {link.previewStatus === "COMPLETED" && "✓ 완료"}
-                    {link.previewStatus === "PENDING" && "⏳ 처리중"}
-                    {link.previewStatus === "FAILED" && "✗ 실패"}
-                  </span>
-                </div>
 
                 {/* URL */}
                 <a
@@ -614,18 +632,20 @@ export default function CategoryPage() {
                   {link.url}
                 </a>
               </div>
-              {/* 클릭 영역 (전체 카드) */}
-              <div
-                onClick={() => {
-                  if (window.electronAPI?.openExternal) {
-                    window.electronAPI.openExternal(link.url);
-                  } else {
-                    window.open(link.url, "_blank");
-                  }
-                }}
-                className="absolute inset-0 z-0 cursor-pointer"
-                aria-label={`${link.title} 링크로 이동`}
-              />
+              {/* 클릭 영역 (전체 카드) - 편집 모드가 아닐 때만 활성화 */}
+              {editingLinkId !== link.id && (
+                <div
+                  onClick={() => {
+                    if (window.electronAPI?.openExternal) {
+                      window.electronAPI.openExternal(link.url);
+                    } else {
+                      window.open(link.url, "_blank");
+                    }
+                  }}
+                  className="absolute inset-0 z-0 cursor-pointer"
+                  aria-label={`${link.title} 링크로 이동`}
+                />
+              )}
             </div>
           ))
         ) : (

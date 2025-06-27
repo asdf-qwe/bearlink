@@ -12,5 +12,4 @@ import lombok.Setter;
 public class LinkPreviewDto {
     private String title;
     private String thumbnailImageUrl;
-    private String price;
 }

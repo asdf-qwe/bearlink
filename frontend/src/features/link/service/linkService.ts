@@ -1,4 +1,4 @@
-import { LinkRequestDto, LinkResponseDto, PreviewStatus } from "../types/link";
+import { LinkRequestDto, LinkResponseDto, LinkUpdateDto } from "../types/link";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
@@ -62,30 +62,28 @@ class LinkService {
     }
   }
 
-  async getThumbnail(url: string): Promise<string | null> {
+  async updateTitle(linkId: number, updateDto: LinkUpdateDto): Promise<string> {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/v1/link/thumbnail?url=${url}`,
+        `${API_BASE_URL}/api/v1/link?linkId=${linkId}`,
         {
-          method: "GET",
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
           },
+          body: JSON.stringify(updateDto),
           credentials: "include", // ✅ 쿠키 포함
         }
       );
 
-      if (response.ok) {
-        const thumbnailUrl = await response.text();
-        return thumbnailUrl || null;
-      } else if (response.status === 204) {
-        return null; // 썸네일 없음
-      } else {
-        throw new Error(`썸네일 추출 실패: ${response.status}`);
+      if (!response.ok) {
+        throw new Error(`링크 제목 수정 실패: ${response.status}`);
       }
+
+      return await response.text();
     } catch (error) {
-      console.error("썸네일 추출 중 오류:", error);
-      return null;
+      console.error("링크 제목 수정 중 오류:", error);
+      throw error;
     }
   }
 
