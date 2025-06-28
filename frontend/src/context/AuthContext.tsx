@@ -9,6 +9,7 @@ import React, {
 } from "react";
 import { useRouter } from "next/navigation";
 import { authService } from "@/features/auth/service/authService";
+import { categoryService } from "@/features/category/service/categoryService";
 import { UserResponseDto } from "@/features/auth/types/auth";
 
 interface AuthContextType {
@@ -65,8 +66,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUserInfo(userInfoData);
       setIsLoggedIn(true);
 
-      // 로그인 성공 후 메인 페이지로 이동
-      router.push("/main");
+      // 로그인 성공 후 첫 번째 카테고리 페이지로 이동
+      try {
+        const categories = await categoryService.getCategoriesByUserId(
+          userInfoData.id
+        );
+        if (categories && categories.length > 0) {
+          // 첫 번째 카테고리로 이동
+          router.push(`/main/category/${categories[0].id}`);
+        } else {
+          // 카테고리가 없으면 마이페이지로 이동
+          router.push("/main/myPage");
+        }
+      } catch (categoryError) {
+        console.error("카테고리 로딩 실패:", categoryError);
+        // 카테고리 로딩 실패 시 마이페이지로 이동
+        router.push("/main/myPage");
+      }
     } catch (err: any) {
       setError(err.message || "로그인에 실패했습니다.");
       throw err;

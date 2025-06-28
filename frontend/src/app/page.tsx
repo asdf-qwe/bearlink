@@ -1,9 +1,41 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { useAuth } from "@/context/AuthContext";
+import { categoryService } from "@/features/category/service/categoryService";
+import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import BackgroundCard from "@/components/BackgroundCard";
 
 export default function HomePage() {
+  const { isLoggedIn, userInfo } = useAuth();
+  const router = useRouter();
+
+  const handleStartClick = async () => {
+    if (!isLoggedIn || !userInfo) {
+      // 로그인되지 않은 경우 로그인 페이지로 이동
+      router.push("/auth/login");
+      return;
+    }
+
+    try {
+      const categories = await categoryService.getCategoriesByUserId(
+        userInfo.id
+      );
+      if (categories && categories.length > 0) {
+        // 첫 번째 카테고리로 이동
+        router.push(`/main/category/${categories[0].id}`);
+      } else {
+        // 카테고리가 없으면 마이페이지로 이동
+        router.push("/main/myPage");
+      }
+    } catch (error) {
+      console.error("카테고리 로딩 실패:", error);
+      // 에러 발생 시 마이페이지로 이동
+      router.push("/main/myPage");
+    }
+  };
   return (
     <>
       <Header />
@@ -14,11 +46,7 @@ export default function HomePage() {
           </h1>
           {/* 메인 배경 카드 */}
           <div className="mb-8">
-            <BackgroundCard
-              imageUrl="/home.png"
-
-              className="h-[32rem]"
-            />
+            <BackgroundCard imageUrl="/home.png" className="h-[32rem]" />
           </div>
           {/* 추가 섹션 */}
           <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -29,12 +57,12 @@ export default function HomePage() {
               <p className="text-amber-700 mb-4">
                 중요한 웹사이트를 카테고리별로 정리하고 쉽게 찾아보세요.
               </p>
-              <Link
-                href="/main"
+              <button
+                onClick={handleStartClick}
                 className="inline-block px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700 transition-colors"
               >
                 시작하기 →
-              </Link>
+              </button>
             </div>
 
             <div className="bg-white p-6 rounded-lg shadow-md border border-amber-200">

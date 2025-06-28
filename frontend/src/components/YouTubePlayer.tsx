@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { IoPlaySkipBackSharp, IoPlaySkipForwardSharp, IoPlay, IoPause } from "react-icons/io5";
+import {
+  IoPlaySkipBackSharp,
+  IoPlaySkipForwardSharp,
+  IoPlay,
+  IoPause,
+} from "react-icons/io5";
 
 interface YouTubePlayerProps {
   videoIds: string[];
@@ -200,10 +205,11 @@ export default function YouTubePlayer({ videoIds }: YouTubePlayerProps) {
     if (playerInstance.current && playerInstance.current.loadVideoById) {
       try {
         playerInstance.current.loadVideoById(videoIds[nextIndex]);
-        // 제목 업데이트를 위해 약간의 지연 후 시도
+        // 비디오 로드 후 자동 재생
         setTimeout(() => {
+          playerInstance.current.playVideo();
           updateVideoTitle(nextIndex);
-        }, 1000);
+        }, 500);
       } catch (e) {
         console.error("비디오 로드 실패:", e);
         // 플레이어를 다시 초기화
@@ -231,10 +237,11 @@ export default function YouTubePlayer({ videoIds }: YouTubePlayerProps) {
     if (playerInstance.current && playerInstance.current.loadVideoById) {
       try {
         playerInstance.current.loadVideoById(videoIds[prevIndex]);
-        // 제목 업데이트를 위해 약간의 지연 후 시도
+        // 비디오 로드 후 재생 및 제목 업데이트
         setTimeout(() => {
+          playerInstance.current.playVideo();
           updateVideoTitle(prevIndex);
-        }, 1000);
+        }, 500);
       } catch (e) {
         console.error("비디오 로드 실패:", e);
         // 플레이어를 다시 초기화
@@ -255,10 +262,11 @@ export default function YouTubePlayer({ videoIds }: YouTubePlayerProps) {
     if (playerInstance.current && playerInstance.current.loadVideoById) {
       try {
         playerInstance.current.loadVideoById(videoIds[index]);
-        // 제목 업데이트를 위해 약간의 지연 후 시도
+        // 비디오 로드 후 재생 및 제목 업데이트
         setTimeout(() => {
+          playerInstance.current.playVideo();
           updateVideoTitle(index);
-        }, 1000);
+        }, 500);
       } catch (e) {
         console.error("비디오 로드 실패:", e);
         // 플레이어를 다시 초기화
@@ -299,8 +307,8 @@ export default function YouTubePlayer({ videoIds }: YouTubePlayerProps) {
       width: "854",
       videoId,
       playerVars: {
-        autoplay: 1,
-        mute: 1,
+        autoplay: 0, // 초기 로드 시 자동재생 비활성화
+        mute: 0, // 음소거 해제
         controls: 1,
         rel: 0,
         showinfo: 0,
@@ -310,14 +318,14 @@ export default function YouTubePlayer({ videoIds }: YouTubePlayerProps) {
         onReady: (event: any) => {
           console.log("YouTube 플레이어 준비 완료");
           setIsPlayerReady(true);
-          setIsPlaying(true);
+          setIsPlaying(false); // 초기에는 일시정지 상태
           // 비디오 제목 가져오기
           updateVideoTitle(currentIndexRef.current);
-          event.target.playVideo();
+          // 초기 로드 시에는 자동 재생하지 않음
         },
         onStateChange: (event: any) => {
           console.log("플레이어 상태 변경:", event.data);
-          
+
           // 재생 상태 업데이트
           if (event.data === (window as any).YT.PlayerState.PLAYING) {
             setIsPlaying(true);
