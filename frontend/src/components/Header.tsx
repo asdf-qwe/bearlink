@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useState, useRef, useEffect } from "react";
 import { LogOut, LogIn, User } from "lucide-react";
+import { categoryService } from "@/features/category/service/categoryService";
 
 export default function Header() {
   const pathname = usePathname();
@@ -17,8 +18,8 @@ export default function Header() {
       ? "text-white border-b-[3px] border-amber-200"
       : "text-amber-100 hover:text-white";
   };
-  // 링크룸 클릭 핸들러 - 메인 페이지로 이동
-  const handleLinkRoomClick = (e: React.MouseEvent) => {
+  // 링크룸 클릭 핸들러 - 첫 번째 카테고리 페이지로 이동
+  const handleLinkRoomClick = async (e: React.MouseEvent) => {
     e.preventDefault();
 
     if (!isLoggedIn || !userInfo) {
@@ -26,8 +27,24 @@ export default function Header() {
       return;
     }
 
-    // 로그인된 사용자는 메인 페이지로 이동
-    router.push("/main");
+    try {
+      // 사용자의 카테고리 목록을 가져옴
+      const categories = await categoryService.getCategoriesByUserId(
+        userInfo.id
+      );
+
+      if (categories && categories.length > 0) {
+        // 첫 번째 카테고리로 이동
+        router.push(`/main/category/${categories[0].id}`);
+      } else {
+        // 카테고리가 없으면 메인 페이지로 이동
+        router.push("/main");
+      }
+    } catch (error) {
+      console.error("카테고리 조회 실패:", error);
+      // 에러 발생 시 메인 페이지로 이동
+      router.push("/main");
+    }
   };
 
   // 사용자 메뉴 외부 클릭 시 닫기
@@ -78,8 +95,7 @@ export default function Header() {
               <button
                 onClick={handleLinkRoomClick}
                 className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
-                  pathname.startsWith("/main") &&
-                  !pathname.startsWith("/main/myPage")
+                  pathname.startsWith("/main/category")
                     ? "text-white border-b-[3px] border-amber-200"
                     : "text-amber-100 hover:text-white"
                 }`}
@@ -88,9 +104,11 @@ export default function Header() {
               </button>
               <Link
                 href="/main/myPage"
-                className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${isActive(
-                  "/main/myPage"
-                )}`}
+                className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
+                  pathname.startsWith("/main/myPage")
+                    ? "text-white border-b-[3px] border-amber-200"
+                    : "text-amber-100 hover:text-white"
+                }`}
               >
                 마이페이지
               </Link>

@@ -7,7 +7,6 @@ import {
   Trash2,
   AlertCircle,
   Loader2,
-  Edit2,
   User,
   Settings,
   LogOut,
@@ -30,13 +29,17 @@ export default function Sidebar() {
   const [showAddCategoryForm, setShowAddCategoryForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [editingCategoryId, setEditingCategoryId] = useState<number | null>(
-    null
-  );
-  const [editingCategoryName, setEditingCategoryName] = useState("");
 
-  // 마이페이지 여부 확인
-  const isMyPage = pathname === "/main/myPage";
+  // 마이페이지 여부 확인 - /main/myPage로 시작하는 경로에서 마이페이지 사이드바 표시
+  const isMyPage = pathname.startsWith("/main/myPage");
+
+  // 현재 선택된 카테고리 ID 추출
+  const getCurrentCategoryId = (): number | null => {
+    const match = pathname.match(/\/main\/category\/(\d+)/);
+    return match ? parseInt(match[1], 10) : null;
+  };
+
+  const currentCategoryId = getCurrentCategoryId();
 
   // 아이콘 순서 배열 (meat, fish, box, beehive, wood 순서로 반복)
   const iconOrder = [
@@ -134,58 +137,18 @@ export default function Sidebar() {
 
       await categoryService.deleteCategory(categoryId);
       await fetchCategories(); // 카테고리 목록 다시 불러오기
+
+      // 카테고리 삭제 이벤트 발생
+      window.dispatchEvent(
+        new CustomEvent("categoryDeleted", {
+          detail: { categoryId },
+        })
+      );
     } catch (err) {
       console.error("카테고리 삭제 실패:", err);
       setError("카테고리 삭제에 실패했습니다.");
     } finally {
       setLoading(false);
-    }
-  };
-
-  // 카테고리 수정 모드 활성화
-  const startEditCategory = (category: Category) => {
-    setEditingCategoryId(category.id);
-    setEditingCategoryName(category.name);
-    setError(null);
-  };
-
-  // 카테고리 수정 취소
-  const cancelEditCategory = () => {
-    setEditingCategoryId(null);
-    setEditingCategoryName("");
-    setError(null);
-  };
-
-  // 카테고리 수정 저장
-  const saveEditCategory = async () => {
-    if (!editingCategoryId || editingCategoryName.trim() === "") return;
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      const categoryRequest: CategoryRequest = {
-        name: editingCategoryName,
-      };
-
-      await categoryService.updateCategory(categoryRequest, editingCategoryId);
-      await fetchCategories(); // 카테고리 목록 다시 불러오기
-      setEditingCategoryId(null);
-      setEditingCategoryName("");
-    } catch (err) {
-      console.error("카테고리 수정 실패:", err);
-      setError("카테고리 수정에 실패했습니다.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 카테고리 수정 시 키 이벤트 처리
-  const handleEditKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      saveEditCategory();
-    } else if (e.key === "Escape") {
-      cancelEditCategory();
     }
   };
 
@@ -199,7 +162,7 @@ export default function Sidebar() {
 
   return (
     <div
-      className="sidebar-container w-52 text-white transition-all duration-300 border-r border-stone-300 z-40 overflow-y-auto flex-shrink-0"
+      className="sidebar-container w-44 text-white transition-all duration-300 border-r border-stone-300 z-40 overflow-y-auto flex-shrink-0"
       style={{ backgroundColor: "#907761" }}
     >
       <div className="p-3">
@@ -212,23 +175,41 @@ export default function Sidebar() {
               </div>
               <div className="space-y-3">
                 <Link
-                  href="/main/myPage"
-                  className="flex items-center space-x-3 p-3 border border-amber-200 rounded-md bg-amber-900 bg-opacity-30"
+                  href="/main/myPage/profile"
+                  className={`flex items-center space-x-3 p-3 border rounded-md transition-colors ${
+                    pathname === "/main/myPage/profile"
+                      ? "border-amber-300 bg-amber-900 bg-opacity-50 shadow-lg"
+                      : "border-amber-200 hover:bg-amber-900 hover:bg-opacity-30"
+                  }`}
                 >
                   <User size={20} className="text-amber-200" />
-                  <span className="font-medium text-white">프로필</span>
+                  <span
+                    className={`font-medium ${
+                      pathname === "/main/myPage/profile"
+                        ? "text-amber-100 font-semibold"
+                        : "text-white"
+                    }`}
+                  >
+                    프로필
+                  </span>
                 </Link>
-                <button className="w-full flex items-center space-x-3 p-3 border border-amber-200 rounded-md hover:bg-amber-900 hover:bg-opacity-30 transition-colors">
-                  <Settings size={20} className="text-amber-200" />
-                  <span className="font-medium text-white">설정</span>
-                </button>
                 <Link
-                  href="/main"
-                  className="flex items-center space-x-3 p-3 border border-amber-200 rounded-md hover:bg-amber-900 hover:bg-opacity-30 transition-colors"
+                  href="/main/myPage/settings"
+                  className={`flex items-center space-x-3 p-3 border rounded-md transition-colors ${
+                    pathname === "/main/myPage/settings"
+                      ? "border-amber-300 bg-amber-900 bg-opacity-50 shadow-lg"
+                      : "border-amber-200 hover:bg-amber-900 hover:bg-opacity-30"
+                  }`}
                 >
-                  <Plus size={20} className="text-amber-200" />
-                  <span className="font-medium text-white">
-                    링크룸으로 돌아가기
+                  <Settings size={20} className="text-amber-200" />
+                  <span
+                    className={`font-medium ${
+                      pathname === "/main/myPage/settings"
+                        ? "text-amber-100 font-semibold"
+                        : "text-white"
+                    }`}
+                  >
+                    설정
                   </span>
                 </Link>
               </div>
@@ -276,27 +257,18 @@ export default function Sidebar() {
                 </div>
               )}
               <div className="space-y-3">
-                {categories.map((category, index) => (
-                  <div
-                    key={category.id}
-                    className="flex justify-between items-center p-2 border border-amber-200 rounded-md hover:bg-amber-900 hover:bg-opacity-30 transition-colors group"
-                  >
-                    {editingCategoryId === category.id ? (
-                      <div className="flex-grow mr-2">
-                        <input
-                          type="text"
-                          value={editingCategoryName}
-                          onChange={(e) =>
-                            setEditingCategoryName(e.target.value)
-                          }
-                          onKeyDown={handleEditKeyPress}
-                          className="w-full p-1 bg-white rounded border border-stone-300 text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-500"
-                          aria-label="카테고리 이름 수정"
-                          autoFocus
-                          disabled={loading}
-                        />
-                      </div>
-                    ) : (
+                {categories.map((category, index) => {
+                  const isSelected = currentCategoryId === category.id;
+
+                  return (
+                    <div
+                      key={category.id}
+                      className={`flex justify-between items-center p-2 border rounded-md transition-colors group ${
+                        isSelected
+                          ? "border-amber-300 bg-amber-900 bg-opacity-50 shadow-lg"
+                          : "border-amber-200 hover:bg-amber-900 hover:bg-opacity-30"
+                      }`}
+                    >
                       <Link
                         href={`/main/category/${category.id}`}
                         className="flex items-center space-x-3 flex-grow min-w-0"
@@ -306,57 +278,32 @@ export default function Sidebar() {
                           alt={`카테고리 아이콘`}
                           className="w-5 h-5 object-contain flex-shrink-0"
                         />
-                        <span className="font-medium text-white break-all word-break-all overflow-hidden">
+                        <span
+                          className={`font-medium break-all word-break-all overflow-hidden ${
+                            isSelected
+                              ? "text-amber-100 font-semibold"
+                              : "text-white"
+                          }`}
+                        >
                           {category.name}
                         </span>
                       </Link>
-                    )}
 
-                    <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      {editingCategoryId === category.id ? (
-                        <>
-                          <button
-                            onClick={saveEditCategory}
-                            className="p-1 text-green-400 hover:text-green-600 transition-colors"
-                            aria-label="저장"
-                            disabled={loading}
-                          >
-                            ✓
-                          </button>
-                          <button
-                            onClick={cancelEditCategory}
-                            className="p-1 text-red-400 hover:text-red-600 transition-colors"
-                            aria-label="취소"
-                            disabled={loading}
-                          >
-                            ✕
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => startEditCategory(category)}
-                            className="p-1 text-blue-400 hover:text-blue-600 transition-colors"
-                            aria-label={`${category.name} 카테고리 수정`}
-                            disabled={loading}
-                          >
-                            <Edit2 size={16} />
-                          </button>
-                          <button
-                            onClick={() =>
-                              removeCategory(category.id, category.name)
-                            }
-                            className="p-1 text-red-500 hover:text-red-700 transition-colors"
-                            aria-label={`${category.name} 카테고리 삭제`}
-                            disabled={loading}
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </>
-                      )}
+                      <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() =>
+                            removeCategory(category.id, category.name)
+                          }
+                          className="p-1 text-red-500 hover:text-red-700 transition-colors"
+                          aria-label={`${category.name} 카테고리 삭제`}
+                          disabled={loading}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
 
                 {!loading && categories.length === 0 && (
                   <p className="text-center text-amber-200 p-4">
