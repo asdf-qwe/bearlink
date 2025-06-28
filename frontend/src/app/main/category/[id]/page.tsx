@@ -137,7 +137,47 @@ export default function CategoryPage() {
       }
     };
     loadCategory();
-  }, [categoryId, userInfo?.id]); // URL 입력 시 기본 처리 (비동기 미리보기는 백엔드에서 처리)
+  }, [categoryId, userInfo?.id]);
+
+  // 카테고리 삭제 이벤트 감지
+  useEffect(() => {
+    const handleCategoryDeleted = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const deletedCategoryId = customEvent.detail?.categoryId;
+      
+      // 현재 보고 있는 카테고리가 삭제된 경우
+      if (deletedCategoryId === categoryId) {
+        (async () => {
+          try {
+            // 사용자의 남은 카테고리들을 가져오기
+            const remainingCategories = await categoryService.getCategoriesByUserId(userInfo?.id || 0);
+            
+            if (remainingCategories.length > 0) {
+              // 첫 번째 남은 카테고리로 이동
+              router.push(`/main/category/${remainingCategories[0].id}`);
+            } else {
+              // 남은 카테고리가 없으면 메인 페이지로 이동
+              router.push('/main');
+            }
+          } catch (error) {
+            console.error('카테고리 목록 조회 실패:', error);
+            // 실패 시 메인 페이지로 이동
+            router.push('/main');
+          }
+        })();
+      }
+    };
+
+    // 이벤트 리스너 등록
+    window.addEventListener('categoryDeleted', handleCategoryDeleted);
+
+    // 클린업
+    return () => {
+      window.removeEventListener('categoryDeleted', handleCategoryDeleted);
+    };
+  }, [categoryId, userInfo?.id, router]);
+
+  // URL 입력 시 기본 처리 (비동기 미리보기는 백엔드에서 처리)
   const handleUrlChange = async (url: string) => {
     setNewLinkData((prev) => ({ ...prev, url }));
     setError(null);
@@ -403,14 +443,6 @@ export default function CategoryPage() {
   }
   return (
     <div className="container mx-auto px-4 py-8 bg-amber-50 min-h-screen">
-      {/* 뒤로 가기 버튼 */}
-      <button
-        onClick={() => router.back()}
-        className="flex items-center text-amber-700 hover:text-amber-900 mb-6"
-      >
-        <ArrowLeft size={20} className="mr-2" />
-        뒤로 가기
-      </button>{" "}
       {/* 카테고리 제목 */}
       <div className="mb-8">
         <div className="flex items-center space-x-3 mb-2">
