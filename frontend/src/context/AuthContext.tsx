@@ -17,6 +17,7 @@ interface AuthContextType {
   userInfo: UserResponseDto | null;
   login: (loginId: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  updateUserInfo: (updatedInfo: Partial<UserResponseDto>) => void;
   loading: boolean;
   error: string | null;
 }
@@ -98,11 +99,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
     router.push("/auth/login");
   };
 
+  // 사용자 정보 업데이트 함수
+  const updateUserInfo = (updatedInfo: Partial<UserResponseDto>) => {
+    if (userInfo) {
+      setUserInfo({ ...userInfo, ...updatedInfo });
+    }
+  };
+
   const value = {
     isLoggedIn,
     userInfo,
     login,
     logout,
+    updateUserInfo,
     loading,
     error,
   };

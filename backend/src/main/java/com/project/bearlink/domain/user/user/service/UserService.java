@@ -34,6 +34,7 @@ public class UserService {
                 .nickname(request.getNickname())
                 .email(request.getEmail())
                 .imageUrl(request.getImageUrl())
+                .bio(request.getNickname() + "님의 프로필 입니다.")
                 .role(UserRole.USER)
                 .build();
 

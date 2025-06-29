@@ -66,4 +66,5 @@ export interface UserResponseDto {
   email: string;
   imageUrl: string;
   role: UserRole;
+  bio?: string;
 }
