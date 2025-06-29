@@ -1,6 +1,8 @@
 package com.project.bearlink.domain.user.user.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.project.bearlink.domain.friend.entity.FriendRequest;
+import com.project.bearlink.domain.myPage.entity.MyPage;
 import com.project.bearlink.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -43,7 +45,18 @@ public class User extends BaseEntity {
     @Column(name = "refresh_token", length = 255)
     private String refreshToken;
 
-    // 권한 반환
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private MyPage myPage;
+
+    private String bio;
+
+    @OneToMany(mappedBy = "requester", cascade = CascadeType.ALL)
+    private List<FriendRequest> sentFriendRequests;
+
+    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL)
+    private List<FriendRequest> receivedFriendRequests;
+
+
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + this.role.name()));
     }

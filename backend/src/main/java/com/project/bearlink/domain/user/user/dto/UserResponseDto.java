@@ -15,6 +15,7 @@ public class UserResponseDto {
     private String email;
     private String imageUrl;
     private UserRole role;
+    private String bio;
 
 
     public static UserResponseDto fromEntity(User user) {
@@ -25,6 +26,7 @@ public class UserResponseDto {
                 .email(user.getEmail())
                 .imageUrl(user.getImageUrl())
                 .role(user.getRole())
+                .bio(user.getBio())
                 .build();
     }
 }
