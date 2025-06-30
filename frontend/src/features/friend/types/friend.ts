@@ -25,3 +25,11 @@ export interface FriendRequest {
   imageUrl?: string;
   requestedAt?: string;
 }
+
+// 친구 검색 결과 DTO
+export interface FindFriendDto {
+  id: number;
+  nickname: string;
+  imageUrl: string;
+  status: string;
+}

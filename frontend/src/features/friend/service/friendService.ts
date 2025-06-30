@@ -4,6 +4,7 @@ import {
   FriendRequestDto,
   Friend,
   FriendRequest,
+  FindFriendDto,
 } from "../types/friend";
 
 class FriendService {
@@ -72,7 +73,7 @@ class FriendService {
     page: number = 0,
     size: number = 10
   ): Promise<{
-    content: FriendResponseDto[];
+    content: FindFriendDto[];
     totalElements: number;
     totalPages: number;
     number: number;
@@ -80,53 +81,34 @@ class FriendService {
   }> {
     try {
       const response = await api.get("/api/v1/friend/find-friend", {
-        params: {
-          keyword,
-          page,
-          size,
-        },
+        params: { keyword, page, size },
       });
 
       console.log("친구 검색 API 원본 응답:", response);
-      console.log("response.data:", response.data);
-      console.log("response.content:", response.content);
 
-      // 응답 데이터 안전성 검사
-      if (response && typeof response === "object") {
-        const content = Array.isArray(response.content)
-          ? response.content
-          : Array.isArray(response.data)
-          ? response.data
-          : Array.isArray(response)
-          ? response
-          : [];
+      // 백엔드에서 이미 필터링된 결과만 반환하므로 모든 결과를 그대로 사용
+      const content = Array.isArray(response?.content)
+        ? response.content
+        : Array.isArray(response)
+        ? response
+        : [];
 
-        console.log("파싱된 content:", content);
-        if (content.length > 0) {
-          console.log("첫 번째 사용자 데이터:", content[0]);
-        }
-
-        return {
-          content: content,
-          totalElements: response.totalElements || 0,
-          totalPages: response.totalPages || 0,
-          number: response.number || 0,
-          size: response.size || size,
-        };
-      }
-
-      // 예상치 못한 응답 구조인 경우
-      console.warn("예상치 못한 응답 구조:", response);
+      return {
+        content,
+        totalElements: response?.totalElements || content.length,
+        totalPages: response?.totalPages || 1,
+        number: response?.number || 0,
+        size: response?.size || size,
+      };
+    } catch (error) {
+      console.error("친구 검색 실패:", error);
       return {
         content: [],
         totalElements: 0,
         totalPages: 0,
         number: 0,
-        size: size,
+        size: 0,
       };
-    } catch (error) {
-      console.error("친구 검색 실패:", error);
-      throw error;
     }
   }
 

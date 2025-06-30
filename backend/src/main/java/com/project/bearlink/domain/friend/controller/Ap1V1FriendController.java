@@ -53,10 +53,17 @@ public class Ap1V1FriendController {
     }
 
     @GetMapping("/find-friend")
-    public ResponseEntity<Page<FriendResponseDto>> findFriend(@RequestParam String keyword,
-                                                 @AuthenticationPrincipal SecurityUser user,
-                                                 Pageable pageable){
+    public ResponseEntity<Page<FindFriendDto>> findFriend(
+            @RequestParam String keyword,
+            @AuthenticationPrincipal SecurityUser user,
+            Pageable pageable) {
 
-        return ResponseEntity.ok(friendService.findFriends(keyword, user.getId(), pageable));
+        Page<FindFriendDto> result = friendService.findFriends(keyword, user.getId(), pageable);
+
+        Page<FindFriendDto> response = result.map(f ->
+                new FindFriendDto(f.id(), f.nickname(), f.imageUrl(), f.status())
+        );
+
+        return ResponseEntity.ok(response);
     }
 }
