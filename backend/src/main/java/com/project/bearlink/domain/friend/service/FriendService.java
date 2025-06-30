@@ -96,8 +96,7 @@ public class FriendService {
                 .toList();
     }
 
-    public Page<FriendResponseDto> findFriends(String keyword, Long userId, Pageable pageable) {
-        Page<User> user = userRepository.searchByNicknameExcludingCurrentUser(keyword, userId, pageable);
-        return user.map(u->new FriendResponseDto(u.getId(),u.getNickname(),u.getImageUrl()));
+    public Page<FindFriendDto> findFriends(String keyword, Long userId, Pageable pageable) {
+        return userRepository.searchOnlyUnrelatedUsers(keyword, userId, pageable);
     }
 }

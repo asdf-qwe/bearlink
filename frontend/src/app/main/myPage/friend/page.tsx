@@ -9,7 +9,10 @@ import {
   User,
 } from "lucide-react";
 import { friendService } from "@/features/friend/service/friendService";
-import { FriendResponseDto } from "@/features/friend/types/friend";
+import {
+  FriendResponseDto,
+  FindFriendDto,
+} from "@/features/friend/types/friend";
 
 interface Friend {
   id: number;
@@ -27,9 +30,9 @@ interface FriendRequest {
 export default function FriendPage() {
   const [friends, setFriends] = useState<Friend[]>([]);
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
-  const [userSearchResults, setUserSearchResults] = useState<
-    FriendResponseDto[]
-  >([]);
+  const [userSearchResults, setUserSearchResults] = useState<FindFriendDto[]>(
+    []
+  );
   const [loading, setLoading] = useState(true);
   const [userSearchLoading, setUserSearchLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -135,20 +138,14 @@ export default function FriendPage() {
       setUserSearchLoading(true);
       const response = await friendService.findFriends(keyword.trim());
 
-      // 응답 구조 안전성 검사
-      if (response && response.content && Array.isArray(response.content)) {
-        setUserSearchResults(response.content);
-      } else if (Array.isArray(response)) {
-        // 응답이 직접 배열인 경우
-        setUserSearchResults(response);
-      } else {
-        // 예상치 못한 응답 구조인 경우
-        console.warn("예상치 못한 응답 구조:", response);
-        setUserSearchResults([]);
+      console.log("파싱된 content:", response.content);
+      if (response.content.length > 0) {
+        console.log("첫 번째 사용자 데이터:", response.content[0]);
       }
-    } catch (err) {
-      console.error("사용자 검색 실패:", err);
-      setError("사용자 검색에 실패했습니다.");
+
+      setUserSearchResults(response.content);
+    } catch (error) {
+      console.error("사용자 검색 실패:", error);
       setUserSearchResults([]);
     } finally {
       setUserSearchLoading(false);
@@ -159,22 +156,20 @@ export default function FriendPage() {
   const handleSendFriendRequest = async (receiverId: number) => {
     try {
       console.log("친구 신청 대상 ID:", receiverId);
-      console.log("전송할 데이터:", { receiverId });
+      const requestData = { receiverId };
+      console.log("전송할 데이터:", requestData);
 
-      if (!receiverId) {
-        throw new Error("유효하지 않은 사용자 ID입니다.");
-      }
+      await friendService.sendFriendRequest(requestData);
 
-      await friendService.sendFriendRequest({ receiverId });
-      // 검색 결과에서 해당 사용자 제거 (이미 신청했으므로)
+      // 신청 성공 시 해당 사용자를 검색 결과에서 제거
       setUserSearchResults((prev) =>
         prev.filter((user) => user.id !== receiverId)
       );
-      setError(null);
-      alert("친구 신청을 보냈습니다.");
-    } catch (err) {
-      console.error("친구 신청 실패:", err);
-      setError("친구 신청에 실패했습니다.");
+
+      alert("친구 신청을 보냈습니다!");
+    } catch (error) {
+      console.error("친구 신청 실패:", error);
+      alert("친구 신청에 실패했습니다.");
     }
   };
 
@@ -259,12 +254,13 @@ export default function FriendPage() {
           </div>
         )}
 
-        {/* 사용자 검색 */}
+        {/* 새로운 친구 찾기 섹션 */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-            <UserPlus className="mr-2 text-amber-600" size={20} />
-            새로운 친구 찾기
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-800">
+              새로운 친구 찾기
+            </h2>
+          </div>
 
           <div className="relative mb-4">
             <Search
@@ -274,12 +270,12 @@ export default function FriendPage() {
             <input
               type="text"
               placeholder="닉네임으로 사용자 검색..."
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
               value={userSearchKeyword}
               onChange={(e) => {
                 setUserSearchKeyword(e.target.value);
                 handleSearchUsers(e.target.value);
               }}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
             />
           </div>
 
@@ -294,7 +290,7 @@ export default function FriendPage() {
               {userSearchResults.map((user) => (
                 <div
                   key={user.id}
-                  className="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
+                  className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
@@ -314,13 +310,15 @@ export default function FriendPage() {
                       </h3>
                     </div>
                   </div>
-                  <button
-                    onClick={() => handleSendFriendRequest(user.id)}
-                    className="flex items-center px-3 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
-                  >
-                    <UserPlus size={14} className="mr-1" />
-                    친구 추가
-                  </button>
+
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => handleSendFriendRequest(user.id)}
+                      className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
+                    >
+                      친구 추가
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
