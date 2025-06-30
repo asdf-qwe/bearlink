@@ -140,13 +140,6 @@ export const LinkCard = ({
           </h3>
         )}
 
-        {/* 가격 정보 */}
-        {link.price && (
-          <div className="text-lg font-bold text-green-600 mb-2">
-            {link.price}
-          </div>
-        )}
-
         {/* URL */}
         <a
           href={link.url}

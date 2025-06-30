@@ -17,11 +17,9 @@ export interface LinkResponseDto {
   title: string;
   url: string;
   thumbnailImageUrl: string;
-  price: string;
 }
 
 export interface LinkPreviewDto {
   title: string;
   thumbnailImageUrl: string;
-  price: string;
 }

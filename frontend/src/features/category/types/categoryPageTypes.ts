@@ -3,7 +3,6 @@ export interface LinkItem {
   title: string;
   url: string;
   thumbnailImageUrl?: string;
-  price?: string;
 }
 
 export interface CategoryWithLinks {

@@ -30,6 +30,4 @@ public class Link extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
-    private String price;
-
 }

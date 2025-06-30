@@ -1,6 +1,8 @@
 package com.project.bearlink.domain.user.user.repository;
 
 import com.project.bearlink.domain.user.user.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -28,4 +30,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
 """)
     Optional<User> findByIdWithRelations(@Param("id") Long id);
 
+    @Query("""
+    SELECT u FROM User u
+    WHERE u.nickname LIKE %:keyword%
+    AND u.id != :currentUserId
+""")
+    Page<User> searchByNicknameExcludingCurrentUser(
+            @Param("keyword") String keyword,
+            @Param("currentUserId") Long currentUserId,
+            Pageable pageable
+    );
 }
