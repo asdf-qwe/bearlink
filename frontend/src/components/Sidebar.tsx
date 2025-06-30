@@ -10,6 +10,8 @@ import {
   User,
   Settings,
   LogOut,
+  CreditCard,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -191,6 +193,44 @@ export default function Sidebar() {
                     }`}
                   >
                     프로필
+                  </span>
+                </Link>
+                <Link
+                  href="/main/myPage/account"
+                  className={`flex items-center space-x-3 p-3 border rounded-md transition-colors ${
+                    pathname === "/main/myPage/account"
+                      ? "border-amber-300 bg-amber-900 bg-opacity-50 shadow-lg"
+                      : "border-amber-200 hover:bg-amber-900 hover:bg-opacity-30"
+                  }`}
+                >
+                  <CreditCard size={20} className="text-amber-200" />
+                  <span
+                    className={`font-medium ${
+                      pathname === "/main/myPage/account"
+                        ? "text-amber-100 font-semibold"
+                        : "text-white"
+                    }`}
+                  >
+                    계정
+                  </span>
+                </Link>
+                <Link
+                  href="/main/myPage/friend"
+                  className={`flex items-center space-x-3 p-3 border rounded-md transition-colors ${
+                    pathname === "/main/myPage/friend"
+                      ? "border-amber-300 bg-amber-900 bg-opacity-50 shadow-lg"
+                      : "border-amber-200 hover:bg-amber-900 hover:bg-opacity-30"
+                  }`}
+                >
+                  <Users size={20} className="text-amber-200" />
+                  <span
+                    className={`font-medium ${
+                      pathname === "/main/myPage/friend"
+                        ? "text-amber-100 font-semibold"
+                        : "text-white"
+                    }`}
+                  >
+                    친구
                   </span>
                 </Link>
                 <Link

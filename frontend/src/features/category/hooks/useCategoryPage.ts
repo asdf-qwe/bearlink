@@ -62,7 +62,6 @@ export const useCategoryPage = ({
           title: link.title,
           url: link.url,
           thumbnailImageUrl: link.thumbnailImageUrl,
-          price: link.price,
         }));
 
         const categoryWithLinks: CategoryWithLinks = {
@@ -119,7 +118,6 @@ export const useCategoryPage = ({
         title: link.title,
         url: link.url,
         thumbnailImageUrl: link.thumbnailImageUrl,
-        price: link.price,
       }));
 
       const updatedCategory = { ...category, links: convertedLinks };
@@ -183,7 +181,6 @@ export const useCategoryPage = ({
           title: link.title,
           url: link.url,
           thumbnailImageUrl: link.thumbnailImageUrl,
-          price: link.price,
         }));
 
         const updatedCategory = { ...category, links: convertedLinks };
