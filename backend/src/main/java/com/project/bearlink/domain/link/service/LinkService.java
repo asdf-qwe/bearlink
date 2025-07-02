@@ -64,8 +64,7 @@ public class LinkService {
                         link.getId(),
                         link.getTitle(),
                         link.getUrl(),
-                        link.getThumbnailImageUrl(),
-                        link.getPrice()
+                        link.getThumbnailImageUrl()
                 ))
                 .collect(Collectors.toList());
     }
