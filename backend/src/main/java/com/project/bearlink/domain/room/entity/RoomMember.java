@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,14 +19,18 @@ import lombok.experimental.SuperBuilder;
 @Entity
 public class RoomMember extends BaseEntity {
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "room_id")
     private LinkRoom room;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
     private User user;
 
     @Enumerated(EnumType.STRING)
-    private RoomRole role; // OWNER or MEMBER
+    private InvitationStatus status; // INVITED, ACCEPTED, DECLINED 등
 
-    private int memberCount;
+    private LocalDateTime invitedAt;
+    private LocalDateTime respondedAt;
+
 }

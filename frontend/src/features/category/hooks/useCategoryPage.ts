@@ -236,11 +236,11 @@ export const useCategoryPage = ({
           if (remainingCategories.length > 0) {
             router.push(`/main/category/${remainingCategories[0].id}`);
           } else {
-            router.push("/main");
+            router.push("/main/category");
           }
         } catch (error) {
           console.error("카테고리 목록 조회 실패:", error);
-          router.push("/main");
+          router.push("/main/category");
         }
       }
     };

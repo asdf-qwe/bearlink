@@ -12,15 +12,19 @@ import {
   LogOut,
   CreditCard,
   Users,
+  Home,
+  UsersRound,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { categoryService } from "@/features/category/service/categoryService";
+import { roomService } from "@/features/room/service/roomService";
 import {
   Category,
   CategoryRequest,
 } from "@/features/category/types/categoryTypes";
+import { CreateLinkRoomRequest, RoomsDto } from "@/features/room/type/room";
 
 export default function Sidebar() {
   const { userInfo, logout } = useAuth();
@@ -31,6 +35,14 @@ export default function Sidebar() {
   const [showAddCategoryForm, setShowAddCategoryForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // 개인/그룹 토글 상태 추가
+  const [viewMode, setViewMode] = useState<"personal" | "group">("personal");
+  // 링크룸 목록 상태 추가
+  const [rooms, setRooms] = useState<RoomsDto[]>([]);
+  const [roomLoading, setRoomLoading] = useState(false);
+  const [roomError, setRoomError] = useState<string | null>(null);
+  const [showAddRoomForm, setShowAddRoomForm] = useState(false);
+  const [newRoomName, setNewRoomName] = useState("");
 
   // 마이페이지 여부 확인 - /main/myPage로 시작하는 경로에서 마이페이지 사이드바 표시
   const isMyPage = pathname.startsWith("/main/myPage");
@@ -41,7 +53,14 @@ export default function Sidebar() {
     return match ? parseInt(match[1], 10) : null;
   };
 
+  // 현재 선택된 링크룸 ID 추출
+  const getCurrentRoomId = (): number | null => {
+    const match = pathname.match(/\/main\/room\/(\d+)/);
+    return match ? parseInt(match[1], 10) : null;
+  };
+
   const currentCategoryId = getCurrentCategoryId();
+  const currentRoomId = getCurrentRoomId();
 
   // 아이콘 순서 배열 (meat, fish, box, beehive, wood 순서로 반복)
   const iconOrder = [
@@ -75,10 +94,39 @@ export default function Sidebar() {
       setLoading(false);
     }
   };
-  // 컴포넌트 마운트 시 카테고리 목록 불러오기
+
+  // 링크룸 목록 가져오기
+  const fetchRooms = async () => {
+    if (!userInfo?.id) return;
+
+    try {
+      setRoomLoading(true);
+      setRoomError(null);
+      const roomsData = await roomService.getRooms();
+      console.log("가져온 링크룸 데이터:", roomsData);
+
+      // 백엔드 응답에 id가 없을 경우 id를 추가
+      const roomsWithId = roomsData.map((room: any, index: number) => {
+        if (room.id === undefined) {
+          return { ...room, id: room.roomId || index };
+        }
+        return room;
+      });
+
+      setRooms(roomsWithId);
+    } catch (err) {
+      console.error("링크룸 로딩 실패:", err);
+      setRoomError("링크룸을 불러오는데 문제가 발생했습니다.");
+    } finally {
+      setRoomLoading(false);
+    }
+  };
+
+  // 컴포넌트 마운트 시 카테고리 및 링크룸 목록 불러오기
   useEffect(() => {
     if (userInfo?.id) {
       fetchCategories();
+      fetchRooms();
     }
   }, [userInfo?.id]);
 
@@ -94,6 +142,21 @@ export default function Sidebar() {
 
     return () => {
       window.removeEventListener("categoryUpdated", handleCategoryUpdate);
+    };
+  }, [userInfo?.id]);
+
+  // 링크룸 업데이트 이벤트 리스너 등록
+  useEffect(() => {
+    const handleRoomUpdate = () => {
+      if (userInfo?.id) {
+        fetchRooms();
+      }
+    };
+
+    window.addEventListener("roomUpdated", handleRoomUpdate);
+
+    return () => {
+      window.removeEventListener("roomUpdated", handleRoomUpdate);
     };
   }, [userInfo?.id]);
 
@@ -161,6 +224,59 @@ export default function Sidebar() {
       setShowAddCategoryForm(false);
     }
   };
+
+  // 링크룸 추가 폼 토글
+  const toggleAddRoomForm = () => {
+    setShowAddRoomForm(!showAddRoomForm);
+    setNewRoomName("");
+  };
+
+  // 링크룸 추가 함수
+  const addRoom = async () => {
+    if (newRoomName.trim() === "") return;
+
+    try {
+      setRoomLoading(true);
+      setRoomError(null);
+
+      const roomRequest: CreateLinkRoomRequest = {
+        name: newRoomName,
+      };
+
+      const createdRoom = await roomService.createRoom(roomRequest);
+      console.log("링크룸 생성 성공:", createdRoom);
+
+      // 링크룸 생성 후 이벤트 발생
+      window.dispatchEvent(new CustomEvent("roomUpdated"));
+      await fetchRooms(); // 링크룸 목록 다시 불러오기
+
+      setNewRoomName("");
+      setShowAddRoomForm(false);
+    } catch (err) {
+      console.error("링크룸 생성 실패:", err);
+      setRoomError("링크룸 생성에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setRoomLoading(false);
+    }
+  };
+
+  // 링크룸 키보드 입력 처리
+  const handleRoomKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      addRoom();
+    } else if (e.key === "Escape") {
+      setShowAddRoomForm(false);
+    }
+  };
+
+  // 컴포넌트 마운트 시 현재 경로에 따라 뷰 모드 설정
+  useEffect(() => {
+    if (pathname.startsWith("/main/room")) {
+      setViewMode("group");
+    } else if (pathname.startsWith("/main/category")) {
+      setViewMode("personal");
+    }
+  }, [pathname]);
 
   return (
     <div
@@ -255,102 +371,228 @@ export default function Sidebar() {
               </div>
             </>
           ) : (
-            // 일반 페이지용 사이드바 (기존 코드)
+            // 일반 페이지용 사이드바
             <>
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-white">저장공간</h2>
+              {/* 개인/그룹 토글 추가 */}
+              <div className="flex mb-4 border border-amber-200 rounded-md overflow-hidden">
                 <button
-                  onClick={toggleAddCategoryForm}
-                  className="p-1 bg-stone-600 hover:bg-stone-700 text-white rounded-full transition-colors"
-                  aria-label="카테고리 추가 폼 열기"
-                  disabled={loading}
+                  className={`flex-1 py-2 px-1 text-center transition-colors ${
+                    viewMode === "personal"
+                      ? "bg-amber-900 bg-opacity-50 text-amber-100 font-semibold"
+                      : "hover:bg-amber-900 hover:bg-opacity-30"
+                  }`}
+                  onClick={() => setViewMode("personal")}
                 >
-                  <Plus size={16} />
+                  <div className="flex items-center justify-center">
+                    <User size={16} className="mr-1" />
+                    <span>개인</span>
+                  </div>
+                </button>
+                <button
+                  className={`flex-1 py-2 px-1 text-center transition-colors ${
+                    viewMode === "group"
+                      ? "bg-amber-900 bg-opacity-50 text-amber-100 font-semibold"
+                      : "hover:bg-amber-900 hover:bg-opacity-30"
+                  }`}
+                  onClick={() => setViewMode("group")}
+                >
+                  <div className="flex items-center justify-center">
+                    <UsersRound size={16} className="mr-1" />
+                    <span>링크룸</span>
+                  </div>
                 </button>
               </div>
-              {/* 오류 메시지 표시 */}
-              {error && (
-                <div className="mb-2 p-2 bg-red-100 border border-red-400 rounded text-red-700 text-sm flex items-center">
-                  <AlertCircle size={16} className="mr-1" />
-                  <span>{error}</span>
-                </div>
-              )}
-              {/* 로딩 표시 */}
-              {loading && (
-                <div className="flex justify-center my-2">
-                  <Loader2 className="h-5 w-5 animate-spin text-amber-200" />
-                </div>
-              )}
-              {showAddCategoryForm && (
-                <div className="mb-4">
-                  <input
-                    type="text"
-                    value={newCategoryName}
-                    onChange={(e) => setNewCategoryName(e.target.value)}
-                    onKeyDown={handleCategoryKeyPress}
-                    placeholder="새 카테고리 이름 입력 후 Enter"
-                    className="w-full p-2 bg-white rounded border border-stone-300 text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
-                    aria-label="새 카테고리 이름 입력"
-                    autoFocus
-                    disabled={loading}
-                  />
-                </div>
-              )}
-              <div className="space-y-3">
-                {categories.map((category, index) => {
-                  const isSelected = currentCategoryId === category.id;
 
-                  return (
-                    <div
-                      key={category.id}
-                      className={`flex justify-between items-center p-2 border rounded-md transition-colors group ${
-                        isSelected
-                          ? "border-amber-300 bg-amber-900 bg-opacity-50 shadow-lg"
-                          : "border-amber-200 hover:bg-amber-900 hover:bg-opacity-30"
-                      }`}
+              {viewMode === "personal" ? (
+                // 개인 링크룸 영역
+                <>
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-bold text-white">저장공간</h2>
+                    <button
+                      onClick={toggleAddCategoryForm}
+                      className="p-1 bg-stone-600 hover:bg-stone-700 text-white rounded-full transition-colors"
+                      aria-label="카테고리 추가 폼 열기"
+                      disabled={loading}
                     >
-                      <Link
-                        href={`/main/category/${category.id}`}
-                        className="flex items-center space-x-3 flex-grow min-w-0"
-                      >
-                        <img
-                          src={getCategoryIcon(index)}
-                          alt={`카테고리 아이콘`}
-                          className="w-5 h-5 object-contain flex-shrink-0"
-                        />
-                        <span
-                          className={`font-medium break-all word-break-all overflow-hidden ${
+                      <Plus size={16} />
+                    </button>
+                  </div>
+                  {/* 오류 메시지 표시 */}
+                  {error && (
+                    <div className="mb-2 p-2 bg-red-100 border border-red-400 rounded text-red-700 text-sm flex items-center">
+                      <AlertCircle size={16} className="mr-1" />
+                      <span>{error}</span>
+                    </div>
+                  )}
+                  {/* 로딩 표시 */}
+                  {loading && (
+                    <div className="flex justify-center my-2">
+                      <Loader2 className="h-5 w-5 animate-spin text-amber-200" />
+                    </div>
+                  )}
+                  {showAddCategoryForm && (
+                    <div className="mb-4">
+                      <input
+                        type="text"
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        onKeyDown={handleCategoryKeyPress}
+                        placeholder="새 카테고리 이름 입력 후 Enter"
+                        className="w-full p-2 bg-white rounded border border-stone-300 text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
+                        aria-label="새 카테고리 이름 입력"
+                        autoFocus
+                        disabled={loading}
+                      />
+                    </div>
+                  )}
+                  <div className="space-y-3">
+                    {categories.map((category, index) => {
+                      const isSelected = currentCategoryId === category.id;
+
+                      return (
+                        <div
+                          key={category.id}
+                          className={`flex justify-between items-center p-2 border rounded-md transition-colors group ${
                             isSelected
-                              ? "text-amber-100 font-semibold"
-                              : "text-white"
+                              ? "border-amber-300 bg-amber-900 bg-opacity-50 shadow-lg"
+                              : "border-amber-200 hover:bg-amber-900 hover:bg-opacity-30"
                           }`}
                         >
-                          {category.name}
-                        </span>
-                      </Link>
+                          <Link
+                            href={`/main/category/${category.id}`}
+                            className="flex items-center space-x-3 flex-grow min-w-0"
+                          >
+                            <img
+                              src={getCategoryIcon(index)}
+                              alt={`카테고리 아이콘`}
+                              className="w-5 h-5 object-contain flex-shrink-0"
+                            />
+                            <span
+                              className={`font-medium break-all word-break-all overflow-hidden ${
+                                isSelected
+                                  ? "text-amber-100 font-semibold"
+                                  : "text-white"
+                              }`}
+                            >
+                              {category.name}
+                            </span>
+                          </Link>
 
-                      <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={() =>
-                            removeCategory(category.id, category.name)
-                          }
-                          className="p-1 text-red-500 hover:text-red-700 transition-colors"
-                          aria-label={`${category.name} 카테고리 삭제`}
-                          disabled={loading}
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
+                          <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              onClick={() =>
+                                removeCategory(category.id, category.name)
+                              }
+                              className="p-1 text-red-500 hover:text-red-700 transition-colors"
+                              aria-label={`${category.name} 카테고리 삭제`}
+                              disabled={loading}
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {!loading && categories.length === 0 && (
+                      <p className="text-center text-amber-200 p-4">
+                        카테고리가 없습니다. 새 카테고리를 추가해보세요!
+                      </p>
+                    )}
+                  </div>
+                </>
+              ) : (
+                // 링크룸 영역
+                <>
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-bold text-white">링크룸</h2>
+                    <button
+                      onClick={toggleAddRoomForm}
+                      className="p-1 bg-stone-600 hover:bg-stone-700 text-white rounded-full transition-colors"
+                      aria-label="링크룸 추가 폼 열기"
+                      disabled={roomLoading}
+                    >
+                      <Plus size={16} />
+                    </button>
+                  </div>
+
+                  {/* 오류 메시지 표시 */}
+                  {roomError && (
+                    <div className="mb-2 p-2 bg-red-100 border border-red-400 rounded text-red-700 text-sm flex items-center">
+                      <AlertCircle size={16} className="mr-1" />
+                      <span>{roomError}</span>
                     </div>
-                  );
-                })}
+                  )}
 
-                {!loading && categories.length === 0 && (
-                  <p className="text-center text-amber-200 p-4">
-                    카테고리가 없습니다. 새 카테고리를 추가해보세요!
-                  </p>
-                )}
-              </div>
+                  {/* 로딩 표시 */}
+                  {roomLoading && (
+                    <div className="flex justify-center my-2">
+                      <Loader2 className="h-5 w-5 animate-spin text-amber-200" />
+                    </div>
+                  )}
+
+                  {/* 링크룸 추가 폼 */}
+                  {showAddRoomForm && (
+                    <div className="mb-4">
+                      <input
+                        type="text"
+                        value={newRoomName}
+                        onChange={(e) => setNewRoomName(e.target.value)}
+                        onKeyDown={handleRoomKeyPress}
+                        placeholder="새 링크룸 이름 입력 후 Enter"
+                        className="w-full p-2 bg-white rounded border border-stone-300 text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
+                        aria-label="새 링크룸 이름 입력"
+                        autoFocus
+                        disabled={roomLoading}
+                      />
+                    </div>
+                  )}
+
+                  {/* 링크룸 목록 */}
+                  <div className="space-y-3">
+                    {rooms.length > 0 ? (
+                      rooms.map((room, index) => {
+                        // room.id가 없는 경우 index를 사용
+                        const roomId = room.id !== undefined ? room.id : index;
+                        const isSelected = currentRoomId === roomId;
+                        return (
+                          <div
+                            key={roomId}
+                            className={`flex justify-between items-center p-2 border rounded-md transition-colors group ${
+                              isSelected
+                                ? "border-amber-300 bg-amber-900 bg-opacity-50 shadow-lg"
+                                : "border-amber-200 hover:bg-amber-900 hover:bg-opacity-30"
+                            }`}
+                          >
+                            <Link
+                              href={`/main/room/${roomId}`}
+                              className="flex items-center space-x-3 flex-grow min-w-0"
+                            >
+                              <UsersRound
+                                size={20}
+                                className="text-amber-200 flex-shrink-0"
+                              />
+                              <span
+                                className={`font-medium break-all word-break-all overflow-hidden ${
+                                  isSelected
+                                    ? "text-amber-100 font-semibold"
+                                    : "text-white"
+                                }`}
+                              >
+                                {room.name}
+                              </span>
+                            </Link>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <p className="text-center text-amber-200 p-4">
+                        참여 중인 링크룸이 없습니다. 새 링크룸을 만들어보세요!
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
             </>
           )}
         </>

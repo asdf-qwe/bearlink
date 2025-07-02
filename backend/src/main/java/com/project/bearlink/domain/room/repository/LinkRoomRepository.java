@@ -1,5 +1,6 @@
 package com.project.bearlink.domain.room.repository;
 
+import com.project.bearlink.domain.room.dto.RoomsDto;
 import com.project.bearlink.domain.room.entity.LinkRoom;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -15,4 +16,6 @@ public interface LinkRoomRepository extends JpaRepository<LinkRoom, Long> {
         WHERE r.owner.id = :userId OR rm.user.id = :userId
     """)
     List<LinkRoom> findAllRoomsParticipatedByUser(@Param("userId") Long userId);
+
+    List<LinkRoom> findByOwnerId(Long userId);
 }
