@@ -1,15 +1,18 @@
 package com.project.bearlink.domain.room.entity;
 
+
 import com.project.bearlink.domain.user.user.entity.User;
 import com.project.bearlink.global.jpa.BaseEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -28,5 +31,4 @@ public class LinkRoom extends BaseEntity {
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL)
     private List<RoomMember> members;
 
-    private int memberCount;
 }

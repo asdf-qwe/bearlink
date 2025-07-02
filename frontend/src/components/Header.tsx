@@ -18,7 +18,7 @@ export default function Header() {
       ? "text-white border-b-[3px] border-amber-200"
       : "text-amber-100 hover:text-white";
   };
-  // 링크룸 클릭 핸들러 - 첫 번째 카테고리 페이지로 이동
+  // 링크룸 클릭 핸들러 - 첫 번째 카테고리 또는 메인 카테고리 페이지로 이동
   const handleLinkRoomClick = async (e: React.MouseEvent) => {
     e.preventDefault();
 
@@ -34,16 +34,16 @@ export default function Header() {
       );
 
       if (categories && categories.length > 0) {
-        // 첫 번째 카테고리로 이동
+        // 카테고리가 있으면 첫 번째 카테고리로 이동
         router.push(`/main/category/${categories[0].id}`);
       } else {
-        // 카테고리가 없으면 메인 페이지로 이동
-        router.push("/main");
+        // 카테고리가 없으면 카테고리 메인 페이지로 이동
+        router.push("/main/category");
       }
     } catch (error) {
       console.error("카테고리 조회 실패:", error);
-      // 에러 발생 시 메인 페이지로 이동
-      router.push("/main");
+      // 에러 발생 시 카테고리 메인 페이지로 이동
+      router.push("/main/category");
     }
   };
 
