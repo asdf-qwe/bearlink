@@ -18,17 +18,19 @@ export const MemberList: React.FC<MemberListProps> = ({
   });
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-      <h2 className="text-xl font-semibold mb-4">멤버 ({members.length}명)</h2>
+    <div className="p-0 mb-0">
+      <h2 className="text-xl font-semibold mb-4 text-amber-700">
+        멤버 ({members.length}명)
+      </h2>
 
-      <div className="space-y-4">
+      <div className="divide-y divide-amber-200">
         {sortedMembers.map((member) => (
           <div
-            key={member.id}
-            className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50"
+            key={member.userId}
+            className="flex items-center justify-between p-3"
           >
             <div className="flex items-center">
-              <div className="h-10 w-10 rounded-full bg-amber-200 flex items-center justify-center mr-3 overflow-hidden">
+              <div className="h-12 w-12 rounded-full bg-amber-200 flex items-center justify-center mr-4 overflow-hidden">
                 {member.profileImage ? (
                   <img
                     src={member.profileImage}
@@ -36,26 +38,14 @@ export const MemberList: React.FC<MemberListProps> = ({
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <span className="text-amber-800 font-bold">
+                  <span className="text-amber-800 font-bold text-lg">
                     {member.username.substring(0, 1).toUpperCase()}
                   </span>
                 )}
               </div>
               <div>
-                <div className="font-medium">
+                <div className="font-semibold text-base md:text-lg">
                   {member.username}
-                  {member.userId === currentUserId && (
-                    <span className="ml-2 text-gray-500 text-sm">(나)</span>
-                  )}
-                </div>
-                <div className="text-sm text-gray-500">
-                  {member.role === "OWNER" ? "방장" : "멤버"}
-                  {" · "}
-                  {member.status === "PENDING"
-                    ? "초대 대기중"
-                    : member.status === "ACCEPTED"
-                    ? "참여중"
-                    : "초대 거절"}
                 </div>
               </div>
             </div>
