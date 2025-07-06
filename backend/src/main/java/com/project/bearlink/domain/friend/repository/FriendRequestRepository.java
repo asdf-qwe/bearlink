@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface FriendRequestRepository extends JpaRepository<FriendRequest, Long> {
 
@@ -35,4 +36,7 @@ AND fr.status = :status
     List<FriendRequest> findAcceptedFriendsWithUsers(@Param("userId") Long userId);
 
 
+    Optional<FriendRequest> findByRequesterAndReceiverAndStatus(User requester, User receiver, FriendRequestStatus status);
+
+    List<FriendRequest> findByRequesterOrReceiverAndStatus(User requester, User receiver, FriendRequestStatus status);
 }

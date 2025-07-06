@@ -50,13 +50,14 @@ public class FriendService {
         friendRequestRepository.save(friendRequest);
     }
 
-    public void accept(Long requestId, Long receiverId){
-        FriendRequest friendRequest = friendRequestRepository.findById(requestId)
-                .orElseThrow(()->new IllegalArgumentException("요청이 존재하지 않습니다"));
+    public void accept(Long requesterId, Long receiverId) {
+        User requester = userRepository.findById(requesterId)
+                .orElseThrow(() -> new IllegalArgumentException("신청자 없음"));
+        User receiver = userRepository.findById(receiverId)
+                .orElseThrow(() -> new IllegalArgumentException("수신자 없음"));
 
-        if (!friendRequest.getReceiver().getId().equals(receiverId)) {
-            throw new SecurityException("이 요청을 수락할 수 있는 권한이 없습니다.");
-        }
+        FriendRequest friendRequest = friendRequestRepository.findByRequesterAndReceiverAndStatus(requester, receiver, FriendRequestStatus.PENDING)
+                .orElseThrow(() -> new IllegalArgumentException("요청이 존재하지 않습니다"));
 
         friendRequest.setStatus(FriendRequestStatus.ACCEPTED);
         friendRequest.setRespondedAt(LocalDateTime.now());

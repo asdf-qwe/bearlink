@@ -5,7 +5,11 @@ import {
   RoomWithMembers,
   RoomMember,
 } from "@/features/room/type/roomPageTypes";
-import { RoomLinkListDto } from "@/features/room/type/room";
+import {
+  RoomLinkListDto,
+  InviteFriendWithStatusResponse,
+  InvitationResponse,
+} from "@/features/room/type/room";
 
 interface UseRoomPageProps {
   roomId: number;
@@ -22,6 +26,84 @@ export const useRoomPage = ({ roomId, userId }: UseRoomPageProps) => {
   const [members, setMembers] = useState<RoomMember[]>([]);
   const [links, setLinks] = useState<RoomLinkListDto[]>([]);
   const [loadingLinks, setLoadingLinks] = useState(false);
+  const [invitableFriends, setInvitableFriends] = useState<
+    InviteFriendWithStatusResponse[]
+  >([]);
+  const [loadingFriends, setLoadingFriends] = useState(false);
+
+  // 받은 초대 목록을 위한 상태
+  const [receivedInvitations, setReceivedInvitations] = useState<
+    InvitationResponse[]
+  >([]);
+  const [loadingInvitations, setLoadingInvitations] = useState(false);
+
+  // 받은 초대 목록 로드
+  const loadReceivedInvitations = useCallback(async () => {
+    if (!userId) return;
+
+    try {
+      setLoadingInvitations(true);
+      console.log("받은 초대 목록 로딩 시작...");
+      const invitationsList = await roomService.getMyInvitations();
+      console.log("받은 초대 목록:", invitationsList);
+      setReceivedInvitations(invitationsList || []);
+    } catch (err) {
+      console.error("초대 목록 로딩 실패:", err);
+      setReceivedInvitations([]);
+      setError(
+        "초대 목록을 불러오는데 실패했습니다. 서버에 연결할 수 없거나 권한이 없습니다."
+      );
+    } finally {
+      setLoadingInvitations(false);
+    }
+  }, [userId]);
+
+  // 초대 가능한 친구 목록 로드
+  const loadInvitableFriends = useCallback(
+    async (forceRefresh = true) => {
+      if (!userId || !roomId) return;
+
+      try {
+        setLoadingFriends(true);
+        console.log(`방 ID ${roomId}에 대한 친구 목록 로딩 시작...`);
+        const friendsList = await roomService.getInvitableFriends(roomId);
+        console.log("받은 친구 목록:", friendsList);
+
+        if (friendsList && friendsList.length > 0) {
+          // 초대 상태별로 친구 수 카운트
+          const statusCount: Record<string, number> = {
+            NOT_INVITED: 0,
+            INVITED: 0,
+            ACCEPTED: 0,
+            DECLINED: 0,
+          };
+
+          friendsList.forEach((friend) => {
+            if (friend.invitationStatus) {
+              statusCount[friend.invitationStatus] =
+                (statusCount[friend.invitationStatus] || 0) + 1;
+            } else {
+              statusCount.NOT_INVITED++;
+            }
+          });
+
+          console.log("초대 상태 통계:", statusCount);
+        }
+
+        setInvitableFriends(friendsList || []);
+      } catch (err) {
+        console.error(
+          `방 ID ${roomId}에 대한 초대 가능한 친구 목록 로딩 실패:`,
+          err
+        );
+        setInvitableFriends([]);
+        setError("초대 가능한 친구 목록을 불러오는데 실패했습니다.");
+      } finally {
+        setLoadingFriends(false);
+      }
+    },
+    [userId, roomId]
+  );
 
   // 링크룸 및 링크 목록 로드
   const loadRoom = useCallback(async () => {
@@ -32,33 +114,32 @@ export const useRoomPage = ({ roomId, userId }: UseRoomPageProps) => {
       setLoadingLinks(true);
       setError(null);
 
-      // 링크 목록 API를 통해 링크룸 정보와 링크를 함께 가져옵니다
+      // 1. 방 정보 API로 방 이름 등 받아오기
+      const roomData = await roomService.getRoomById(roomId);
+      setRoom(roomData);
+      setRoomName(roomData.name);
+
+      // 2. 링크 목록 받아오기
       const linksList = await roomService.getRoomLinks(roomId);
       setLinks(linksList);
 
+      // 3. 멤버 목록 받아오기
       try {
-        // 멤버 목록도 함께 조회
-        const membersList = await roomService.getRoomMembers(roomId);
-
-        // 실제로는 링크 API 응답에서 방 정보를 추출해야 하지만
-        // 임시로 방 ID만으로 객체 생성
-        const roomData = { id: roomId, name: `링크룸 ${roomId}` };
-
-        const roomWithMembers: RoomWithMembers = {
-          ...roomData,
-          members: membersList,
-        };
-
-        setRoom(roomWithMembers);
-        setRoomName(roomData.name);
-        setMembers(membersList);
+        const membersList = await roomService.getMembers(roomId);
+        console.log(`멤버 목록 조회 성공: ${membersList.length}명`);
+        const transformedMembers = membersList.map((member) => ({
+          id: member.userId,
+          userId: member.userId,
+          username: member.nickname,
+          role: "MEMBER" as const,
+          status: "ACCEPTED" as const,
+        }));
+        setMembers(transformedMembers);
       } catch (err) {
         console.warn("링크룸 멤버 가져오기 실패:", err);
-        // 최소한의 방 정보라도 설정
-        const roomData = { id: roomId, name: `링크룸 ${roomId}` };
-        setRoom(roomData);
-        setRoomName(roomData.name);
+        setMembers([]);
       }
+      console.log(`링크룸(ID: ${roomId}) 정보 및 데이터 로드 완료`);
     } catch (err) {
       console.error("링크룸 로딩 실패:", err);
       setError("링크룸을 불러오는데 실패했습니다.");
@@ -76,10 +157,13 @@ export const useRoomPage = ({ roomId, userId }: UseRoomPageProps) => {
       setError(null);
 
       try {
+        // 초대 API 호출
         await roomService.inviteUser(roomId, invitedUserId);
-        // 초대 후 멤버 목록 새로고침
-        const updatedMembers = await roomService.getRoomMembers(roomId);
-        setMembers(updatedMembers);
+
+        // 백엔드 API 변경으로 인해 멤버 목록 대신 초대 가능한 친구 목록만 새로고침
+        // (멤버는 수락 후에만 추가됨)
+        await loadInvitableFriends();
+
         return true;
       } catch (error) {
         console.error("사용자 초대 실패:", error);
@@ -87,7 +171,7 @@ export const useRoomPage = ({ roomId, userId }: UseRoomPageProps) => {
         return false;
       }
     },
-    [room, userId, roomId]
+    [room, userId, roomId, loadInvitableFriends]
   );
 
   // 링크룸 이름 저장
@@ -112,7 +196,49 @@ export const useRoomPage = ({ roomId, userId }: UseRoomPageProps) => {
   // 초기 로드
   useEffect(() => {
     loadRoom();
-  }, [loadRoom]);
+    loadInvitableFriends();
+    loadReceivedInvitations();
+  }, [loadRoom, loadInvitableFriends, loadReceivedInvitations]);
+
+  // 초대 수락 처리 함수
+  const acceptRoomInvitation = useCallback(
+    async (roomMemberId: number) => {
+      if (!userId) return;
+
+      try {
+        await roomService.acceptInvitation(roomMemberId);
+        // 초대 목록 새로고침
+        await loadReceivedInvitations();
+        // 방 정보 새로고침
+        await loadRoom();
+        return true;
+      } catch (error) {
+        console.error("초대 수락 실패:", error);
+        setError("초대 수락에 실패했습니다. 다시 시도해주세요.");
+        return false;
+      }
+    },
+    [userId, loadReceivedInvitations, loadRoom]
+  );
+
+  // 초대 거절 처리 함수
+  const declineRoomInvitation = useCallback(
+    async (roomMemberId: number) => {
+      if (!userId) return;
+
+      try {
+        await roomService.declineInvitation(roomMemberId);
+        // 초대 목록 새로고침
+        await loadReceivedInvitations();
+        return true;
+      } catch (error) {
+        console.error("초대 거절 실패:", error);
+        setError("초대 거절에 실패했습니다. 다시 시도해주세요.");
+        return false;
+      }
+    },
+    [userId, loadReceivedInvitations]
+  );
 
   return {
     // State
@@ -124,6 +250,10 @@ export const useRoomPage = ({ roomId, userId }: UseRoomPageProps) => {
     members,
     links,
     loadingLinks,
+    invitableFriends,
+    loadingFriends,
+    receivedInvitations,
+    loadingInvitations,
 
     // Setters
     setRoomName,
@@ -132,7 +262,11 @@ export const useRoomPage = ({ roomId, userId }: UseRoomPageProps) => {
 
     // Actions
     loadRoom,
+    loadInvitableFriends,
+    loadReceivedInvitations,
     inviteUserToRoom,
+    acceptRoomInvitation,
+    declineRoomInvitation,
     saveRoomName,
   };
 };

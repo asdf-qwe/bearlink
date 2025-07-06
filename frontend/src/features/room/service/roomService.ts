@@ -5,6 +5,11 @@ import {
   RoomInviteRequest,
   RoomsDto,
   RoomLinkListDto,
+  RoomInviteListDto,
+  InvitationStatus,
+  InvitationResponse,
+  InviteFriendWithStatusResponse,
+  RoomMemberList,
 } from "../type/room";
 import { RoomMember } from "../type/roomPageTypes";
 
@@ -72,19 +77,16 @@ export const roomService = {
   },
 
   /**
-   * 특정 링크룸 조회
-   * 주의: 실제 API 없음 - 대신 getRoomLinks를 통해 링크룸 정보와 링크 목록을 함께 조회
+   * 특정 링크룸 조회 (실제 API 연동)
+   * 서버 엔드포인트: GET /api/v1/room/{roomId}
    *
    * @param roomId 조회할 방 ID
    * @returns 링크룸 정보
-   * @deprecated 이 메서드는 더 이상 사용되지 않습니다. getRoomLinks를 통해 링크룸 정보를 함께 조회하세요.
    */
   async getRoomById(roomId: number): Promise<RoomsDto> {
     try {
-      // 실제 구현에서는 getRoomLinks 호출 결과에서 방 정보를 추출하거나
-      // 다른 방식으로 방 정보를 얻어야 합니다.
-      // 임시로 최소한의 정보만 반환
-      return { id: roomId, name: `링크룸 ${roomId}` } as RoomsDto;
+      const response = await api.get(`/api/v1/room/${roomId}`);
+      return response as RoomsDto;
     } catch (error) {
       console.error(`링크룸(ID: ${roomId}) 조회 실패:`, error);
       throw error;
@@ -128,12 +130,20 @@ export const roomService = {
    * 서버 엔드포인트: GET /api/v1/room/{roomId}/members
    *
    * @param roomId 조회할 방 ID
-   * @returns 링크룸 멤버 목록
+   * @returns 링크룸 멤버 목록 (RoomMemberList[] 타입)
    */
-  async getRoomMembers(roomId: number): Promise<RoomMember[]> {
+  async getMembers(roomId: number): Promise<RoomMemberList[]> {
     try {
+      console.log(`API 호출: /api/v1/room/${roomId}/members`);
       const response = await api.get(`/api/v1/room/${roomId}/members`);
-      return response as RoomMember[];
+
+      if (Array.isArray(response)) {
+        console.log(`링크룸(ID: ${roomId}) 멤버 ${response.length}명 조회됨`);
+        return response as RoomMemberList[];
+      } else {
+        console.warn("API가 예상과 다른 형식으로 응답함:", response);
+        return [];
+      }
     } catch (error) {
       console.error(`링크룸(ID: ${roomId}) 멤버 조회 실패:`, error);
       throw error;
@@ -153,6 +163,84 @@ export const roomService = {
       return response as RoomLinkListDto[];
     } catch (error) {
       console.error(`링크룸(ID: ${roomId}) 링크 목록 조회 실패:`, error);
+      throw error;
+    }
+  },
+
+  /**
+   * 초대 가능한 친구 목록 조회 (상태 포함)
+   * 서버 엔드포인트: GET /api/v1/room/{roomId}/invite-friends
+   *
+   * @param roomId 조회할 방 ID
+   * @returns 초대할 수 있는 친구 목록 (상태 정보 포함)
+   */
+  async getInvitableFriends(
+    roomId: number
+  ): Promise<InviteFriendWithStatusResponse[]> {
+    try {
+      console.log(`API 호출: /api/v1/room/${roomId}/invite-friends`);
+      // 캐시를 무시하고 최신 데이터를 가져오기 위한 랜덤 쿼리 파라미터 추가
+      const timestamp = new Date().getTime();
+      const response = await api.get(
+        `/api/v1/room/${roomId}/invite-friends?_t=${timestamp}`
+      );
+      console.log("API 응답:", response);
+
+      // 응답 데이터가 유효한지 확인
+      if (Array.isArray(response)) {
+        // 로그를 통해 각 친구의 상태 확인
+        response.forEach((friend) => {
+          console.log(
+            `친구 ${friend.nickname}(ID: ${friend.userId})의 초대 상태: ${friend.invitationStatus}`
+          );
+        });
+        return response as InviteFriendWithStatusResponse[];
+      } else {
+        console.warn("API가 예상과 다른 형식으로 응답함:", response);
+        return [];
+      }
+    } catch (error) {
+      console.error("초대 가능한 친구 목록 조회 실패:", error);
+      throw error; // 에러를 그대로 전달하여 호출한 쪽에서 처리하도록 함
+    }
+  },
+
+  /**
+   * 사용자가 받은 초대 목록 조회
+   * 서버 엔드포인트: GET /api/v1/room/invitations
+   *
+   * @returns 사용자가 받은 초대 목록 (InvitationResponse 배열)
+   */
+  async getMyInvitations(): Promise<InvitationResponse[]> {
+    try {
+      console.log("API 호출: /api/v1/room/invitations");
+      const response = await api.get("/api/v1/room/invitations");
+      console.log("받은 초대 목록 응답:", response);
+
+      // 응답 형식 검증
+      if (Array.isArray(response)) {
+        console.log(`받은 초대 ${response.length}개 성공적으로 조회됨`);
+        // 응답 데이터 구조 검증
+        response.forEach((item, index) => {
+          if (!item.roomMemberId || !item.roomId) {
+            console.warn(`초대 항목 #${index}에 필요한 필드가 누락됨:`, item);
+          }
+        });
+        return response as InvitationResponse[];
+      } else {
+        console.warn("API가 예상과 다른 형식으로 응답함:", response);
+        return [];
+      }
+    } catch (error: any) {
+      // 자세한 에러 정보 출력
+      console.error("초대 목록 조회 실패:", error);
+      console.error("에러 상태 코드:", error?.response?.status);
+      console.error("에러 상세 정보:", error?.response?.data);
+      if (error?.response?.status === 500) {
+        console.error(
+          "서버 내부 오류가 발생했습니다. 백엔드 로그를 확인하세요."
+        );
+      }
       throw error;
     }
   },
