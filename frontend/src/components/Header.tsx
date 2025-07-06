@@ -95,7 +95,8 @@ export default function Header() {
               <button
                 onClick={handleLinkRoomClick}
                 className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
-                  pathname.startsWith("/main/category")
+                  pathname.startsWith("/main/category") ||
+                  pathname.startsWith("/main/room")
                     ? "text-white border-b-[3px] border-amber-200"
                     : "text-amber-100 hover:text-white"
                 }`}

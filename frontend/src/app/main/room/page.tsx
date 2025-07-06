@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { roomService } from "@/features/room/service/roomService";
-import { RoomsDto } from "@/features/room/type/room";
+import { RoomsDto, InvitationResponse } from "@/features/room/type/room";
+import { ReceivedInvitationsList } from "@/features/room/components/ReceivedInvitationsList";
 
 export default function RoomListPage() {
   const router = useRouter();
@@ -16,25 +17,109 @@ export default function RoomListPage() {
   const [newRoomName, setNewRoomName] = useState("");
   const [creating, setCreating] = useState(false);
 
+  // 초대 관련 상태
+  const [receivedInvitations, setReceivedInvitations] = useState<
+    InvitationResponse[]
+  >([]);
+  const [loadingInvitations, setLoadingInvitations] = useState(false);
+  const [invitationError, setInvitationError] = useState<string | null>(null);
+
   // 방 목록 로드
-  useEffect(() => {
-    const loadRooms = async () => {
-      if (!userInfo?.id) return;
+  // 받은 초대 목록 로드 함수
+  const loadReceivedInvitations = useCallback(async () => {
+    if (!userInfo?.id) return;
 
-      try {
-        setLoading(true);
-        const roomList = await roomService.getRooms();
-        setRooms(roomList);
-      } catch (err) {
-        console.error("링크룸 목록 로딩 실패:", err);
-        setError("링크룸 목록을 불러오는데 실패했습니다.");
-      } finally {
-        setLoading(false);
+    try {
+      setLoadingInvitations(true);
+      setInvitationError(null);
+      console.log("받은 초대 목록 로딩 시작...");
+      const invitationsList = await roomService.getMyInvitations();
+      console.log("받은 초대 목록:", invitationsList);
+      setReceivedInvitations(invitationsList || []);
+    } catch (err: any) {
+      console.error("초대 목록 로딩 실패:", err);
+
+      // 에러 종류에 따라 다른 메시지 표시
+      if (err?.response?.status === 500) {
+        setInvitationError(
+          "서버 내부 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
+        );
+      } else if (err?.response?.status === 401) {
+        setInvitationError("로그인이 필요하거나 권한이 없습니다.");
+      } else if (err?.response?.status === 404) {
+        setInvitationError("요청한 리소스를 찾을 수 없습니다.");
+      } else {
+        setInvitationError(
+          "초대 목록을 불러오는데 실패했습니다. " + (err?.message || "")
+        );
       }
-    };
 
+      setReceivedInvitations([]);
+    } finally {
+      setLoadingInvitations(false);
+    }
+  }, [userInfo?.id]);
+
+  // 초대 수락 핸들러
+  const handleAcceptInvitation = async (roomMemberId: number) => {
+    if (!userInfo?.id) return;
+
+    try {
+      setInvitationError(null);
+      await roomService.acceptInvitation(roomMemberId);
+
+      // 초대 목록과 방 목록 새로고침
+      await loadReceivedInvitations();
+      await loadRooms();
+
+      return true;
+    } catch (error) {
+      console.error("초대 수락 실패:", error);
+      setInvitationError("초대 수락에 실패했습니다. 다시 시도해주세요.");
+      return false;
+    }
+  };
+
+  // 초대 거절 핸들러
+  const handleDeclineInvitation = async (roomMemberId: number) => {
+    if (!userInfo?.id) return;
+
+    try {
+      setInvitationError(null);
+      await roomService.declineInvitation(roomMemberId);
+
+      // 초대 목록 새로고침
+      await loadReceivedInvitations();
+
+      return true;
+    } catch (error) {
+      console.error("초대 거절 실패:", error);
+      setInvitationError("초대 거절에 실패했습니다. 다시 시도해주세요.");
+      return false;
+    }
+  };
+
+  // 방 목록 로드 함수
+  const loadRooms = useCallback(async () => {
+    if (!userInfo?.id) return;
+
+    try {
+      setLoading(true);
+      const roomList = await roomService.getRooms();
+      setRooms(roomList);
+    } catch (err) {
+      console.error("링크룸 목록 로딩 실패:", err);
+      setError("링크룸 목록을 불러오는데 실패했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  }, [userInfo?.id]);
+
+  // 초기 데이터 로드
+  useEffect(() => {
     loadRooms();
-  }, [userInfo]);
+    loadReceivedInvitations();
+  }, [loadRooms, loadReceivedInvitations]);
 
   // 새 링크룸 생성
   const handleCreateRoom = async (e: React.FormEvent) => {
@@ -118,6 +203,16 @@ export default function RoomListPage() {
           {error}
         </div>
       )}
+
+      {/* 받은 초대 목록 - 항상 표시되도록 설정됨 */}
+      <ReceivedInvitationsList
+        invitations={receivedInvitations}
+        loading={loadingInvitations}
+        onAccept={handleAcceptInvitation}
+        onDecline={handleDeclineInvitation}
+        onRefresh={loadReceivedInvitations}
+        error={invitationError}
+      />
 
       {/* 링크룸 생성 폼 */}
       {showCreateForm && (

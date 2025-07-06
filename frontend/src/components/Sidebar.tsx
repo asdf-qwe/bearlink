@@ -381,7 +381,15 @@ export default function Sidebar() {
                       ? "bg-amber-900 bg-opacity-50 text-amber-100 font-semibold"
                       : "hover:bg-amber-900 hover:bg-opacity-30"
                   }`}
-                  onClick={() => setViewMode("personal")}
+                  onClick={() => {
+                    setViewMode("personal");
+                    // 링크룸에서 개인으로 변경 시, 카테고리가 있으면 첫 번째 카테고리로, 없으면 카테고리 메인 페이지로 이동
+                    if (categories.length > 0) {
+                      router.push(`/main/category/${categories[0].id}`);
+                    } else {
+                      router.push("/main/category");
+                    }
+                  }}
                 >
                   <div className="flex items-center justify-center">
                     <User size={16} className="mr-1" />
@@ -394,7 +402,11 @@ export default function Sidebar() {
                       ? "bg-amber-900 bg-opacity-50 text-amber-100 font-semibold"
                       : "hover:bg-amber-900 hover:bg-opacity-30"
                   }`}
-                  onClick={() => setViewMode("group")}
+                  onClick={() => {
+                    setViewMode("group");
+                    // 개인에서 링크룸으로 변경 시 링크룸 메인 페이지로 이동
+                    router.push("/main/room");
+                  }}
                 >
                   <div className="flex items-center justify-center">
                     <UsersRound size={16} className="mr-1" />

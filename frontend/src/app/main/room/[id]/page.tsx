@@ -1,4 +1,5 @@
 "use client";
+import React, { useState } from "react";
 
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -12,8 +13,10 @@ import { RoomHeader } from "@/features/room/components/RoomHeader";
 import { MemberList } from "@/features/room/components/MemberList";
 import { InviteUserForm } from "@/features/room/components/InviteUserForm";
 import { RoomLinkList } from "@/features/room/components/RoomLinkList";
+import { RoomChatDummy } from "@/features/room/components/RoomChatDummy";
 
 export default function RoomPage() {
+  const [activeTab, setActiveTab] = useState("members");
   const params = useParams();
   const router = useRouter();
   const { userInfo } = useAuth();
@@ -29,6 +32,8 @@ export default function RoomPage() {
     members,
     links,
     loadingLinks,
+    invitableFriends,
+    loadingFriends,
 
     // Setters
     setRoomName,
@@ -38,6 +43,7 @@ export default function RoomPage() {
     // Actions
     inviteUserToRoom,
     saveRoomName,
+    loadInvitableFriends,
   } = useRoomPage({ roomId, userId: userInfo?.id });
 
   // 키보드 이벤트 핸들러
@@ -66,11 +72,8 @@ export default function RoomPage() {
     setError(null);
   };
 
-  const handleInviteUser = async (email: string) => {
-    // 실제 구현에서는 이메일로 사용자 ID를 가져오는 API 호출 필요
-    // 지금은 임시로 사용자 ID를 1로 고정합니다.
-    const mockUserId = 1;
-    return await inviteUserToRoom(mockUserId);
+  const handleInviteUser = async (userId: number) => {
+    return await inviteUserToRoom(userId);
   };
 
   // 로딩 상태
@@ -93,31 +96,62 @@ export default function RoomPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 bg-amber-50 min-h-screen">
-      {/* 링크룸 헤더 */}
-      <RoomHeader
-        roomName={roomName}
-        editingRoom={editingRoom}
-        error={error && editingRoom ? error : null}
-        onEditStart={handleRoomEditStart}
-        onRoomNameChange={handleRoomNameChange}
-        onSave={saveRoomName}
-        onCancel={handleRoomEditCancel}
-        onKeyPress={handleRoomKeyPress}
-      />
+      {/* 링크룸 제목 */}
+      <h1 className="text-2xl md:text-3xl font-bold mb-8 text-amber-900">
+        {room?.name || "링크룸"}
+      </h1>
 
-      {/* 멤버 목록 */}
-      <MemberList members={members || []} currentUserId={userInfo?.id} />
+      {/* 탭 메뉴 */}
+      <div className="flex space-x-2 mt-8 mb-6">
+        <button
+          className={`px-4 py-2 rounded-t-lg font-semibold focus:outline-none ${
+            activeTab === "members"
+              ? "bg-white border-x border-t border-amber-400 text-amber-700"
+              : "bg-amber-100 text-amber-700"
+          }`}
+          onClick={() => setActiveTab("members")}
+        >
+          멤버
+        </button>
+        <button
+          className={`px-4 py-2 rounded-t-lg font-semibold focus:outline-none ${
+            activeTab === "invite"
+              ? "bg-white border-x border-t border-amber-400 text-amber-700"
+              : "bg-amber-100 text-amber-700"
+          }`}
+          onClick={() => setActiveTab("invite")}
+        >
+          친구 초대
+        </button>
+        <button
+          className={`px-4 py-2 rounded-t-lg font-semibold focus:outline-none ${
+            activeTab === "links"
+              ? "bg-white border-x border-t border-amber-400 text-amber-700"
+              : "bg-amber-100 text-amber-700"
+          }`}
+          onClick={() => setActiveTab("links")}
+        >
+          공유된 링크
+        </button>
+      </div>
 
-      {/* 사용자 초대 폼 (방장만 볼 수 있음) */}
-      {isOwner && (
-        <InviteUserForm
-          onInvite={handleInviteUser}
-          error={error && !editingRoom ? error : null}
-        />
-      )}
-
-      {/* 링크룸 내의 공유 링크 목록 */}
-      <RoomLinkList links={links} loading={loadingLinks} />
+      <div className="bg-white rounded-b-lg shadow-md p-6 min-h-[300px]">
+        {activeTab === "members" && (
+          <MemberList members={members || []} currentUserId={userInfo?.id} />
+        )}
+        {activeTab === "invite" && (
+          <InviteUserForm
+            invitableFriends={invitableFriends}
+            loadingFriends={loadingFriends}
+            onInvite={handleInviteUser}
+            onRefresh={loadInvitableFriends}
+            error={error && !editingRoom ? error : null}
+          />
+        )}
+        {activeTab === "links" && (
+          <RoomLinkList links={links} loading={loadingLinks} />
+        )}
+      </div>
     </div>
   );
 }

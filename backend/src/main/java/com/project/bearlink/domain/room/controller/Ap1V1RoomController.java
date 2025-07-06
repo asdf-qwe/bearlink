@@ -7,7 +7,6 @@ import com.project.bearlink.domain.user.user.entity.User;
 import com.project.bearlink.domain.user.user.repository.UserRepository;
 import com.project.bearlink.global.security.auth.SecurityUser;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -47,6 +46,13 @@ public class Ap1V1RoomController {
         return ResponseEntity.ok(links);
     }
 
+    @GetMapping("/{roomId}")
+    public ResponseEntity<RoomsDto> getRoom(@PathVariable Long roomId) {
+        RoomsDto linkRoom = linkRoomService.getRoom(roomId);
+
+        return ResponseEntity.ok(linkRoom);
+    }
+
     @PostMapping("/{roomId}/invite")
     public ResponseEntity<Void> inviteUser(
             @PathVariable Long roomId,
@@ -60,6 +66,16 @@ public class Ap1V1RoomController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/invitations")
+    public ResponseEntity<List<InvitationResponse>> getMyInvitations(
+            @AuthenticationPrincipal SecurityUser securityUser
+    ) {
+        User user = userRepository.findById(securityUser.getId())
+                .orElseThrow(() -> new IllegalArgumentException("유저 찾을 수 없음"));
+
+        List<InvitationResponse> invitations = linkRoomService.getMyInvitations(user);
+        return ResponseEntity.ok(invitations);
+    }
     // 수락
     @PostMapping("/invitations/{roomMemberId}/accept")
     public ResponseEntity<Void> acceptInvitation(
@@ -84,5 +100,25 @@ public class Ap1V1RoomController {
 
         linkRoomService.declineInvitation(roomMemberId, user);
         return ResponseEntity.ok().build();
+    }
+
+    // 친구인 유저만 조회
+    @GetMapping("/{roomId}/invite-friends")
+    public ResponseEntity<List<InviteFriendWithStatusResponse>> getInviteFriendsWithStatus(
+            @AuthenticationPrincipal SecurityUser securityUser,
+            @PathVariable Long roomId
+    ) {
+        User user = userRepository.findById(securityUser.getId())
+                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없음"));
+
+        List<InviteFriendWithStatusResponse> friends = linkRoomService.getInviteFriendsWithStatus(user, roomId);
+        return ResponseEntity.ok(friends);
+    }
+
+    @GetMapping("/{roomId}/members")
+    public ResponseEntity<List<RoomMemberList>> getMembers(@PathVariable Long roomId){
+
+        List<RoomMemberList> memberLists = linkRoomService.getMembers(roomId);
+        return ResponseEntity.ok(memberLists);
     }
 }
