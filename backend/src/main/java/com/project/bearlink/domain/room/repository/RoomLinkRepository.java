@@ -9,4 +9,5 @@ import java.util.List;
 public interface RoomLinkRepository extends JpaRepository<RoomLink, Long> {
 
     List<RoomLink> findByRoomOwnerIdAndRoomId(Long ownerId, Long roomId);
+    List<RoomLink> findByRoomId(Long roomId);
 }
