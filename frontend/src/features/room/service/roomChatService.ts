@@ -13,7 +13,7 @@ import axios from "axios";
 import { RoomLinkDto, RoomMessageDto } from "../type/room";
 
 const SOCKET_URL = `${process.env.NEXT_PUBLIC_API_URL}/ws`;
-const BASE_URL = "/api/rooms";
+const BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/rooms`;
 
 let stompClient: Client | null = null;
 
