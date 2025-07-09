@@ -1,16 +1,88 @@
-import React from "react";
-import { RoomChatDummy } from "./RoomChatDummy";
-import { RoomLinkListDto } from "../type/room";
+import React, { useState } from "react";
+import { RoomChat } from "./RoomChat";
+import { RoomLinkListDto, RoomLinkDto } from "../type/room";
+import { addLink, updateLink, deleteLink } from "../service/roomChatService";
 
 interface RoomLinkListProps {
   links: RoomLinkListDto[];
   loading: boolean;
+  roomId: number;
+  currentUserId: number;
+  currentUserName: string;
 }
 
 export const RoomLinkList: React.FC<RoomLinkListProps> = ({
   links,
   loading,
+  roomId,
+  currentUserId,
+  currentUserName,
 }) => {
+  // 링크 추가 폼 항상 보이도록 변경
+  const [form, setForm] = useState<{ title: string; url: string }>({
+    title: "",
+    url: "",
+  });
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editForm, setEditForm] = useState<{ title: string; url: string }>({
+    title: "",
+    url: "",
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // 새 링크 추가
+  const handleAdd = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!form.url.trim()) {
+      setError("URL을 입력하세요.");
+      return;
+    }
+    setSubmitting(true);
+    setError(null);
+    try {
+      await addLink(roomId, form as RoomLinkDto); // 백엔드에서 썸네일 자동 처리
+      setForm({ title: "", url: "" });
+    } catch (err) {
+      setError("링크 추가에 실패했습니다.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+  const handleCancelAdd = () => {
+    setForm({ title: "", url: "" });
+    setError(null);
+  };
+
+  // 링크 수정 시작
+  const startEdit = (link: RoomLinkListDto) => {
+    setEditingId(link.id);
+    setEditForm({ title: link.title, url: link.url });
+  };
+
+  // 링크 수정 저장
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingId === null) return;
+    setSubmitting(true);
+    try {
+      await updateLink(roomId, editingId, editForm as RoomLinkDto);
+      setEditingId(null);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // 링크 삭제
+  const handleDelete = async (id: number) => {
+    if (!window.confirm("정말 삭제하시겠습니까?")) return;
+    setSubmitting(true);
+    try {
+      await deleteLink(roomId, id);
+    } finally {
+      setSubmitting(false);
+    }
+  };
   if (loading) {
     return (
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -47,60 +119,213 @@ export const RoomLinkList: React.FC<RoomLinkListProps> = ({
   return (
     <div className="p-0 mb-0">
       <h2 className="text-xl font-semibold mb-4">공유된 링크</h2>
-
+      {/* 링크 목록 */}
       {links.length > 0 ? (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-            {links.map((link) => (
-              <a
-                key={link.id}
-                href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block transition-transform hover:-translate-y-1"
-              >
-                <div className="border overflow-hidden hover:shadow-md">
-                  {link.thumbnailImageUrl && (
-                    <div className="aspect-video w-full overflow-hidden bg-gray-100">
-                      <img
-                        src={link.thumbnailImageUrl}
-                        alt={link.title}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          // 이미지 로드 실패 시 기본 이미지 표시
-                          (e.target as HTMLImageElement).src =
-                            "/link-placeholder.png";
-                        }}
-                      />
-                    </div>
-                  )}
-                  <div className="p-3">
-                    <h3 className="font-medium line-clamp-2" title={link.title}>
-                      {link.title}
-                    </h3>
-                    <p
-                      className="text-xs text-gray-500 mt-1 truncate"
-                      title={link.url}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          {links.map((link) => (
+            <div key={link.id} className="relative group">
+              {editingId === link.id ? (
+                <form
+                  onSubmit={handleEdit}
+                  className="border bg-white p-3 rounded shadow flex flex-col gap-2"
+                >
+                  <input
+                    className="border rounded px-2 py-1"
+                    value={editForm.title}
+                    onChange={(e) =>
+                      setEditForm((f) => ({ ...f, title: e.target.value }))
+                    }
+                    required
+                  />
+                  <input
+                    className="border rounded px-2 py-1"
+                    value={editForm.url}
+                    onChange={(e) =>
+                      setEditForm((f) => ({ ...f, url: e.target.value }))
+                    }
+                    required
+                  />
+                  {/* 썸네일 입력란 제거: 백엔드에서 자동 처리 */}
+                  <div className="flex gap-2 mt-1">
+                    <button
+                      type="submit"
+                      className="bg-amber-500 text-white px-3 py-1 rounded"
+                      disabled={submitting}
                     >
-                      {link.url}
-                    </p>
+                      저장
+                    </button>
+                    <button
+                      type="button"
+                      className="bg-gray-300 px-3 py-1 rounded"
+                      onClick={() => setEditingId(null)}
+                    >
+                      취소
+                    </button>
                   </div>
+                </form>
+              ) : (
+                <a
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block transition-transform hover:-translate-y-1"
+                >
+                  <div className="border overflow-hidden hover:shadow-md">
+                    {link.thumbnailImageUrl && (
+                      <div className="aspect-video w-full overflow-hidden bg-gray-100">
+                        <img
+                          src={link.thumbnailImageUrl}
+                          alt={link.title}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src =
+                              "/link-placeholder.png";
+                          }}
+                        />
+                      </div>
+                    )}
+                    <div className="p-3">
+                      <h3
+                        className="font-medium line-clamp-2"
+                        title={link.title}
+                      >
+                        {link.title}
+                      </h3>
+                      <p
+                        className="text-xs text-gray-500 mt-1 truncate"
+                        title={link.url}
+                      >
+                        {link.url}
+                      </p>
+                    </div>
+                  </div>
+                </a>
+              )}
+              {/* 수정/삭제 버튼 */}
+              {editingId !== link.id && (
+                <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition">
+                  <button
+                    className="text-xs bg-blue-100 px-2 py-1 rounded"
+                    onClick={() => startEdit(link)}
+                    disabled={submitting}
+                  >
+                    수정
+                  </button>
+                  <button
+                    className="text-xs bg-red-100 px-2 py-1 rounded"
+                    onClick={() => handleDelete(link.id)}
+                    disabled={submitting}
+                  >
+                    삭제
+                  </button>
                 </div>
-              </a>
-            ))}
-          </div>
-          {/* 공유된 링크 카드 아래에 채팅 카드 삽입 */}
-          <RoomChatDummy />
-        </>
+              )}
+            </div>
+          ))}
+        </div>
       ) : (
-        <>
-          <p className="text-gray-500 text-center py-8">
-            이 링크룸에는 아직 공유된 링크가 없습니다.
-          </p>
-          {/* 링크가 없을 때도 채팅 카드 표시 */}
-          <RoomChatDummy />
-        </>
+        <p className="text-gray-500 text-center py-8">
+          이 링크룸에는 아직 공유된 링크가 없습니다.
+        </p>
       )}
+
+      {/* 링크 목록 아래에 채팅과 추가폼을 가로로 배치 (빈 공간 최소화, 높이 맞춤) */}
+      <div className="flex flex-row gap-4 items-stretch mb-0">
+        {/* 채팅 영역 */}
+        <div className="flex-6 min-w-0 w-0 flex-grow-[6] flex flex-col">
+          <div className="bg-white rounded-lg p-0 h-full flex flex-col border border-solid border-blue-500">
+            <RoomChat
+              roomId={roomId}
+              currentUserId={currentUserId}
+              currentUserName={currentUserName}
+            />
+          </div>
+        </div>
+        {/* 링크 추가 폼 영역 - 채팅과 높이 맞춤 */}
+        <div className="flex-4 min-w-[320px] w-0 flex-grow-[4] flex flex-col">
+          <div className="bg-white rounded-lg shadow-md p-6 h-full flex flex-col justify-between border border-solid border-red-500">
+            <div
+              className="flex flex-col justify-start flex-1 mb-2"
+              style={{ minHeight: 0 }}
+            >
+              <div className="flex items-end justify-between mb-4">
+                <h3 className="text-lg font-semibold text-amber-900">
+                  새 링크 추가
+                </h3>
+                <div className="flex space-x-2 ml-4">
+                  <button
+                    onClick={handleAdd}
+                    disabled={!form.url.trim() || submitting}
+                    className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {submitting && (
+                      <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                    )}
+                    <span>{submitting ? "추가 중..." : "추가"}</span>
+                  </button>
+                  <button
+                    onClick={handleCancelAdd}
+                    className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                    disabled={submitting}
+                  >
+                    취소
+                  </button>
+                </div>
+              </div>
+              {error && (
+                <div className="text-red-500 mb-2 text-sm">{error}</div>
+              )}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-amber-700 mb-1">
+                    URL
+                  </label>
+                  <input
+                    type="url"
+                    value={form.url}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, url: e.target.value }))
+                    }
+                    placeholder="https://example.com"
+                    className="w-full p-2 border border-amber-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    disabled={submitting}
+                    autoFocus
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-amber-700 mb-1">
+                    제목
+                  </label>
+                  <input
+                    type="text"
+                    value={form.title}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, title: e.target.value }))
+                    }
+                    placeholder="제목을 입력해주세요"
+                    className="w-full p-2 border border-amber-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    disabled={submitting}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

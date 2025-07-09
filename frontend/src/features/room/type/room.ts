@@ -1,3 +1,38 @@
+/**
+ * 백엔드의 RoomLinkDto와 매핑되는 타입
+ * 링크룸 내 단일 링크 정보에 사용
+ */
+export interface RoomLinkDto {
+  title: string;
+  url: string;
+  thumbnailImageUrl: string;
+}
+/**
+ * 백엔드의 RoomMessageDto와 매핑되는 타입
+ * 채팅 메시지 및 링크 작업 메시지에 사용
+ */
+export interface RoomMessageDto {
+  roomId: number; // 방 ID
+  senderId: number; // 보낸 사람 ID
+  senderName: string; // 보낸 사람 이름 or 닉네임
+  type: MessageType; // 메시지 타입 (TALK, LINK_ADD 등)
+  content: string; // 채팅 내용 or 링크 ID
+  // (선택) 링크 작업시 사용할 데이터
+  linkTitle?: string;
+  linkUrl?: string;
+  linkThumbnail?: string;
+}
+
+/**
+ * 메시지 타입 (ENTER, TALK, LEAVE, LINK_ADD, LINK_DELETE, LINK_UPDATE)
+ */
+export type MessageType =
+  | "ENTER"
+  | "TALK"
+  | "LEAVE"
+  | "LINK_ADD"
+  | "LINK_DELETE"
+  | "LINK_UPDATE";
 export interface CreateLinkRoomRequest {
   name: string;
 }
