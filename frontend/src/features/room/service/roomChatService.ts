@@ -4,7 +4,7 @@
  * @returns RoomLinkDto[]
  */
 export async function getLinks(roomId: number): Promise<RoomLinkDto[]> {
-  const res = await axios.get(`${BASE_URL}/${roomId}/links`);
+  const res = await axios.get(`${BASE_URL}/${roomId}/links`, { withCredentials: true });
   return res.data;
 }
 import SockJS from "sockjs-client";
@@ -82,7 +82,7 @@ export function sendRoomMessage(roomId: number, message: RoomMessageDto) {
 export async function getChatHistory(
   roomId: number
 ): Promise<RoomMessageDto[]> {
-  const res = await axios.get(`${BASE_URL}/${roomId}/messages`);
+  const res = await axios.get(`${BASE_URL}/${roomId}/messages`, { withCredentials: true });
   return res.data;
 }
 
@@ -95,7 +95,7 @@ export async function addLink(
   roomId: number,
   dto: RoomLinkDto
 ): Promise<number> {
-  const res = await axios.post(`${BASE_URL}/${roomId}/links`, dto);
+  const res = await axios.post(`${BASE_URL}/${roomId}/links`, dto, { withCredentials: true });
   return res.data; // linkId 반환
 }
 
@@ -110,7 +110,7 @@ export async function updateLink(
   linkId: number,
   dto: RoomLinkDto
 ): Promise<void> {
-  await axios.put(`${BASE_URL}/${roomId}/links/${linkId}`, dto);
+  await axios.put(`${BASE_URL}/${roomId}/links/${linkId}`, dto, { withCredentials: true });
 }
 
 /**
@@ -122,5 +122,5 @@ export async function deleteLink(
   roomId: number,
   linkId: number
 ): Promise<void> {
-  await axios.delete(`${BASE_URL}/${roomId}/links/${linkId}`);
+  await axios.delete(`${BASE_URL}/${roomId}/links/${linkId}`, { withCredentials: true });
 }
