@@ -45,6 +45,8 @@ dependencies {
 	implementation("org.jsoup:jsoup:1.17.2")
 
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
+
+	implementation("org.springframework.boot:spring-boot-starter-websocket")
 }
 
 

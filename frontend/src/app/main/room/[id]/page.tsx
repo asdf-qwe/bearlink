@@ -16,7 +16,7 @@ import { RoomLinkList } from "@/features/room/components/RoomLinkList";
 import { RoomChatDummy } from "@/features/room/components/RoomChatDummy";
 
 export default function RoomPage() {
-  const [activeTab, setActiveTab] = useState("members");
+  const [activeTab, setActiveTab] = useState("links");
   const params = useParams();
   const router = useRouter();
   const { userInfo } = useAuth();
@@ -105,6 +105,16 @@ export default function RoomPage() {
       <div className="flex space-x-2 mt-8 mb-6">
         <button
           className={`px-4 py-2 rounded-t-lg font-semibold focus:outline-none ${
+            activeTab === "links"
+              ? "bg-white border-x border-t border-amber-400 text-amber-700"
+              : "bg-amber-100 text-amber-700"
+          }`}
+          onClick={() => setActiveTab("links")}
+        >
+          링크룸
+        </button>
+        <button
+          className={`px-4 py-2 rounded-t-lg font-semibold focus:outline-none ${
             activeTab === "members"
               ? "bg-white border-x border-t border-amber-400 text-amber-700"
               : "bg-amber-100 text-amber-700"
@@ -123,16 +133,6 @@ export default function RoomPage() {
         >
           친구 초대
         </button>
-        <button
-          className={`px-4 py-2 rounded-t-lg font-semibold focus:outline-none ${
-            activeTab === "links"
-              ? "bg-white border-x border-t border-amber-400 text-amber-700"
-              : "bg-amber-100 text-amber-700"
-          }`}
-          onClick={() => setActiveTab("links")}
-        >
-          공유된 링크
-        </button>
       </div>
 
       <div className="bg-white rounded-b-lg shadow-md p-6 min-h-[300px]">
@@ -148,9 +148,17 @@ export default function RoomPage() {
             error={error && !editingRoom ? error : null}
           />
         )}
-        {activeTab === "links" && (
-          <RoomLinkList links={links} loading={loadingLinks} />
-        )}
+        {activeTab === "links" &&
+          userInfo &&
+          typeof userInfo.id === "number" && (
+            <RoomLinkList
+              links={links}
+              loading={loadingLinks}
+              roomId={roomId}
+              currentUserId={userInfo.id}
+              currentUserName={userInfo.nickname || ""}
+            />
+          )}
       </div>
     </div>
   );
