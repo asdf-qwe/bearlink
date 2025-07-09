@@ -13,7 +13,6 @@ import { RoomHeader } from "@/features/room/components/RoomHeader";
 import { MemberList } from "@/features/room/components/MemberList";
 import { InviteUserForm } from "@/features/room/components/InviteUserForm";
 import { RoomLinkList } from "@/features/room/components/RoomLinkList";
-import { RoomChatDummy } from "@/features/room/components/RoomChatDummy";
 
 export default function RoomPage() {
   const [activeTab, setActiveTab] = useState("links");
