@@ -4,6 +4,7 @@ import com.project.bearlink.domain.chat.entity.MessageType;
 import com.project.bearlink.domain.link.dto.LinkPreviewDto;
 import com.project.bearlink.domain.link.service.LinkPreviewService;
 import com.project.bearlink.domain.room.dto.RoomLinkDto;
+import com.project.bearlink.domain.room.dto.RoomLinkListDto;
 import com.project.bearlink.domain.room.dto.RoomMessageDto;
 import com.project.bearlink.domain.room.entity.LinkRoom;
 import com.project.bearlink.domain.room.entity.RoomLink;
@@ -18,7 +19,9 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @RestController
@@ -116,5 +119,20 @@ public class ApiV1RoomLinkController {
         messagingTemplate.convertAndSend("/topic/room/" + roomId, message);
 
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping
+    public ResponseEntity<List<RoomLinkDto>> getLinks(@PathVariable Long roomId) {
+        List<RoomLink> links = roomLinkRepository.findByRoomId(roomId);
+
+        List<RoomLinkDto> result = links.stream()
+                .map(link -> new RoomLinkDto(
+                        link.getTitle(),
+                        link.getUrl(),
+                        link.getThumbnailImageUrl()
+                ))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(result);
     }
 }

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { RoomChat } from "./RoomChat";
 import { RoomLinkListDto, RoomLinkDto } from "../type/room";
 import { addLink, updateLink, deleteLink } from "../service/roomChatService";
+import { RoomLinkCard } from "./RoomLinkCard";
 
 interface RoomLinkListProps {
   links: RoomLinkListDto[];
@@ -121,106 +122,47 @@ export const RoomLinkList: React.FC<RoomLinkListProps> = ({
       <h2 className="text-xl font-semibold mb-4">공유된 링크</h2>
       {/* 링크 목록 */}
       {links.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 mb-6">
           {links.map((link) => (
-            <div key={link.id} className="relative group">
-              {editingId === link.id ? (
-                <form
-                  onSubmit={handleEdit}
-                  className="border bg-white p-3 rounded shadow flex flex-col gap-2"
-                >
-                  <input
-                    className="border rounded px-2 py-1"
-                    value={editForm.title}
-                    onChange={(e) =>
-                      setEditForm((f) => ({ ...f, title: e.target.value }))
-                    }
-                    required
-                  />
-                  <input
-                    className="border rounded px-2 py-1"
-                    value={editForm.url}
-                    onChange={(e) =>
-                      setEditForm((f) => ({ ...f, url: e.target.value }))
-                    }
-                    required
-                  />
-                  {/* 썸네일 입력란 제거: 백엔드에서 자동 처리 */}
-                  <div className="flex gap-2 mt-1">
-                    <button
-                      type="submit"
-                      className="bg-amber-500 text-white px-3 py-1 rounded"
-                      disabled={submitting}
-                    >
-                      저장
-                    </button>
-                    <button
-                      type="button"
-                      className="bg-gray-300 px-3 py-1 rounded"
-                      onClick={() => setEditingId(null)}
-                    >
-                      취소
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <a
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block transition-transform hover:-translate-y-1"
-                >
-                  <div className="border overflow-hidden hover:shadow-md">
-                    {link.thumbnailImageUrl && (
-                      <div className="aspect-video w-full overflow-hidden bg-gray-100">
-                        <img
-                          src={link.thumbnailImageUrl}
-                          alt={link.title}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src =
-                              "/link-placeholder.png";
-                          }}
-                        />
-                      </div>
-                    )}
-                    <div className="p-3">
-                      <h3
-                        className="font-medium line-clamp-2"
-                        title={link.title}
-                      >
-                        {link.title}
-                      </h3>
-                      <p
-                        className="text-xs text-gray-500 mt-1 truncate"
-                        title={link.url}
-                      >
-                        {link.url}
-                      </p>
-                    </div>
-                  </div>
-                </a>
-              )}
-              {/* 수정/삭제 버튼 */}
-              {editingId !== link.id && (
-                <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition">
-                  <button
-                    className="text-xs bg-blue-100 px-2 py-1 rounded"
-                    onClick={() => startEdit(link)}
-                    disabled={submitting}
-                  >
-                    수정
-                  </button>
-                  <button
-                    className="text-xs bg-red-100 px-2 py-1 rounded"
-                    onClick={() => handleDelete(link.id)}
-                    disabled={submitting}
-                  >
-                    삭제
-                  </button>
-                </div>
-              )}
-            </div>
+            <RoomLinkCard
+              key={link.id}
+              link={link}
+              editing={editingId === link.id}
+              editingTitle={editForm.title}
+              submitting={submitting}
+              onEdit={startEdit}
+              onDelete={handleDelete}
+              onTitleChange={(title) => setEditForm((f) => ({ ...f, title }))}
+              onSaveTitle={async (id, title) => {
+                setEditForm((f) => ({ ...f, title }));
+                setSubmitting(true);
+                try {
+                  await updateLink(roomId, id, {
+                    title,
+                    url: link.url,
+                    thumbnailImageUrl: link.thumbnailImageUrl ?? "",
+                  });
+                  setEditingId(null);
+                } finally {
+                  setSubmitting(false);
+                }
+              }}
+              onCancelEdit={() => setEditingId(null)}
+              onKeyPress={(e, id) => {
+                if (e.key === "Enter") {
+                  setSubmitting(true);
+                  updateLink(roomId, id, {
+                    title: editForm.title,
+                    url: link.url,
+                    thumbnailImageUrl: link.thumbnailImageUrl ?? "",
+                  })
+                    .then(() => setEditingId(null))
+                    .finally(() => setSubmitting(false));
+                } else if (e.key === "Escape") {
+                  setEditingId(null);
+                }
+              }}
+            />
           ))}
         </div>
       ) : (

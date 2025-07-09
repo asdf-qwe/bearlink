@@ -1,6 +1,13 @@
+import {
+  connectToRoom,
+  disconnectRoom,
+  getLinks,
+} from "@/features/room/service/roomChatService";
+
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { roomService } from "@/features/room/service/roomService";
+
 import {
   RoomWithMembers,
   RoomMember,
@@ -17,6 +24,31 @@ interface UseRoomPageProps {
 }
 
 export const useRoomPage = ({ roomId, userId }: UseRoomPageProps) => {
+  // 실시간 링크 동기화: 웹소켓 메시지 수신 시 목록 새로고침
+  // 반드시 useRoomPage 함수 내부에서 선언되어야 roomId, userId, setLinks 접근 가능
+  // (이 코드는 useRoomPage 함수 본문 안에 위치해야 함)
+  useEffect(() => {
+    if (!roomId || !userId) return;
+    let mounted = true;
+    connectToRoom(roomId, async (msg) => {
+      if (["LINK_ADD", "LINK_UPDATE", "LINK_DELETE"].includes(msg.type)) {
+        const linksList = await getLinks(roomId);
+        const mappedLinks = linksList.map((link, idx) => ({
+          id: idx + 1,
+          title: link.title,
+          url: link.url,
+          thumbnailImageUrl: link.thumbnailImageUrl ?? undefined,
+        }));
+        if (mounted) {
+          setLinks(mappedLinks);
+        }
+      }
+    });
+    return () => {
+      mounted = false;
+      disconnectRoom();
+    };
+  }, [roomId, userId]);
   const router = useRouter();
   const [room, setRoom] = useState<RoomWithMembers | null>(null);
   const [roomName, setRoomName] = useState("");
@@ -78,7 +110,7 @@ export const useRoomPage = ({ roomId, userId }: UseRoomPageProps) => {
             DECLINED: 0,
           };
 
-          friendsList.forEach((friend) => {
+          friendsList.forEach((friend: any) => {
             if (friend.invitationStatus) {
               statusCount[friend.invitationStatus] =
                 (statusCount[friend.invitationStatus] || 0) + 1;
@@ -119,15 +151,20 @@ export const useRoomPage = ({ roomId, userId }: UseRoomPageProps) => {
       setRoom(roomData);
       setRoomName(roomData.name);
 
-      // 2. 링크 목록 받아오기
-      const linksList = await roomService.getRoomLinks(roomId);
-      setLinks(linksList);
+      // 2. 링크 목록 받아오기 (roomChatService의 getLinks 사용)
+      const linksList = await getLinks(roomId);
+      // RoomLinkDto[] → RoomLinkListDto[]로 변환 (id는 index로 임시 할당)
+      const mappedLinks = linksList.map((link, idx) => ({
+        id: idx + 1,
+        ...link,
+      }));
+      setLinks(mappedLinks);
 
       // 3. 멤버 목록 받아오기
       try {
         const membersList = await roomService.getMembers(roomId);
         console.log(`멤버 목록 조회 성공: ${membersList.length}명`);
-        const transformedMembers = membersList.map((member) => ({
+        const transformedMembers = membersList.map((member: any) => ({
           id: member.userId,
           userId: member.userId,
           username: member.nickname,
