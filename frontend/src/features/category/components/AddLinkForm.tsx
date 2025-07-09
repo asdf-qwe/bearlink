@@ -66,21 +66,17 @@ export const AddLinkForm = ({
 
         <div>
           <label className="block text-sm font-medium text-amber-700 mb-1">
-            제목 (선택사항)
+            제목
           </label>
           <input
             type="text"
             value={newLinkData.title}
             onChange={(e) => onTitleChange(e.target.value)}
             onKeyDown={onKeyPress}
-            placeholder="제목을 입력하지 않으면 자동으로 추출됩니다"
+            placeholder="제목을 입력해주세요"
             className="w-full p-2 border border-amber-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500"
             disabled={addingLink}
           />
-          <p className="text-sm text-amber-600 mt-1">
-            제목을 입력하면 입력한 제목이 사용되고, 비워두면 자동으로 추출된
-            제목이 사용됩니다.
-          </p>
         </div>
 
         <div className="flex space-x-2">
