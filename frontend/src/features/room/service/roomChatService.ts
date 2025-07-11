@@ -1,9 +1,11 @@
 /**
  * 링크룸 내 링크 목록 조회 (REST)
  * @param roomId 채팅방 ID
- * @returns RoomLinkDto[]
+ * @returns RoomLinkListDto[]
  */
-export async function getLinks(roomId: number): Promise<RoomLinkDto[]> {
+export async function getLinks(
+  roomId: number
+): Promise<import("../type/room").RoomLinkListDto[]> {
   const res = await axios.get(`${BASE_URL}/${roomId}/links`, {
     withCredentials: true,
   });

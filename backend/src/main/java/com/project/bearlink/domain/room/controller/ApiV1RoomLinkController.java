@@ -122,11 +122,12 @@ public class ApiV1RoomLinkController {
     }
 
     @GetMapping
-    public ResponseEntity<List<RoomLinkDto>> getLinks(@PathVariable Long roomId) {
+    public ResponseEntity<List<RoomLinkListDto>> getLinks(@PathVariable Long roomId) {
         List<RoomLink> links = roomLinkRepository.findByRoomId(roomId);
 
-        List<RoomLinkDto> result = links.stream()
-                .map(link -> new RoomLinkDto(
+        List<RoomLinkListDto> result = links.stream()
+                .map(link -> new RoomLinkListDto(
+                        link.getId(),
                         link.getTitle(),
                         link.getUrl(),
                         link.getThumbnailImageUrl()
