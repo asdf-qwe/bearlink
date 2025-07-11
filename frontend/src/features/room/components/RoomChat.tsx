@@ -55,7 +55,7 @@ export const RoomChat: React.FC<RoomChatProps> = ({
   };
 
   return (
-    <div className="mt-6 bg-white rounded-lg shadow-md p-4">
+    <div className="mt-6 bg-white rounded-lg">
       <div className="h-40 overflow-y-auto border rounded p-2 bg-gray-50 mb-2">
         {messages.map((msg, idx) => {
           const isMine = msg.senderId === currentUserId;
