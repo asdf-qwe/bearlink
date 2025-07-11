@@ -175,7 +175,7 @@ export const RoomLinkList: React.FC<RoomLinkListProps> = ({
       <div className="flex flex-row gap-4 items-stretch mb-0">
         {/* 채팅 영역 */}
         <div className="flex-6 min-w-0 w-0 flex-grow-[6] flex flex-col">
-          <div className="bg-white rounded-lg p-0 h-full flex flex-col border border-solid border-blue-500">
+          <div className="bg-white rounded-lg p-0 h-full flex flex-col">
             <RoomChat
               roomId={roomId}
               currentUserId={currentUserId}
@@ -185,7 +185,7 @@ export const RoomLinkList: React.FC<RoomLinkListProps> = ({
         </div>
         {/* 링크 추가 폼 영역 - 채팅과 높이 맞춤 */}
         <div className="flex-4 min-w-[320px] w-0 flex-grow-[4] flex flex-col">
-          <div className="bg-white rounded-lg shadow-md p-6 h-full flex flex-col justify-between border border-solid border-red-500">
+          <div className="bg-white rounded-lg p-6 h-full flex flex-col justify-between">
             <div
               className="flex flex-col justify-start flex-1 mb-2"
               style={{ minHeight: 0 }}
