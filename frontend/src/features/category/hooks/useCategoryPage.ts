@@ -125,6 +125,14 @@ export const useCategoryPage = ({
       setNewLinkData({ title: "", url: "" });
       setShowAddLinkForm(false);
       saveLinksToStorage(convertedLinks);
+
+      // 유튜브 링크 목록도 즉시 갱신
+      try {
+        const youtubeIds = await linkService.getYoutubeVideoIds(category.id);
+        setVideoIds(youtubeIds);
+      } catch (err) {
+        console.warn("YouTube 비디오 ID 갱신 실패:", err);
+      }
     } catch (error) {
       console.error("링크 생성 실패:", error);
       setError("링크 생성에 실패했습니다. 다시 시도해주세요.");
