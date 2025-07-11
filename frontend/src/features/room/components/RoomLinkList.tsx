@@ -123,47 +123,49 @@ export const RoomLinkList: React.FC<RoomLinkListProps> = ({
       {/* 링크 목록 */}
       {links.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 mb-6">
-          {links.map((link) => (
-            <RoomLinkCard
-              key={link.id}
-              link={link}
-              editing={editingId === link.id}
-              editingTitle={editForm.title}
-              submitting={submitting}
-              onEdit={startEdit}
-              onDelete={handleDelete}
-              onTitleChange={(title) => setEditForm((f) => ({ ...f, title }))}
-              onSaveTitle={async (id, title) => {
-                setEditForm((f) => ({ ...f, title }));
-                setSubmitting(true);
-                try {
-                  await updateLink(roomId, id, {
-                    title,
-                    url: link.url,
-                    thumbnailImageUrl: link.thumbnailImageUrl ?? "",
-                  });
-                  setEditingId(null);
-                } finally {
-                  setSubmitting(false);
-                }
-              }}
-              onCancelEdit={() => setEditingId(null)}
-              onKeyPress={(e, id) => {
-                if (e.key === "Enter") {
+          {links.map((link, idx) =>
+            link.id != null ? (
+              <RoomLinkCard
+                key={`${link.id}-${idx}`}
+                link={link}
+                editing={editingId === link.id}
+                editingTitle={editForm.title}
+                submitting={submitting}
+                onEdit={startEdit}
+                onDelete={handleDelete}
+                onTitleChange={(title) => setEditForm((f) => ({ ...f, title }))}
+                onSaveTitle={async (id, title) => {
+                  setEditForm((f) => ({ ...f, title }));
                   setSubmitting(true);
-                  updateLink(roomId, id, {
-                    title: editForm.title,
-                    url: link.url,
-                    thumbnailImageUrl: link.thumbnailImageUrl ?? "",
-                  })
-                    .then(() => setEditingId(null))
-                    .finally(() => setSubmitting(false));
-                } else if (e.key === "Escape") {
-                  setEditingId(null);
-                }
-              }}
-            />
-          ))}
+                  try {
+                    await updateLink(roomId, id, {
+                      title,
+                      url: link.url,
+                      thumbnailImageUrl: link.thumbnailImageUrl ?? "",
+                    });
+                    setEditingId(null);
+                  } finally {
+                    setSubmitting(false);
+                  }
+                }}
+                onCancelEdit={() => setEditingId(null)}
+                onKeyPress={(e, id) => {
+                  if (e.key === "Enter") {
+                    setSubmitting(true);
+                    updateLink(roomId, id, {
+                      title: editForm.title,
+                      url: link.url,
+                      thumbnailImageUrl: link.thumbnailImageUrl ?? "",
+                    })
+                      .then(() => setEditingId(null))
+                      .finally(() => setSubmitting(false));
+                  } else if (e.key === "Escape") {
+                    setEditingId(null);
+                  }
+                }}
+              />
+            ) : null
+          )}
         </div>
       ) : (
         <p className="text-gray-500 text-center py-8">

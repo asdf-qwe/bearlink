@@ -33,8 +33,8 @@ export const useRoomPage = ({ roomId, userId }: UseRoomPageProps) => {
     connectToRoom(roomId, async (msg) => {
       if (["LINK_ADD", "LINK_UPDATE", "LINK_DELETE"].includes(msg.type)) {
         const linksList = await getLinks(roomId);
-        const mappedLinks = linksList.map((link, idx) => ({
-          id: idx + 1,
+        const mappedLinks = linksList.map((link) => ({
+          id: link.id, // id는 백엔드에서 제공하는 id 사용
           title: link.title,
           url: link.url,
           thumbnailImageUrl: link.thumbnailImageUrl ?? undefined,
@@ -153,12 +153,8 @@ export const useRoomPage = ({ roomId, userId }: UseRoomPageProps) => {
 
       // 2. 링크 목록 받아오기 (roomChatService의 getLinks 사용)
       const linksList = await getLinks(roomId);
-      // RoomLinkDto[] → RoomLinkListDto[]로 변환 (id는 index로 임시 할당)
-      const mappedLinks = linksList.map((link, idx) => ({
-        id: idx + 1,
-        ...link,
-      }));
-      setLinks(mappedLinks);
+      // RoomLinkListDto[]를 그대로 사용 (id는 백엔드에서 제공)
+      setLinks(linksList);
 
       // 3. 멤버 목록 받아오기
       try {

@@ -57,34 +57,36 @@ export const RoomChat: React.FC<RoomChatProps> = ({
   return (
     <div className="mt-6 bg-white rounded-lg">
       <div className="h-40 overflow-y-auto border rounded p-2 bg-gray-50 mb-2">
-        {messages.map((msg, idx) => {
-          const isMine = msg.senderId === currentUserId;
-          return (
-            <div
-              key={idx}
-              className={`mb-2 flex ${
-                isMine ? "justify-end" : "justify-start"
-              }`}
-            >
+        {messages
+          .filter((msg) => msg.type === "TALK")
+          .map((msg, idx) => {
+            const isMine = msg.senderId === currentUserId;
+            return (
               <div
-                className={`max-w-[70%] px-3 py-2 rounded-lg shadow-sm break-words whitespace-pre-line ${
-                  isMine
-                    ? "bg-amber-100 text-amber-900 ml-8 text-right"
-                    : "bg-gray-100 text-gray-800 mr-8 text-left"
+                key={idx}
+                className={`mb-2 flex ${
+                  isMine ? "justify-end" : "justify-start"
                 }`}
               >
-                <span
-                  className={`font-bold ${
-                    isMine ? "text-amber-700" : "text-blue-700"
+                <div
+                  className={`max-w-[70%] px-3 py-2 rounded-lg shadow-sm break-words whitespace-pre-line ${
+                    isMine
+                      ? "bg-amber-100 text-amber-900 ml-8 text-right"
+                      : "bg-gray-100 text-gray-800 mr-8 text-left"
                   }`}
                 >
-                  {msg.senderName}
-                </span>
-                <span className="ml-2">{msg.content}</span>
+                  <span
+                    className={`font-bold ${
+                      isMine ? "text-amber-700" : "text-blue-700"
+                    }`}
+                  >
+                    {msg.senderName}
+                  </span>
+                  <span className="ml-2">{msg.content}</span>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
         <div ref={messagesEndRef} />
       </div>
       <div className="flex">
