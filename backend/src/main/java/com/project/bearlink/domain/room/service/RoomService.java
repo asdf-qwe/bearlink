@@ -67,6 +67,15 @@ public class RoomService {
                 .collect(Collectors.toList());
     }
 
+    public void deleteRooms(Long roomId){
+        LinkRoom linkRoom= linkRoomRepository.findById(roomId)
+                .orElseThrow(()-> new IllegalArgumentException("방을 찾을 수 없음"));
+        List<RoomLink> links = roomLinkRepository.findByRoomId(roomId);
+
+        roomLinkRepository.deleteAll(links);
+        linkRoomRepository.delete(linkRoom);
+    }
+
     public void inviteUser(Long roomId, Long userId, User inviter) {
         LinkRoom room = linkRoomRepository.findById(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("방을 찾을 수 없음"));
