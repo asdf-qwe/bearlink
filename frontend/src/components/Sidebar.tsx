@@ -410,7 +410,7 @@ export default function Sidebar() {
                 >
                   <div className="flex items-center justify-center">
                     <UsersRound size={16} className="mr-1" />
-                    <span>링크룸</span>
+                    <span>그룹</span>
                   </div>
                 </button>
               </div>
@@ -564,7 +564,6 @@ export default function Sidebar() {
                   <div className="space-y-3">
                     {rooms.length > 0 ? (
                       rooms.map((room, index) => {
-                        // room.id가 없는 경우 index를 사용
                         const roomId = room.id !== undefined ? room.id : index;
                         const isSelected = currentRoomId === roomId;
                         return (
@@ -594,6 +593,38 @@ export default function Sidebar() {
                                 {room.name}
                               </span>
                             </Link>
+                            <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button
+                                onClick={async () => {
+                                  if (
+                                    !confirm(
+                                      `"${room.name}" 링크룸을 삭제하시겠습니까?`
+                                    )
+                                  )
+                                    return;
+                                  try {
+                                    setRoomLoading(true);
+                                    setRoomError(null);
+                                    await roomService.deleteRoom(roomId);
+                                    window.dispatchEvent(
+                                      new CustomEvent("roomUpdated")
+                                    );
+                                    await fetchRooms();
+                                    router.push("/main/room");
+                                  } catch (err) {
+                                    console.error("링크룸 삭제 실패:", err);
+                                    setRoomError("링크룸 삭제에 실패했습니다.");
+                                  } finally {
+                                    setRoomLoading(false);
+                                  }
+                                }}
+                                className="p-1 text-red-500 hover:text-red-700 transition-colors"
+                                aria-label={`${room.name} 링크룸 삭제`}
+                                disabled={roomLoading}
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
                           </div>
                         );
                       })
