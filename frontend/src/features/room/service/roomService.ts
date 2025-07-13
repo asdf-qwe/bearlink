@@ -19,6 +19,21 @@ import { RoomMember } from "../type/roomPageTypes";
  */
 export const roomService = {
   /**
+   * 링크룸 삭제
+   * 서버 엔드포인트: DELETE /api/v1/room?roomId={roomId}
+   *
+   * @param roomId 삭제할 방 ID
+   * @returns void
+   */
+  deleteRoom: async (roomId: number): Promise<void> => {
+    try {
+      await api.delete(`/api/v1/room?roomId=${roomId}`);
+    } catch (error) {
+      console.error(`링크룸(ID: ${roomId}) 삭제 실패:`, error);
+      throw error;
+    }
+  },
+  /**
    * 새로운 링크룸 생성
    *
    * @param request 방 생성 요청 정보

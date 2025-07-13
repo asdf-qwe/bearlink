@@ -121,4 +121,9 @@ public class Ap1V1RoomController {
         List<RoomMemberList> memberLists = linkRoomService.getMembers(roomId);
         return ResponseEntity.ok(memberLists);
     }
+
+    @DeleteMapping
+    public void deleteRoom(@RequestParam Long roomId){
+        linkRoomService.deleteRooms(roomId);
+    }
 }
