@@ -101,12 +101,13 @@ public class RoomService {
     }
 
     public List<InvitationResponse> getMyInvitations(User user) {
-        List<RoomMember> invitedMembers = roomMemberRepository.findByUserAndStatus(user, InvitationStatus.INVITED);
+        List<RoomMember> invitedMembers = roomMemberRepository.findWithRoomByUserAndStatus(user, InvitationStatus.INVITED);
 
         return invitedMembers.stream()
                 .map(m -> new InvitationResponse(
                         m.getId(),
-                        m.getRoom().getId()
+                        m.getRoom().getId(),
+                        m.getRoom().getName()
                 ))
                 .toList();
     }
