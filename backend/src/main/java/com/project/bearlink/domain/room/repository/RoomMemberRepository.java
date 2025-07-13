@@ -22,4 +22,14 @@ public interface RoomMemberRepository extends JpaRepository<RoomMember, Long> {
     List<RoomMember> findByRoomAndStatus(LinkRoom room, InvitationStatus status);
     @Query("SELECT DISTINCT rm.room FROM RoomMember rm WHERE rm.user.id = :userId")
     List<LinkRoom> findRoomsByUserId(@Param("userId") Long userId);
+
+    @Query("""
+    SELECT m FROM RoomMember m
+    JOIN FETCH m.room
+    WHERE m.user = :user AND m.status = :status
+""")
+    List<RoomMember> findWithRoomByUserAndStatus(
+            @Param("user") User user,
+            @Param("status") InvitationStatus status
+    );
 }

@@ -2,5 +2,7 @@ package com.project.bearlink.domain.room.dto;
 
 public record InvitationResponse(
         Long roomMemberId,
-        Long roomId
+        Long roomId,
+        String name
 ) {}
+

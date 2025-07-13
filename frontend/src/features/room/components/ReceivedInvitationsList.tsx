@@ -109,7 +109,7 @@ export const ReceivedInvitationsList: React.FC<
         >
           <div className="mb-2 sm:mb-0">
             <p className="font-medium text-gray-800">
-              링크룸 #{invitation.roomId}
+              {invitation.name} 방의 초대가 있습니다
             </p>
             <p className="text-sm text-gray-600">새로운 초대가 있습니다</p>
           </div>

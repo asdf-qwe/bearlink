@@ -99,6 +99,7 @@ export interface RoomInviteListDto {
 export interface InvitationResponse {
   roomMemberId: number;
   roomId: number;
+  name: string; // 방 제목
 }
 
 /**
