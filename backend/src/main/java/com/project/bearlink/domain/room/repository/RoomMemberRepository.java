@@ -1,9 +1,6 @@
 package com.project.bearlink.domain.room.repository;
 
 
-import com.project.bearlink.domain.friend.entity.FriendRequest;
-import com.project.bearlink.domain.friend.entity.FriendRequestStatus;
-import com.project.bearlink.domain.link.entity.Link;
 import com.project.bearlink.domain.room.entity.InvitationStatus;
 import com.project.bearlink.domain.room.entity.LinkRoom;
 import com.project.bearlink.domain.room.entity.RoomMember;
@@ -20,8 +17,9 @@ public interface RoomMemberRepository extends JpaRepository<RoomMember, Long> {
     List<RoomMember> findByUserAndStatus(User user, InvitationStatus status);
     List<RoomMember> findByRoomId(Long roomId);
     List<RoomMember> findByRoomAndStatus(LinkRoom room, InvitationStatus status);
-    @Query("SELECT DISTINCT rm.room FROM RoomMember rm WHERE rm.user.id = :userId")
-    List<LinkRoom> findRoomsByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT DISTINCT rm.room FROM RoomMember rm WHERE rm.user.id = :userId AND rm.status = 'ACCEPTED'")
+    List<LinkRoom> findAcceptedRoomsByUserId(@Param("userId") Long userId);
 
     @Query("""
     SELECT m FROM RoomMember m

@@ -59,7 +59,7 @@ public class RoomService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다"));
 
-        List<LinkRoom> linkRooms = roomMemberRepository.findRoomsByUserId(userId);
+        List<LinkRoom> linkRooms = roomMemberRepository.findAcceptedRoomsByUserId(userId);
 
         // 변환
         return linkRooms.stream()

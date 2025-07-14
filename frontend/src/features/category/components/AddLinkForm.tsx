@@ -73,7 +73,7 @@ export const AddLinkForm = ({
             value={newLinkData.title}
             onChange={(e) => onTitleChange(e.target.value)}
             onKeyDown={onKeyPress}
-            placeholder="제목을 입력해주세요"
+            placeholder="제목을 입력해주세요 (유튜브는 제목 입력을 안해도 자동생성 됩니다.)"
             className="w-full p-2 border border-amber-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500"
             disabled={addingLink}
           />

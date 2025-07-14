@@ -84,10 +84,12 @@ export default function CategoryPage() {
         <div className="mb-12 bg-amber-50 rounded-lg p-6">
           <h2 className="text-2xl font-semibold mb-4">베어링크 시작하기</h2>
           <div className="aspect-video rounded-lg overflow-hidden shadow-lg bg-white flex items-center justify-center">
-            <img
-              src="/main.png"
-              alt="베어링크 메인 이미지"
+            <video
+              src="/introduce1.mp4"
               className="max-w-full max-h-full object-cover"
+              controls
+              muted
+              loop
             />
           </div>
           <p className="mt-4 text-sm text-amber-700">
