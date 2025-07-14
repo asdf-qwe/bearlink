@@ -85,7 +85,7 @@ export default function CategoryPage() {
           <h2 className="text-2xl font-semibold mb-4">베어링크 시작하기</h2>
           <div className="aspect-video rounded-lg overflow-hidden shadow-lg bg-white flex items-center justify-center">
             <video
-              src="/introduce.mp4"
+              src="/introduce1.mp4"
               className="max-w-full max-h-full object-cover"
               controls
               muted
