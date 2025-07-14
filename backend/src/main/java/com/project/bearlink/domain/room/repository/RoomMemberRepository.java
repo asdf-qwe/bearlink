@@ -20,8 +20,9 @@ public interface RoomMemberRepository extends JpaRepository<RoomMember, Long> {
     List<RoomMember> findByUserAndStatus(User user, InvitationStatus status);
     List<RoomMember> findByRoomId(Long roomId);
     List<RoomMember> findByRoomAndStatus(LinkRoom room, InvitationStatus status);
-    @Query("SELECT DISTINCT rm.room FROM RoomMember rm WHERE rm.user.id = :userId")
-    List<LinkRoom> findRoomsByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT DISTINCT rm.room FROM RoomMember rm WHERE rm.user.id = :userId AND rm.status = 'ACCEPTED'")
+    List<LinkRoom> findAcceptedRoomsByUserId(@Param("userId") Long userId);
 
     @Query("""
     SELECT m FROM RoomMember m

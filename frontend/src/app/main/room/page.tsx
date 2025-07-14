@@ -115,6 +115,17 @@ export default function RoomListPage() {
     }
   }, [userInfo?.id]);
 
+  // 사이드바에서 roomUpdated 이벤트 발생 시 목록 새로고침
+  useEffect(() => {
+    const handleRoomUpdated = () => {
+      loadRooms();
+    };
+    window.addEventListener("roomUpdated", handleRoomUpdated);
+    return () => {
+      window.removeEventListener("roomUpdated", handleRoomUpdated);
+    };
+  }, [loadRooms]);
+
   // 초기 데이터 로드
   useEffect(() => {
     loadRooms();
