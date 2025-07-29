@@ -21,7 +21,7 @@ public class ApiV1CategoryController {
     public ResponseEntity<String> createCategory (@RequestBody CategoryRequest req,
                                                @RequestParam Long userId) {
         Category category = categoryService.createCategory(req, userId);
-        return ResponseEntity.ok("카테고리 생성1 " + category);
+        return ResponseEntity.ok("카테고리 생성12 " + category);
     }
 
     @GetMapping
