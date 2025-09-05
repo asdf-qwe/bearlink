@@ -9,7 +9,6 @@ on:
       - "backend/Dockerfile"
     branches:
       - main
-
 jobs:
   makeTagAndRelease:
     runs-on: ubuntu-latest
@@ -39,7 +38,7 @@ jobs:
     needs: makeTagAndRelease
     runs-on: ubuntu-latest
     env:
-      DOCKER_IMAGE_NAME: blog-project2604
+      DOCKER_IMAGE_NAME: blog-project2604 # 팀 프로젝트 이미지 네임 (env.DOCKER_IMAGE_NAME으로 사용됨)
     outputs:
       DOCKER_IMAGE_NAME: ${{ env.DOCKER_IMAGE_NAME }}
       OWNER_LC: ${{ env.OWNER_LC }}
@@ -102,12 +101,15 @@ jobs:
           working-directory: /
           comment: Deploy
           command: |
+            # 공통 변수 설정
             IMAGE="ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest"
-            VOLUME="/gen:/gen"
-            NETWORK="common"
-            HEALTH_ENDPOINT="/actuator/health"
-            TIMEOUT=60
+            VOLUME="/gen:/gen" # 볼륨 마운트 경로 (필요시 수정)
+            NETWORK="common"    # Redis 컨테이너와 동일한 Docker 네트워크 이름
+            HEALTH_ENDPOINT="/actuator/health" # Spring Actuator 헬스체크 엔드포인트
+            TIMEOUT=60          # 헬스체크 타임아웃 (초)
 
+            # 현재 실행 중인 컨테이너 확인 (블루/그린 배포 로직)
+            # app1_1이 실행 중이면 app1_2가 다음 타겟, 아니면 app1_1이 다음 타겟
             if docker ps --format '{{.Names}}' | grep -q "app1_1"; then
               CURRENT="app1_1"
               NEXT="app1_2"
@@ -120,19 +122,18 @@ jobs:
               NEXT_PORT=8080
             fi
 
+            # 다음 배포될 컨테이너 이미지 풀
             echo "Pulling new image: $IMAGE"
             docker pull "$IMAGE"
 
+            # 기존에 다음 타겟 컨테이너가 남아있다면 중지 및 삭제
             echo "Stopping and removing potential old $NEXT container..."
             docker stop "$NEXT" 2>/dev/null || true
             docker rm "$NEXT" 2>/dev/null || true
 
+            # 새로운 컨테이너 실행
             echo "Starting new container: $NEXT on port $NEXT_PORT..."
             docker run -d \
-              --restart unless-stopped \
-              --memory=1g --memory-swap=1g \
-              -e JAVA_TOOL_OPTIONS="-Xms512m -Xmx768m -XX:MaxMetaspaceSize=256m -XX:MaxDirectMemorySize=256m \
-              -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/dumps -Xlog:gc*:file=/logs/gc.log:tags,uptime,tid,level" \
               -v "$VOLUME" \
               --network "$NETWORK" \
               --name "$NEXT" \
@@ -141,31 +142,39 @@ jobs:
               -e SPRING_DATA_REDIS_PORT=6379 \
               "$IMAGE"
 
+            # 헬스체크 대기
             echo "Waiting for health check of $NEXT..."
             START_TIME=$(date +%s)
             while true; do
               CONTENT=$(curl -s "http://localhost:$NEXT_PORT$HEALTH_ENDPOINT")
+
               if [[ "$CONTENT" == *'"status":"UP"'* ]]; then
                 echo "✅ $NEXT is UP! Status: $CONTENT"
                 break
               fi
+
               ELAPSED_TIME=$(( $(date +%s) - START_TIME ))
               if [[ $ELAPSED_TIME -ge $TIMEOUT ]]; then
                 echo "❌ Timeout: $NEXT did not start in $TIMEOUT seconds."
+                echo "Container logs for $NEXT:"
                 docker logs "$NEXT"
                 docker stop "$NEXT" 2>/dev/null || true
                 docker rm "$NEXT" 2>/dev/null || true
                 exit 1
               fi
-              echo "⏳ Waiting for $NEXT to be UP ($ELAPSED_TIME/$TIMEOUT s)... Current status: $CONTENT"
+
+              echo "⏳ Waiting for $NEXT to be UP (Elapsed: $ELAPSED_TIME/$TIMEOUT s)... Current status: $CONTENT"
               sleep 5
             done
 
-            sleep 10
+            sleep 10 # HA 프록시나 DNS 캐시 때문에 서비스가 띄워지고도 10초 후에 발견될 수 있어, 기존 서버를 바로 내리지 않음.
+
+            # 기존 컨테이너 중지 및 제거
             echo "Stopping old container: $CURRENT"
             docker stop "$CURRENT" 2>/dev/null || true
             docker rm "$CURRENT" 2>/dev/null || true
 
+            # 사용되지 않는(dangling) Docker 이미지 정리
             echo "Cleaning up dangling images..."
             docker rmi $(docker images -f "dangling=true" -q) 2>/dev/null || true
 
