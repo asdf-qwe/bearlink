@@ -167,7 +167,7 @@ jobs:
               sleep 5
             done
 
-            sleep 10 # HA 프록시나 DNS 캐시 때문에 서비스가 띄워지고도 10초 후에 발견될 수 있어, 기존 서버를 바로 내리지 않음.
+            sleep 10 # HA 프록시나 DNS 캐시 때문에 서비스가 띄워지고도 10초 후에 발견될 수 있어, 기존 서버를 바로 내리지 않음1.
 
             # 기존 컨테이너 중지 및 제거
             echo "Stopping old container: $CURRENT"
