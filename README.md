@@ -84,29 +84,19 @@ BearLink는 아래 구조로 구성되어 있습니다.
   - YouTube Data API · Embedded Player API 활용
 <br/>
 
-## 🔍 트러블슈팅 & 해결 경험
+## 🚀 배포 및 데모  
+- **라이브 데모 URL**: https://www.pofol.site/ 
+- **접근 방법**: 데모 계정 또는 직접 회원가입 후 테스트 가능  
 
-- ✅ WebSocket 연결 세션 문제 → 세션 분리/재연결 로직 적용  
-- ✅ YouTube URL 유효성 검증 로직 개선  
-- ✅ 링크 썸네일 실패 대응 → fallback 이미지 적용  
-
-> 실 서비스 운영 목적의 안정성 고려 경험
-
-<br/>
-
-## 🚀 향후 개선 계획
-- 링크 통계(클릭 수/이용 분석) 제공
-- 권한 레벨 세분화(읽기/편집 구분)
-- 모바일 환경 UI 최적화
-
-<br/>
-
-## 🏁 프로젝트 회고
-- **실시간 협업 기능**을 통한 서버/통신 이해도 향상
-- **YouTube/외부 API 활용** 경험 확보
-- 사용자 경험 기반 **정보 구조 설계** 능력 강화
-
-<br/>
+## 🧪 설치 및 실행 방법  
+### 로컬 실행  
+```bash
+git clone https://github.com/asdf-qwe/portfolio.git  
+cd portfolio  
+# 백엔드 실행  
+cd backend && ./mvnw spring-boot:run  
+# 프론트엔드 실행  
+cd ../frontend && npm install && npm run dev  
 
 ---
 
