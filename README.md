@@ -61,16 +61,27 @@ BearLink는 흩어져 있는 링크들을 손쉽게 저장하고 분류할 수 �
 
 <br/>
 
-## 🧩 시스템 아키텍처 (요약)
-Client (Next.js)
-↓ REST API / WebSocket
-Backend (Spring Boot)
-↓
-Database (MySQL)
+## 🧩 System Architecture
 
-S3 (이미지 저장)
+BearLink는 아래 구조로 구성되어 있습니다.
 
-YouTube API (메타데이터 수집)
+- **Client**
+  - Next.js 기반 SPA
+  - REST API + WebSocket 혼합 통신
+
+- **Backend**
+  - Spring Boot 기반 API 서버
+  - 링크 메타데이터 파싱 & 외부 API 연동
+  - 그룹 실시간 협업(WebSocket) 처리
+
+- **Database**
+  - MySQL를 통해 사용자 정보 · 링크 데이터 저장
+
+- **Object Storage**
+  - AWS S3에 이미지/미디어 저장
+
+- **External Services**
+  - YouTube Data API · Embedded Player API 활용
 <br/>
 
 ## 🔍 트러블슈팅 & 해결 경험
