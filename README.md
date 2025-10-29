@@ -96,8 +96,8 @@ cd bearlink
 # 백엔드 실행  
 cd backend && ./mvnw spring-boot:run  
 # 프론트엔드 실행  
-cd ../frontend && npm install && npm run dev  
-
+cd ../frontend && npm install && npm run dev
+<br/>
 ---
 
 > **“링크를 연결하고, 사람을 이어주는 서비스”**  
