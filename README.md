@@ -85,7 +85,7 @@ BearLink는 아래 구조로 구성되어 있습니다.
 <br/>
 
 ## 🚀 배포 및 데모  
-- **라이브 데모 URL**: https://www.pofol.site/ 
+- **라이브 데모 URL**: https://www.bearlink.kr/ 
 - **접근 방법**: 데모 계정 또는 직접 회원가입 후 테스트 가능  
 
 ## 🧪 설치 및 실행 방법  
