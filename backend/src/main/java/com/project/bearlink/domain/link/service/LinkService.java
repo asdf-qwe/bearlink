@@ -39,7 +39,7 @@ public class LinkService {
                 .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다"));
 
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다"));
+                .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
 
         LinkPreviewDto preview = linkPreviewService.extract(req.getUrl());
         String title = StringUtils.hasText(req.getTitle()) ? req.getTitle() : preview.getTitle();
