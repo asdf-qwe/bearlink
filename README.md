@@ -91,8 +91,8 @@ BearLink는 아래 구조로 구성되어 있습니다.
 ## 🧪 설치 및 실행 방법  
 ### 로컬 실행  
 ```bash
-git clone https://github.com/asdf-qwe/portfolio.git  
-cd portfolio  
+git clone https://github.com/asdf-qwe/bearlink.git  
+cd bearlink  
 # 백엔드 실행  
 cd backend && ./mvnw spring-boot:run  
 # 프론트엔드 실행  
