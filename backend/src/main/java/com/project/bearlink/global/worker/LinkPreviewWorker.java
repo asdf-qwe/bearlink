@@ -31,7 +31,7 @@
 //                Long linkId = Long.parseLong(linkIdStr);
 //                processor.processLink(linkId); // 병렬 처리
 //            } catch (NumberFormatException e) {
-//                log.warn("❗ 잘못된 링크 ID 형식: {}", linkIdStr);
+//                log.warn(" 잘못된 링크 ID 형식: {}", linkIdStr);
 //            }
 //        }
 //    }

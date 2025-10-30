@@ -16,6 +16,5 @@ public class MyPage extends BaseEntity{
     private ViewMode viewMode; // CARD, LIST
     private boolean darkModeEnabled;
 
-    // 친구 목록이 아닌, 친구 요청을 기반으로 친구를 판별
-    // -> FriendRequest 테이블로 관리
+
 }

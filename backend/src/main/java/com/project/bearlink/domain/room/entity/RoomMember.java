@@ -17,6 +17,15 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @SuperBuilder
 @Entity
+@Table(
+        name = "room_member",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_room_member_unique",
+                        columnNames = {"room_id", "user_id"}
+                )
+        }
+)
 public class RoomMember extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -28,7 +37,7 @@ public class RoomMember extends BaseEntity {
     private User user;
 
     @Enumerated(EnumType.STRING)
-    private InvitationStatus status; // INVITED, ACCEPTED, DECLINED 등
+    private InvitationStatus status;
 
     private LocalDateTime invitedAt;
     private LocalDateTime respondedAt;

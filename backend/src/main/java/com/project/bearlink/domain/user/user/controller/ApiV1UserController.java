@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class ApiV1UserController {
 
-    // service쪽에 태워서 가입시킴
     private final UserService userService;
     private final AuthLoginService authLoginService;
 

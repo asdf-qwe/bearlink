@@ -13,6 +13,12 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
+@Table(
+        name = "chat_message",
+        indexes = {
+                @Index(name = "idx_message_room_created", columnList = "room_id, created_at")
+        }
+)
 public class ChatMessage extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)

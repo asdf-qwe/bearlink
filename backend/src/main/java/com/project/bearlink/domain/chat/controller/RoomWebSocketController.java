@@ -39,7 +39,7 @@ public class RoomWebSocketController {
         User sender = userRepository.findById(messageDto.getSenderId())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        // ✅ 채팅 관련 메시지는 DB 저장
+
         if (messageDto.getType() == MessageType.TALK ||
                 messageDto.getType() == MessageType.ENTER ||
                 messageDto.getType() == MessageType.LEAVE) {
@@ -54,7 +54,7 @@ public class RoomWebSocketController {
             chatMessageRepository.save(chatMessage);
         }
 
-        // ✅ 모든 메시지는 실시간 전송
+
         messagingTemplate.convertAndSend("/topic/room/" + roomId, messageDto);
     }
 

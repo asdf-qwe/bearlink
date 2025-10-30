@@ -10,6 +10,6 @@ public class CategoryResponse{
     private String name;
     private Long userId;
 
-    // 생성자, getter, setter
+
 }
 

@@ -29,32 +29,18 @@ public class SecurityConfig {
 
     private final Rq rq;
 
-    /**
-     * 비밀번호 암호화용 빈 등록
-     * 회원가입 시 비밀번호를 해시 처리하는 데 사용
-     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
 
-
-    /**
-     * 커스텀 JWT 인증 필터 빈 등록
-     * → HTTP 요청마다 JWT 토큰 검사해서 로그인 여부 확인해주는 필터
-     */
     @Bean
     public CustomAuthenticationFilter customAuthenticationFilter() {
         return new CustomAuthenticationFilter(rq);
     }
 
 
-
-    /**
-     * Spring Security 필터 체인 구성
-     * 어떤 요청에 인증이 필요한지, 어떤 필터를 적용할지를 설정
-     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -85,11 +71,6 @@ public class SecurityConfig {
     }
 
 
-
-    /**
-     * CORS 설정
-     * → 모든 origin, method, header 허용
-     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();

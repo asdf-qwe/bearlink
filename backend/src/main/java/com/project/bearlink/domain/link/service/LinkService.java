@@ -7,7 +7,6 @@ import com.project.bearlink.domain.link.dto.LinkRequestDto;
 import com.project.bearlink.domain.link.dto.LinkResponseDto;
 import com.project.bearlink.domain.link.dto.LinkUpdateDto;
 import com.project.bearlink.domain.link.entity.Link;
-import com.project.bearlink.domain.link.entity.PreviewStatus;
 import com.project.bearlink.domain.link.repository.LinkRepository;
 import com.project.bearlink.domain.user.user.entity.User;
 import com.project.bearlink.domain.user.user.repository.UserRepository;
@@ -15,10 +14,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.net.URI;
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -27,6 +26,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class LinkService {
     private final LinkRepository linkRepository;
     private final UserRepository userRepository;
@@ -34,6 +34,7 @@ public class LinkService {
     private final LinkPreviewService linkPreviewService;
     private final RedisTemplate<String, String> redisStringTemplate;
 
+    @Transactional(readOnly = false)
     public Link createLink(LinkRequestDto req, Long userId, Long categoryId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다"));
@@ -69,6 +70,7 @@ public class LinkService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = false)
     public Link updateTitle (Long linkId, LinkUpdateDto dto) {
         Link link = linkRepository.findById(linkId)
                         .orElseThrow(()-> new IllegalArgumentException("링크를 찾을 수 없습니다"));
@@ -77,6 +79,7 @@ public class LinkService {
         return linkRepository.save(link);
     }
 
+    @Transactional(readOnly = false)
     public void deleteLink (Long linkId) {
         Link link = linkRepository.findById(linkId)
                 .orElseThrow(()->new IllegalArgumentException("링크를 찾을 수 없습니다"));
@@ -92,7 +95,7 @@ public class LinkService {
     }
 
     private String extractYoutubeVideoId(String url) {
-        // 예: https://www.youtube.com/watch?v=Dmt2dzRCA0 또는 https://youtu.be/Dmt2dzRCA0
+
         try {
             URI uri = new URI(url);
             String host = uri.getHost();
@@ -109,7 +112,7 @@ public class LinkService {
                 return uri.getPath().substring(1); // /Dmt2dzRCA0
             }
         } catch (Exception e) {
-            // 로깅만 하고 무시
+
         }
         return null;
     }

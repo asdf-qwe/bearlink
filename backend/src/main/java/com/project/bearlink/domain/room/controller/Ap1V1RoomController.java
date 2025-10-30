@@ -76,7 +76,7 @@ public class Ap1V1RoomController {
         List<InvitationResponse> invitations = linkRoomService.getMyInvitations(user);
         return ResponseEntity.ok(invitations);
     }
-    // 수락
+
     @PostMapping("/invitations/{roomMemberId}/accept")
     public ResponseEntity<Void> acceptInvitation(
             @PathVariable Long roomMemberId,
@@ -89,7 +89,7 @@ public class Ap1V1RoomController {
         return ResponseEntity.ok().build();
     }
 
-    // 거절
+
     @PostMapping("/invitations/{roomMemberId}/decline")
     public ResponseEntity<Void> declineInvitation(
             @PathVariable Long roomMemberId,
@@ -102,7 +102,7 @@ public class Ap1V1RoomController {
         return ResponseEntity.ok().build();
     }
 
-    // 친구인 유저만 조회
+
     @GetMapping("/{roomId}/invite-friends")
     public ResponseEntity<List<InviteFriendWithStatusResponse>> getInviteFriendsWithStatus(
             @AuthenticationPrincipal SecurityUser securityUser,

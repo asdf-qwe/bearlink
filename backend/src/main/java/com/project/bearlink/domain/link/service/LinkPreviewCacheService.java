@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 
-// 2. Redis 캐시 서비스
+
 @Service
 @RequiredArgsConstructor
 public class LinkPreviewCacheService {
@@ -23,7 +23,7 @@ public class LinkPreviewCacheService {
         Object raw = redisTemplate.opsForValue().get(PREFIX + url);
         if (raw == null) return null;
 
-        return objectMapper.convertValue(raw, LinkPreviewDto.class); // ⭐ 명시적 변환
+        return objectMapper.convertValue(raw, LinkPreviewDto.class);
     }
 
     public void set(String url, LinkPreviewDto preview) {

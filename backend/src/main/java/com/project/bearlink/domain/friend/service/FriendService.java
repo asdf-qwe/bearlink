@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,11 +20,13 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class FriendService {
 
     private final UserRepository userRepository;
     private final FriendRequestRepository friendRequestRepository;
 
+    @Transactional(readOnly = false)
     public void sendRequest(Long requesterId, FriendRequestDto dto) {
 
         if(requesterId.equals(dto.getReceiverId())){
@@ -50,6 +53,7 @@ public class FriendService {
         friendRequestRepository.save(friendRequest);
     }
 
+    @Transactional(readOnly = false)
     public void accept(Long requesterId, Long receiverId) {
         User requester = userRepository.findById(requesterId)
                 .orElseThrow(() -> new IllegalArgumentException("신청자 없음"));
@@ -64,6 +68,7 @@ public class FriendService {
         friendRequestRepository.save(friendRequest);
     }
 
+    @Transactional(readOnly = false)
     public void rejectRequest(Long requestId, Long receiverId) {
         FriendRequest request = friendRequestRepository.findById(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("요청이 존재하지 않습니다."));
@@ -96,6 +101,7 @@ public class FriendService {
                 })
                 .toList();
     }
+
 
     public Page<FindFriendDto> findFriends(String keyword, Long userId, Pageable pageable) {
         return userRepository.searchOnlyUnrelatedUsers(keyword, userId, pageable);

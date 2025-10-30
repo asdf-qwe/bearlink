@@ -13,7 +13,7 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
-// 5. OpenGraph API Client (단순 HTTP 클라이언트)
+// OpenGraph API Client (단순 HTTP 클라이언트)
 @Component
 @Slf4j
 public class OpenGraphApiClient {
@@ -25,7 +25,7 @@ public class OpenGraphApiClient {
             return new LinkPreviewDto(null, image);
 
         } catch (Exception e) {
-            log.warn("❌ OpenGraph API 실패: {}", url, e);
+            log.warn(" OpenGraph API 실패: {}", url, e);
             return null;
         }
     }

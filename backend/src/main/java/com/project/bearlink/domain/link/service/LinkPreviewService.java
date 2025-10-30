@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-// 3. 메인 미리보기 추출 서비스
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -16,14 +16,14 @@ public class LinkPreviewService {
     private final YoutubeApiClient youtubeApiClient;
 
     public LinkPreviewDto extract(String url) {
-        // 1. 캐시 먼저 확인
+        //  캐시 먼저 확인
         LinkPreviewDto cached = cache.get(url);
         if (cached != null) return cached;
 
         LinkPreviewDto preview = null;
 
         try {
-            // 2. YouTube 처리
+            //  YouTube 처리
             if (isYoutube(url)) {
                 preview = youtubeApiClient.fetchPreview(url);
             } else {
@@ -32,13 +32,13 @@ public class LinkPreviewService {
 
             }
 
-            // 5. 캐시에 저장
+            //  캐시에 저장
             if (preview != null) {
                 cache.set(url, preview);
             }
 
         } catch (Exception e) {
-            log.warn("❌ 미리보기 추출 실패: {}", url, e);
+            log.warn(" 미리보기 추출 실패: {}", url, e);
         }
 
         return preview;
@@ -55,7 +55,7 @@ public class LinkPreviewService {
             return new LinkPreviewDto(null, image);
 
         } catch (Exception e) {
-            log.warn("❌ OpenGraph API 실패: {}", url, e);
+            log.warn(" OpenGraph API 실패: {}", url, e);
             return null;
         }
     }

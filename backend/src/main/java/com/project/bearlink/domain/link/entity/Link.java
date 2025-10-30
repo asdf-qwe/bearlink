@@ -16,7 +16,14 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-@Table(name = "link")
+@Table(
+        name = "link",
+        indexes = {
+                @Index(name = "idx_link_user", columnList = "user_id"),
+                @Index(name = "idx_link_category", columnList = "category_id"),
+                @Index(name = "idx_link_url", columnList = "url")
+        }
+)
 public class Link extends BaseEntity {
 
     private String title;
