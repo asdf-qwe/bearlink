@@ -16,14 +16,23 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @SuperBuilder
 @Entity
+@Table(
+        name = "friend_request",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_friend_request_pair",
+                        columnNames = {"requester_id", "receiver_id"}
+                )
+        }
+)
 public class FriendRequest extends BaseEntity {
 
-    // 친구 신청자
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "requester_id")
     private User requester;
 
-    // 친구 수락자
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "receiver_id")
     private User receiver;

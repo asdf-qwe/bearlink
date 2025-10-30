@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class RoomService {
 
     private final UserRepository userRepository;
@@ -34,15 +35,17 @@ public class RoomService {
     private final RoomMemberRepository roomMemberRepository;
     private final RoomLinkRepository roomLinkRepository;
     private final FriendRequestRepository friendRequestRepository;
+
+    @Transactional(readOnly = false)
     public CreateLinkRoomResponse createRoom(CreateLinkRoomRequest request, User currentUser) {
-        // 1. 링크룸 생성
+
         LinkRoom room = LinkRoom.builder()
                 .name(request.name())
                 .owner(currentUser)
                 .build();
         linkRoomRepository.save(room);
 
-        // 2. 본인을 RoomMember로 추가 (바로 ACCEPTED)
+
         RoomMember selfMember = RoomMember.builder()
                 .room(room)
                 .user(currentUser)
@@ -61,12 +64,13 @@ public class RoomService {
 
         List<LinkRoom> linkRooms = roomMemberRepository.findAcceptedRoomsByUserId(userId);
 
-        // 변환
+
         return linkRooms.stream()
                 .map(room -> new RoomsDto(room.getId(), room.getName()))
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = false)
     public void deleteRooms(Long roomId){
         LinkRoom linkRoom= linkRoomRepository.findById(roomId)
                 .orElseThrow(()-> new IllegalArgumentException("방을 찾을 수 없음"));
@@ -76,19 +80,20 @@ public class RoomService {
         linkRoomRepository.delete(linkRoom);
     }
 
+    @Transactional(readOnly = false)
     public void inviteUser(Long roomId, Long userId, User inviter) {
         LinkRoom room = linkRoomRepository.findById(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("방을 찾을 수 없음"));
         if (!room.getOwner().getId().equals(inviter.getId())) {
-            throw new AccessDeniedException("Only the owner can invite.");
+            throw new AccessDeniedException("방장만 초대할 수 있습니다.");
         }
 
         User invitee = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없음"));
 
-        // 중복 초대 방지
+
         if (roomMemberRepository.existsByRoomAndUser(room, invitee)) {
-            throw new IllegalStateException("User already invited or a member.");
+            throw new IllegalStateException("이미 초대된 멤버 입니다.");
         }
 
         RoomMember member = RoomMember.builder()
@@ -113,36 +118,35 @@ public class RoomService {
     }
 
 
-    // 수락
+    @Transactional(readOnly = false)
     public void acceptInvitation(Long roomMemberId, User user) {
         RoomMember member = roomMemberRepository.findById(roomMemberId)
-                .orElseThrow(() -> new IllegalArgumentException("Invitation not found"));
+                .orElseThrow(() -> new IllegalArgumentException("멤버를 찾을 수 없습니다."));
         if (!member.getUser().getId().equals(user.getId())) {
-            throw new AccessDeniedException("Not your invitation.");
+            throw new AccessDeniedException("초대 받지 못한 사용자입니다.");
         }
         if (member.getStatus() != InvitationStatus.INVITED) {
-            throw new IllegalStateException("Already responded.");
+            throw new IllegalStateException("이미 초대 되었습니다.");
         }
 
         member.setStatus(InvitationStatus.ACCEPTED);
         member.setRespondedAt(LocalDateTime.now());
-        roomMemberRepository.save(member);
+
     }
 
-    // 거절
+    @Transactional(readOnly = false)
     public void declineInvitation(Long roomMemberId, User user) {
         RoomMember member = roomMemberRepository.findById(roomMemberId)
-                .orElseThrow(() -> new IllegalArgumentException("Invitation not found"));
+                .orElseThrow(() -> new IllegalArgumentException("멤버를 찾을 수 없습니다."));
         if (!member.getUser().getId().equals(user.getId())) {
-            throw new AccessDeniedException("Not your invitation.");
+            throw new AccessDeniedException("초대 받지 못한 사용자입니다.");
         }
         if (member.getStatus() != InvitationStatus.INVITED) {
-            throw new IllegalStateException("Already responded.");
+            throw new IllegalStateException("이미 초대 되었습니다.");
         }
 
         member.setStatus(InvitationStatus.DECLINED);
         member.setRespondedAt(LocalDateTime.now());
-        roomMemberRepository.save(member);
     }
 
     public List<RoomLinkListDto> getRoomLinks(Long userId, Long roomId) {
@@ -158,7 +162,7 @@ public class RoomService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
+
     public List<InviteFriendWithStatusResponse> getInviteFriendsWithStatus(User currentUser, Long roomId) {
         LinkRoom room = linkRoomRepository.findById(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("링크룸을 찾을 수 없습니다."));
@@ -193,7 +197,7 @@ public class RoomService {
                     } else if (status == InvitationStatus.ACCEPTED) {
                         invitationStatus = "ACCEPTED";
                     } else {
-                        invitationStatus = "DECLINED"; // 선택적 처리
+                        invitationStatus = "DECLINED";
                     }
 
                     return new InviteFriendWithStatusResponse(
@@ -206,7 +210,7 @@ public class RoomService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
+
     public List<RoomMemberList> getMembers(Long roomId){
         LinkRoom room = linkRoomRepository.findById(roomId)
                 .orElseThrow(()-> new IllegalArgumentException("유저를 찾을 수 없습니다"));

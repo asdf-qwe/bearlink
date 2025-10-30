@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import java.net.URI;
 import java.util.Arrays;
 
-// 6. YouTube API Client (예: 공식 API 사용)
+// YouTube API Client (예: 공식 API 사용)
 @Component
 @Slf4j
 public class YoutubeApiClient {

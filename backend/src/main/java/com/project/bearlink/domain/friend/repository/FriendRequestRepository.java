@@ -14,7 +14,7 @@ import java.util.Optional;
 
 public interface FriendRequestRepository extends JpaRepository<FriendRequest, Long> {
 
-    // 이미 신청한 친구 요청이 있는지
+
     boolean existsByRequesterIdAndReceiverIdAndStatus(Long requesterId, Long receiverId, FriendRequestStatus status);
 
     @Query("""

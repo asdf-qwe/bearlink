@@ -40,7 +40,7 @@
 //            linkRepository.save(link);
 //
 //        } catch (Exception e) {
-//            log.error("❌ 링크 미리보기 처리 중 예외 발생 (id: {}):", linkId, e);
+//            log.error("링크 미리보기 처리 중 예외 발생 (id: {}):", linkId, e);
 //        }
 //    }
 //}

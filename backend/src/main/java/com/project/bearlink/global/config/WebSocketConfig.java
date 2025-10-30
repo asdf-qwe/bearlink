@@ -12,10 +12,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        // ✅ 클라이언트가 구독할 주소 (브로드캐스트용)
+
         config.enableSimpleBroker("/topic", "/queue");
 
-        // ✅ 클라이언트가 메시지를 보낼 때 붙일 prefix
+
         config.setApplicationDestinationPrefixes("/app");
     }
 

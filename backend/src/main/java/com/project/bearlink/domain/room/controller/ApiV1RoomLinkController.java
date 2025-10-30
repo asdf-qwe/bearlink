@@ -42,7 +42,7 @@ public class ApiV1RoomLinkController {
         User user = userRepository.findById(currentUser.getId())
                 .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다"));
 
-        // ✅ 썸네일 자동 추출
+
         String thumbnail = linkPreviewService.extract(dto.getUrl()) != null
                 ? linkPreviewService.extract(dto.getUrl()).getThumbnailImageUrl()
                 : null;
@@ -76,7 +76,7 @@ public class ApiV1RoomLinkController {
         RoomLink link = roomLinkRepository.findById(linkId)
                 .orElseThrow(() -> new IllegalArgumentException("링크를 찾을 수 없습니다"));
 
-        // ✅ 썸네일 재추출 (URL이 바뀐 경우만)
+
         String thumbnail = link.getUrl().equals(dto.getUrl())
                 ? link.getThumbnailImageUrl()
                 : Optional.ofNullable(linkPreviewService.extract(dto.getUrl()))

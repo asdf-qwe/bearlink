@@ -12,9 +12,7 @@ import java.util.Map;
 @Slf4j
 @Service
 public class AuthTokenService {
-    /**
-     * yaml 파일에서 정보 @Value로 받아옴
-     */
+
     @Value("${custom.jwt.secretKey}")
     private String jwtSecret;
 
@@ -24,9 +22,7 @@ public class AuthTokenService {
     @Value("${custom.refreshToken.expirationSeconds}")
     private long refreshTokenExpirationSeconds;
 
-    /**
-     * 액세스 토큰 생성
-     */
+
     public String genAccessToken(User user) {
         long id = user.getId();
         String email = user.getEmail();
@@ -39,9 +35,7 @@ public class AuthTokenService {
         );
     }
 
-    /**
-     * 리프레시 토큰 생성
-     */
+
     public String genRefreshToken(User user) {
         long id = user.getId();
         String email = user.getEmail();
@@ -62,17 +56,13 @@ public class AuthTokenService {
         );
     }
 
-    /**
-     * 토큰 페이로드 추출
-     */
+
     public Map<String, Object> payload(String token) {
         log.info("jwtSecret from AuthTokenService: {}", jwtSecret);
         return JwtUtil.getPayload(jwtSecret, token);
     }
 
-    /**
-     * 토큰 유효성 검증
-     */
+
     public boolean isValid(String token) {
         log.info("isValid() - jwtSecret: {}", jwtSecret);
         return JwtUtil.isValid(jwtSecret, token);

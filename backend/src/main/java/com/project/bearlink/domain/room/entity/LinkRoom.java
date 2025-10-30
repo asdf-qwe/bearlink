@@ -30,8 +30,8 @@ public class LinkRoom extends BaseEntity {
     @ManyToOne
     private User owner;
 
-    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL)
-    private List<RoomMember> members;
+    @OneToMany(mappedBy = "room", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<RoomMember> members = new ArrayList<>();
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ChatMessage> messages = new ArrayList<>();
