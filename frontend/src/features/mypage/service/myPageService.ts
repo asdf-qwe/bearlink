@@ -68,7 +68,6 @@ class MyPageService {
       const result = await response.json();
       return result.imageUrl || result.url || result;
     } catch (error) {
-      console.error("이미지 업로드 실패:", error);
       throw new Error("이미지 업로드에 실패했습니다.");
     }
   }

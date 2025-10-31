@@ -50,7 +50,6 @@ export default function CategoryPage() {
         );
         setCategories(categoriesData);
       } catch (err) {
-        console.error("카테고리 로딩 실패:", err);
         setError("카테고리를 불러오는데 문제가 발생했습니다.");
       } finally {
         setIsLoading(false);

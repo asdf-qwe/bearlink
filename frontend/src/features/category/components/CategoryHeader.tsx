@@ -23,7 +23,7 @@ export const CategoryHeader = ({
   onKeyPress,
 }: CategoryHeaderProps) => {
   return (
-    <div className="mb-8">
+    <div className="ml-8">
       <div className="flex items-center space-x-3 mb-2">
         {editingCategory ? (
           <>
@@ -38,13 +38,13 @@ export const CategoryHeader = ({
             <div className="flex space-x-2">
               <button
                 onClick={onSave}
-                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                className="px-3 py-1.5 text-sm bg-green-600 text-white rounded hover:bg-green-700"
               >
                 저장
               </button>
               <button
                 onClick={onCancel}
-                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                className="px-3 py-1.5 text-sm bg-gray-600 text-white rounded hover:bg-gray-700"
               >
                 취소
               </button>

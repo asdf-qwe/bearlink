@@ -107,15 +107,6 @@ export const RoomLinkListView: React.FC<RoomLinkListViewProps> = ({
     </div>
   );
 
-  if (links.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <LinkIcon size={48} className="text-amber-300 mx-auto mb-4" />
-        <p className="text-amber-600">첫 번째 링크를 추가해보세요!</p>
-      </div>
-    );
-  }
-
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* 섹션 1 */}

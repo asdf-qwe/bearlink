@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Plus,
   X,
@@ -62,22 +62,28 @@ export default function Sidebar() {
   const currentCategoryId = getCurrentCategoryId();
   const currentRoomId = getCurrentRoomId();
 
-  // 아이콘 순서 배열 (meat, fish, box, beehive, wood 순서로 반복)
-  const iconOrder = [
-    "/free-icon-no-meat-5769766.png", // meat
-    "/free-icon-fish-8047799.png", // fish
-    "/free-icon-fruit-box-5836745.png", // box
-    "/free-icon-beehive-9421133.png", // beehive
-    "/free-icon-wood-12479254.png", // wood
-  ];
+  // 아이콘 순서 배열 (meat, fish, box, beehive, wood 순서로 반복) - useMemo로 최적화
+  const iconOrder = useMemo(
+    () => [
+      "/free-icon-no-meat-5769766.png", // meat
+      "/free-icon-fish-8047799.png", // fish
+      "/free-icon-fruit-box-5836745.png", // box
+      "/free-icon-beehive-9421133.png", // beehive
+      "/free-icon-wood-12479254.png", // wood
+    ],
+    []
+  );
 
-  // 카테고리 인덱스에 따라 아이콘을 반환하는 함수
-  const getCategoryIcon = (index: number): string => {
-    return iconOrder[index % iconOrder.length];
-  };
+  // 카테고리 인덱스에 따라 아이콘을 반환하는 함수 - useCallback으로 최적화
+  const getCategoryIcon = useCallback(
+    (index: number): string => {
+      return iconOrder[index % iconOrder.length];
+    },
+    [iconOrder]
+  );
 
-  // 백엔드에서 카테고리 목록 가져오기
-  const fetchCategories = async () => {
+  // 백엔드에서 카테고리 목록 가져오기 - useCallback으로 최적화
+  const fetchCategories = useCallback(async () => {
     if (!userInfo?.id) return;
 
     try {
@@ -93,17 +99,16 @@ export default function Sidebar() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userInfo?.id]);
 
-  // 링크룸 목록 가져오기
-  const fetchRooms = async () => {
+  // 링크룸 목록 가져오기 - useCallback으로 최적화
+  const fetchRooms = useCallback(async () => {
     if (!userInfo?.id) return;
 
     try {
       setRoomLoading(true);
       setRoomError(null);
       const roomsData = await roomService.getRooms();
-      console.log("가져온 링크룸 데이터:", roomsData);
 
       // 백엔드 응답에 id가 없을 경우 id를 추가
       const roomsWithId = roomsData.map((room: any, index: number) => {
@@ -120,7 +125,7 @@ export default function Sidebar() {
     } finally {
       setRoomLoading(false);
     }
-  };
+  }, [userInfo?.id]);
 
   // 컴포넌트 마운트 시 카테고리 및 링크룸 목록 불러오기
   useEffect(() => {
@@ -128,41 +133,76 @@ export default function Sidebar() {
       fetchCategories();
       fetchRooms();
     }
-  }, [userInfo?.id]);
+  }, [userInfo?.id, fetchCategories, fetchRooms]);
+
+  // 뷰 모드 전환 함수 - useCallback으로 최적화
+  const switchToPersonal = useCallback(() => {
+    setViewMode("personal");
+  }, []);
+
+  const switchToGroup = useCallback(() => {
+    setViewMode("group");
+  }, []);
+
+  // 메모이제이션된 이벤트 핸들러들
+  const handleCategoryUpdate = useCallback(() => {
+    if (userInfo?.id) {
+      fetchCategories();
+    }
+  }, [userInfo?.id, fetchCategories]);
+
+  const handleRoomUpdate = useCallback(() => {
+    if (userInfo?.id) {
+      fetchRooms();
+    }
+  }, [userInfo?.id, fetchRooms]);
 
   // 카테고리 업데이트 이벤트 리스너 등록
   useEffect(() => {
-    const handleCategoryUpdate = () => {
-      if (userInfo?.id) {
-        fetchCategories();
-      }
-    };
-
     window.addEventListener("categoryUpdated", handleCategoryUpdate);
-
     return () => {
       window.removeEventListener("categoryUpdated", handleCategoryUpdate);
     };
-  }, [userInfo?.id]);
+  }, [handleCategoryUpdate]);
 
   // 링크룸 업데이트 이벤트 리스너 등록
   useEffect(() => {
-    const handleRoomUpdate = () => {
-      if (userInfo?.id) {
-        fetchRooms();
-      }
-    };
-
     window.addEventListener("roomUpdated", handleRoomUpdate);
-
     return () => {
       window.removeEventListener("roomUpdated", handleRoomUpdate);
     };
-  }, [userInfo?.id]);
+  }, [handleRoomUpdate]);
 
   const toggleSidebar = () => {
     // 토글 기능 제거됨
   };
+
+  // 메모이제이션된 네비게이션 핸들러들
+  const handlePersonalNavigation = useCallback(() => {
+    switchToPersonal();
+    if (categories.length > 0) {
+      router.push(`/main/category/${categories[0].id}`);
+    } else {
+      router.push("/main/category");
+    }
+  }, [categories, router, switchToPersonal]);
+
+  const handleGroupNavigation = useCallback(() => {
+    switchToGroup();
+    if (rooms.length > 0) {
+      router.push(`/main/room/${rooms[0].id}`);
+    } else {
+      router.push("/main/room");
+    }
+  }, [rooms, router, switchToGroup]);
+
+  // 아이콘 프리로딩
+  useEffect(() => {
+    iconOrder.forEach((iconPath) => {
+      const img = new Image();
+      img.src = iconPath;
+    });
+  }, [iconOrder]);
 
   const toggleAddCategoryForm = () => {
     setShowAddCategoryForm(!showAddCategoryForm);
@@ -244,7 +284,6 @@ export default function Sidebar() {
       };
 
       const createdRoom = await roomService.createRoom(roomRequest);
-      console.log("링크룸 생성 성공:", createdRoom);
 
       // 링크룸 생성 후 이벤트 발생
       window.dispatchEvent(new CustomEvent("roomUpdated"));
@@ -381,15 +420,7 @@ export default function Sidebar() {
                       ? "bg-amber-900 bg-opacity-50 text-amber-100 font-semibold"
                       : "hover:bg-amber-900 hover:bg-opacity-30"
                   }`}
-                  onClick={() => {
-                    setViewMode("personal");
-                    // 링크룸에서 개인으로 변경 시, 카테고리가 있으면 첫 번째 카테고리로, 없으면 카테고리 메인 페이지로 이동
-                    if (categories.length > 0) {
-                      router.push(`/main/category/${categories[0].id}`);
-                    } else {
-                      router.push("/main/category");
-                    }
-                  }}
+                  onClick={handlePersonalNavigation}
                 >
                   <div className="flex items-center justify-center">
                     <User size={16} className="mr-1" />
@@ -402,11 +433,7 @@ export default function Sidebar() {
                       ? "bg-amber-900 bg-opacity-50 text-amber-100 font-semibold"
                       : "hover:bg-amber-900 hover:bg-opacity-30"
                   }`}
-                  onClick={() => {
-                    setViewMode("group");
-                    // 개인에서 링크룸으로 변경 시 링크룸 메인 페이지로 이동
-                    router.push("/main/room");
-                  }}
+                  onClick={handleGroupNavigation}
                 >
                   <div className="flex items-center justify-center">
                     <UsersRound size={16} className="mr-1" />

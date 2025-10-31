@@ -76,9 +76,7 @@ export const useCategoryPage = ({
         try {
           const youtubeIds = await linkService.getYoutubeVideoIds(categoryId);
           setVideoIds(youtubeIds);
-        } catch (err) {
-          console.warn("YouTube 비디오 ID 가져오기 실패:", err);
-        }
+        } catch (err) {}
 
         saveLinksToStorage(convertedLinks);
       } else {
@@ -130,9 +128,7 @@ export const useCategoryPage = ({
       try {
         const youtubeIds = await linkService.getYoutubeVideoIds(category.id);
         setVideoIds(youtubeIds);
-      } catch (err) {
-        console.warn("YouTube 비디오 ID 갱신 실패:", err);
-      }
+      } catch (err) {}
     } catch (error) {
       console.error("링크 생성 실패:", error);
       setError("링크 생성에 실패했습니다. 다시 시도해주세요.");
