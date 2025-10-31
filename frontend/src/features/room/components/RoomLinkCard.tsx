@@ -1,5 +1,6 @@
 import React from "react";
 import { RoomLinkListDto } from "../type/room";
+import { Favicon } from "@/components/Favicon";
 
 interface RoomLinkCardProps {
   link: RoomLinkListDto;
@@ -80,7 +81,7 @@ export const RoomLinkCard: React.FC<RoomLinkCardProps> = ({
         </svg>
       </button>
       {/* 썸네일 */}
-      <div className="w-full h-32 bg-gray-100 flex items-center justify-center">
+      <div className="w-full h-32 bg-gray-100 flex items-center justify-center relative">
         {link.thumbnailImageUrl ? (
           <img
             src={link.thumbnailImageUrl}
@@ -95,6 +96,17 @@ export const RoomLinkCard: React.FC<RoomLinkCardProps> = ({
             className="w-24 h-24 object-contain"
           />
         )}
+
+        {/* 파비콘 오버레이 */}
+        <div className="absolute bottom-2 right-2 bg-white rounded-full p-1 shadow-md">
+          <Favicon
+            url={link.url}
+            fallbackIcon="/link-placeholder.png"
+            size={20}
+            className="rounded"
+            alt={`${link.title} 사이트 아이콘`}
+          />
+        </div>
       </div>
       {/* 카드 내용 */}
       <div className="p-3">
@@ -136,16 +148,25 @@ export const RoomLinkCard: React.FC<RoomLinkCardProps> = ({
           </h3>
         )}
         {/* URL */}
-        <a
-          href={link.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-sm text-amber-600 hover:text-amber-800 hover:underline block truncate"
-          title={link.url}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {link.url}
-        </a>
+        <div className="flex items-center space-x-2">
+          <Favicon
+            url={link.url}
+            fallbackIcon="/link-placeholder.png"
+            size={14}
+            className="rounded flex-shrink-0"
+            alt={`${link.title} 사이트 아이콘`}
+          />
+          <a
+            href={link.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-amber-600 hover:text-amber-800 hover:underline truncate flex-1"
+            title={link.url}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {link.url}
+          </a>
+        </div>
       </div>
     </div>
   );

@@ -10,7 +10,7 @@ import {
 } from "@/features/category/components/PageStates";
 import { CategoryHeader } from "@/features/category/components/CategoryHeader";
 import { AddLinkForm } from "@/features/category/components/AddLinkForm";
-import { LinkGrid } from "@/features/category/components/LinkGrid";
+import { LinkListView } from "@/features/category/components/LinkListView";
 import YouTubePlayer from "@/components/YouTubePlayer";
 
 export default function CategoryPage() {
@@ -173,8 +173,8 @@ export default function CategoryPage() {
         onKeyPress={handleLinkKeyPress}
       />
 
-      {/* 링크 그리드 */}
-      <LinkGrid
+      {/* 링크 리스트 뷰 */}
+      <LinkListView
         links={category.links}
         categoryIndex={categoryIndex}
         editingLinkId={editingLinkId}
@@ -183,7 +183,9 @@ export default function CategoryPage() {
         onEditLink={startEditingLink}
         onDeleteLink={removeLink}
         onTitleChange={setEditingLinkTitle}
-        onSaveTitle={(linkId, title) => updateLinkTitle(linkId, title)}
+        onSaveTitle={(linkId: number, title: string) =>
+          updateLinkTitle(linkId, title)
+        }
         onCancelEdit={cancelEditingLink}
         onKeyPress={handleLinkTitleKeyPress}
       />
