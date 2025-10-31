@@ -5,6 +5,8 @@ import React, {
   useState,
   useContext,
   useEffect,
+  useCallback,
+  useMemo,
   ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
@@ -57,64 +59,77 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
 
     checkAuthStatus();
-  }, []); // 로그인 함수
-  const login = async (loginId: string, password: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      await authService.login({ loginId, password });
-      const userInfoData = await authService.getCurrentUser();
-      setUserInfo(userInfoData);
-      setIsLoggedIn(true);
+  }, []);
 
-      // 로그인 성공 후 첫 번째 카테고리 페이지로 이동
+  // 로그인 함수 메모이제이션
+  const login = useCallback(
+    async (loginId: string, password: string) => {
+      setLoading(true);
+      setError(null);
       try {
-        const categories = await categoryService.getCategoriesByUserId(
-          userInfoData.id
-        );
-        if (categories && categories.length > 0) {
-          // 첫 번째 카테고리로 이동
-          router.push(`/main/category/${categories[0].id}`);
-        } else {
-          // 카테고리가 없으면 마이페이지로 이동
+        await authService.login({ loginId, password });
+        const userInfoData = await authService.getCurrentUser();
+        setUserInfo(userInfoData);
+        setIsLoggedIn(true);
+
+        // 로그인 성공 후 첫 번째 카테고리 페이지로 이동
+        try {
+          const categories = await categoryService.getCategoriesByUserId(
+            userInfoData.id
+          );
+          if (categories && categories.length > 0) {
+            // 첫 번째 카테고리로 이동
+            router.push(`/main/category/${categories[0].id}`);
+          } else {
+            // 카테고리가 없으면 마이페이지로 이동
+            router.push("/main/myPage");
+          }
+        } catch (categoryError) {
+          console.error("카테고리 로딩 실패:", categoryError);
+          // 카테고리 로딩 실패 시 마이페이지로 이동
           router.push("/main/myPage");
         }
-      } catch (categoryError) {
-        console.error("카테고리 로딩 실패:", categoryError);
-        // 카테고리 로딩 실패 시 마이페이지로 이동
-        router.push("/main/myPage");
+      } catch (err: any) {
+        setError(err.message || "로그인에 실패했습니다.");
+        throw err;
+      } finally {
+        setLoading(false);
       }
-    } catch (err: any) {
-      setError(err.message || "로그인에 실패했습니다.");
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
-  // 로그아웃 함수
-  const logout = async () => {
+    },
+    [router]
+  );
+
+  // 로그아웃 함수 메모이제이션
+  const logout = useCallback(async () => {
     await authService.logout();
     setIsLoggedIn(false);
     setUserInfo(null);
     router.push("/auth/login");
-  };
+  }, [router]);
 
-  // 사용자 정보 업데이트 함수
-  const updateUserInfo = (updatedInfo: Partial<UserResponseDto>) => {
-    if (userInfo) {
-      setUserInfo({ ...userInfo, ...updatedInfo });
-    }
-  };
+  // 사용자 정보 업데이트 함수 메모이제이션
+  const updateUserInfo = useCallback(
+    (updatedInfo: Partial<UserResponseDto>) => {
+      if (userInfo) {
+        setUserInfo({ ...userInfo, ...updatedInfo });
+      }
+    },
+    [userInfo]
+  );
 
-  const value = {
-    isLoggedIn,
-    userInfo,
-    login,
-    logout,
-    updateUserInfo,
-    loading,
-    error,
-  };
+  // Context value 메모이제이션
+  const value = useMemo(
+    () => ({
+      isLoggedIn,
+      userInfo,
+      login,
+      logout,
+      updateUserInfo,
+      loading,
+      error,
+    }),
+    [isLoggedIn, userInfo, login, logout, updateUserInfo, loading, error]
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { roomService } from "@/features/room/service/roomService";
@@ -24,6 +24,31 @@ export default function RoomListPage() {
   >([]);
   const [loadingInvitations, setLoadingInvitations] = useState(false);
   const [invitationError, setInvitationError] = useState<string | null>(null);
+
+  // 계산된 값들 메모이제이션
+  const roomCount = useMemo(() => rooms?.length || 0, [rooms?.length]);
+  const invitationCount = useMemo(
+    () => receivedInvitations?.length || 0,
+    [receivedInvitations?.length]
+  );
+
+  // 핸들러들 메모이제이션
+  const handleShowCreateForm = useCallback(() => {
+    setShowCreateForm(true);
+  }, []);
+
+  const handleHideCreateForm = useCallback(() => {
+    setShowCreateForm(false);
+    setNewRoomName("");
+    setError(null);
+  }, []);
+
+  const handleRoomClick = useCallback(
+    (roomId: number) => {
+      router.push(`/main/room/${roomId}`);
+    },
+    [router]
+  );
 
   // 방 목록 로드
   // 받은 초대 목록 로드 함수
@@ -58,41 +83,47 @@ export default function RoomListPage() {
   }, [userInfo?.id]);
 
   // 초대 수락 핸들러
-  const handleAcceptInvitation = async (roomMemberId: number) => {
-    if (!userInfo?.id) return;
+  const handleAcceptInvitation = useCallback(
+    async (roomMemberId: number) => {
+      if (!userInfo?.id) return;
 
-    try {
-      setInvitationError(null);
-      await roomService.acceptInvitation(roomMemberId);
+      try {
+        setInvitationError(null);
+        await roomService.acceptInvitation(roomMemberId);
 
-      // 초대 목록과 방 목록 새로고침
-      await loadReceivedInvitations();
-      await loadRooms();
+        // 초대 목록과 방 목록 새로고침
+        loadReceivedInvitations();
+        loadRooms();
 
-      return true;
-    } catch (error) {
-      setInvitationError("초대 수락에 실패했습니다. 다시 시도해주세요.");
-      return false;
-    }
-  };
+        return true;
+      } catch (error) {
+        setInvitationError("초대 수락에 실패했습니다. 다시 시도해주세요.");
+        return false;
+      }
+    },
+    [userInfo?.id, loadReceivedInvitations]
+  );
 
   // 초대 거절 핸들러
-  const handleDeclineInvitation = async (roomMemberId: number) => {
-    if (!userInfo?.id) return;
+  const handleDeclineInvitation = useCallback(
+    async (roomMemberId: number) => {
+      if (!userInfo?.id) return;
 
-    try {
-      setInvitationError(null);
-      await roomService.declineInvitation(roomMemberId);
+      try {
+        setInvitationError(null);
+        await roomService.declineInvitation(roomMemberId);
 
-      // 초대 목록 새로고침
-      await loadReceivedInvitations();
+        // 초대 목록 새로고침
+        await loadReceivedInvitations();
 
-      return true;
-    } catch (error) {
-      setInvitationError("초대 거절에 실패했습니다. 다시 시도해주세요.");
-      return false;
-    }
-  };
+        return true;
+      } catch (error) {
+        setInvitationError("초대 거절에 실패했습니다. 다시 시도해주세요.");
+        return false;
+      }
+    },
+    [userInfo?.id, loadReceivedInvitations]
+  );
 
   // 방 목록 로드 함수
   const loadRooms = useCallback(async () => {
@@ -132,26 +163,174 @@ export default function RoomListPage() {
   }, []);
 
   // 새 링크룸 생성
-  const handleCreateRoom = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newRoomName.trim() || !userInfo) return;
+  const handleCreateRoom = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!newRoomName.trim() || !userInfo) return;
 
-    try {
-      setCreating(true);
-      setError(null);
+      try {
+        setCreating(true);
+        setError(null);
 
-      const response = await roomService.createRoom({
-        name: newRoomName.trim(),
-      });
+        const response = await roomService.createRoom({
+          name: newRoomName.trim(),
+        });
 
-      // 생성 후 새 방으로 이동
-      router.push(`/main/room/${response.roomId}`);
-    } catch (err) {
-      setError("링크룸 생성에 실패했습니다. 다시 시도해주세요.");
-    } finally {
-      setCreating(false);
-    }
-  };
+        // 생성 후 새 방으로 이동
+        router.push(`/main/room/${response.roomId}`);
+      } catch (err) {
+        setError("링크룸 생성에 실패했습니다. 다시 시도해주세요.");
+      } finally {
+        setCreating(false);
+      }
+    },
+    [newRoomName, userInfo, router]
+  );
+
+  // 탭 버튼들 메모이제이션
+  const TabButtons = useMemo(
+    () => (
+      <div className="flex border-b border-gray-200 bg-gray-50">
+        <button
+          className={`flex-1 px-6 py-4 font-medium focus:outline-none transition-all duration-100 ${
+            activeTab === "myRooms"
+              ? "bg-white border-b-2 border-amber-600 text-amber-700"
+              : "text-gray-600 hover:text-amber-700 hover:bg-gray-100"
+          }`}
+          onClick={() => handleTabChange("myRooms")}
+        >
+          <div className="flex items-center justify-center space-x-2">
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <span>내 링크룸 ({roomCount})</span>
+          </div>
+        </button>
+        <button
+          className={`flex-1 px-6 py-4 font-medium focus:outline-none transition-all duration-100 ${
+            activeTab === "invitations"
+              ? "bg-white border-b-2 border-amber-600 text-amber-700"
+              : "text-gray-600 hover:text-amber-700 hover:bg-gray-100"
+          }`}
+          onClick={() => handleTabChange("invitations")}
+        >
+          <div className="flex items-center justify-center space-x-2">
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+              <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+            </svg>
+            <span>받은 초대 ({invitationCount})</span>
+          </div>
+        </button>
+      </div>
+    ),
+    [activeTab, handleTabChange, roomCount, invitationCount]
+  );
+
+  // 방 생성 폼 메모이제이션
+  const CreateRoomForm = useMemo(() => {
+    if (!showCreateForm) return null;
+
+    return (
+      <div className="mb-8">
+        <div className="bg-slate-50 rounded-xl p-6 border border-slate-200">
+          <div className="flex items-center mb-6">
+            <div className="w-10 h-10 bg-amber-600 rounded-lg flex items-center justify-center mr-4">
+              <svg
+                className="w-5 h-5 text-white"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-semibold text-gray-800">
+              새 링크룸 만들기
+            </h2>
+          </div>
+          <form onSubmit={handleCreateRoom} className="space-y-6">
+            <div>
+              <label
+                htmlFor="roomName"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                링크룸 이름
+              </label>
+              <input
+                type="text"
+                id="roomName"
+                value={newRoomName}
+                onChange={(e) => setNewRoomName(e.target.value)}
+                className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all duration-200"
+                placeholder="예: 개발 팀 링크 모음"
+                required
+                autoFocus
+                disabled={creating}
+              />
+            </div>
+            <div className="flex justify-end space-x-3 pt-4">
+              <button
+                type="button"
+                onClick={handleHideCreateForm}
+                className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all duration-200 font-medium"
+                disabled={creating}
+              >
+                취소
+              </button>
+              <button
+                type="submit"
+                className={`px-6 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-all duration-200 font-medium shadow-sm hover:shadow-md ${
+                  creating ? "opacity-70 cursor-not-allowed" : ""
+                }`}
+                disabled={creating || !newRoomName.trim()}
+              >
+                {creating ? (
+                  <div className="flex items-center">
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                    생성 중...
+                  </div>
+                ) : (
+                  "생성하기"
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }, [
+    showCreateForm,
+    handleCreateRoom,
+    newRoomName,
+    creating,
+    handleHideCreateForm,
+  ]);
 
   if (loading) {
     return (
@@ -206,7 +385,7 @@ export default function RoomListPage() {
                 </div>
                 {activeTab === "myRooms" && (
                   <button
-                    onClick={() => setShowCreateForm(true)}
+                    onClick={handleShowCreateForm}
                     className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-lg transition-all duration-200 flex items-center shadow-sm hover:shadow-md"
                   >
                     <svg
@@ -228,51 +407,7 @@ export default function RoomListPage() {
             </div>
 
             {/* 탭 메뉴 */}
-            <div className="flex border-b border-gray-200 bg-gray-50">
-              <button
-                className={`flex-1 px-6 py-4 font-medium focus:outline-none transition-all duration-100 ${
-                  activeTab === "myRooms"
-                    ? "bg-white border-b-2 border-amber-600 text-amber-700"
-                    : "text-gray-600 hover:text-amber-700 hover:bg-gray-100"
-                }`}
-                onClick={() => handleTabChange("myRooms")}
-              >
-                <div className="flex items-center justify-center space-x-2">
-                  <svg
-                    className="w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span>내 링크룸 ({rooms.length})</span>
-                </div>
-              </button>
-              <button
-                className={`flex-1 px-6 py-4 font-medium focus:outline-none transition-all duration-100 ${
-                  activeTab === "invitations"
-                    ? "bg-white border-b-2 border-amber-600 text-amber-700"
-                    : "text-gray-600 hover:text-amber-700 hover:bg-gray-100"
-                }`}
-                onClick={() => handleTabChange("invitations")}
-              >
-                <div className="flex items-center justify-center space-x-2">
-                  <svg
-                    className="w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                  </svg>
-                  <span>받은 초대 ({receivedInvitations.length})</span>
-                </div>
-              </button>
-            </div>
+            {TabButtons}
           </div>
         </div>
 
@@ -301,100 +436,7 @@ export default function RoomListPage() {
           {/* 내 링크룸 탭 */}
           {activeTab === "myRooms" && (
             <div className="p-6 animate-in fade-in duration-150">
-              {/* 링크룸 생성 폼 */}
-              {showCreateForm && (
-                <div className="mb-8">
-                  <div className="bg-slate-50 rounded-xl p-6 border border-slate-200">
-                    <div className="flex items-center mb-6">
-                      <div className="w-10 h-10 bg-amber-600 rounded-lg flex items-center justify-center mr-4">
-                        <svg
-                          className="w-5 h-5 text-white"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </div>
-                      <h2 className="text-2xl font-semibold text-gray-800">
-                        새 링크룸 만들기
-                      </h2>
-                    </div>
-                    <form onSubmit={handleCreateRoom} className="space-y-6">
-                      <div>
-                        <label
-                          htmlFor="roomName"
-                          className="block text-sm font-medium text-gray-700 mb-2"
-                        >
-                          링크룸 이름
-                        </label>
-                        <input
-                          type="text"
-                          id="roomName"
-                          value={newRoomName}
-                          onChange={(e) => setNewRoomName(e.target.value)}
-                          className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all duration-200"
-                          placeholder="예: 개발 팀 링크 모음"
-                          required
-                          autoFocus
-                          disabled={creating}
-                        />
-                      </div>
-                      <div className="flex justify-end space-x-3 pt-4">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setShowCreateForm(false);
-                            setNewRoomName("");
-                            setError(null);
-                          }}
-                          className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all duration-200 font-medium"
-                          disabled={creating}
-                        >
-                          취소
-                        </button>
-                        <button
-                          type="submit"
-                          className={`px-6 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-all duration-200 font-medium shadow-sm hover:shadow-md ${
-                            creating ? "opacity-70 cursor-not-allowed" : ""
-                          }`}
-                          disabled={creating || !newRoomName.trim()}
-                        >
-                          {creating ? (
-                            <div className="flex items-center">
-                              <svg
-                                className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                              >
-                                <circle
-                                  className="opacity-25"
-                                  cx="12"
-                                  cy="12"
-                                  r="10"
-                                  stroke="currentColor"
-                                  strokeWidth="4"
-                                />
-                                <path
-                                  className="opacity-75"
-                                  fill="currentColor"
-                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                />
-                              </svg>
-                              생성 중...
-                            </div>
-                          ) : (
-                            "생성하기"
-                          )}
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-              )}
+              {CreateRoomForm}
 
               {/* 내 링크룸 목록 */}
               {rooms.length === 0 ? (
@@ -422,7 +464,7 @@ export default function RoomListPage() {
                     첫 번째 링크룸을 만들어보세요!
                   </p>
                   <button
-                    onClick={() => setShowCreateForm(true)}
+                    onClick={handleShowCreateForm}
                     className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
                   >
                     링크룸 만들기
@@ -434,7 +476,7 @@ export default function RoomListPage() {
                     <div
                       key={room.id}
                       className="group flex items-center justify-between p-6 hover:bg-slate-50 transition-all duration-200 cursor-pointer first:pt-0"
-                      onClick={() => router.push(`/main/room/${room.id}`)}
+                      onClick={() => handleRoomClick(room.id)}
                     >
                       <div className="flex items-center space-x-4 flex-1">
                         {/* 룸 아이콘 */}
@@ -550,7 +592,7 @@ export default function RoomListPage() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <button
-                onClick={() => setShowCreateForm(true)}
+                onClick={handleShowCreateForm}
                 className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-8 py-4 rounded-xl transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:scale-105 flex items-center"
               >
                 <svg
