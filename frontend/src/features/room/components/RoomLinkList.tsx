@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { RoomChat } from "./RoomChat";
 import { RoomLinkListDto, RoomLinkDto } from "../type/room";
 import { addLink, updateLink, deleteLink } from "../service/roomChatService";
-import { RoomLinkCard } from "./RoomLinkCard";
+import { RoomLinkListView } from "./RoomLinkListView";
 
 interface RoomLinkListProps {
   links: RoomLinkListDto[];
@@ -121,57 +121,54 @@ export const RoomLinkList: React.FC<RoomLinkListProps> = ({
     <div className="p-0 mb-0">
       <h2 className="text-xl font-semibold mb-4">공유된 링크</h2>
       {/* 링크 목록 */}
-      {links.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 mb-6">
-          {links.map((link, idx) =>
-            link.id != null ? (
-              <RoomLinkCard
-                key={`${link.id}-${idx}`}
-                link={link}
-                editing={editingId === link.id}
-                editingTitle={editForm.title}
-                submitting={submitting}
-                onEdit={startEdit}
-                onDelete={handleDelete}
-                onTitleChange={(title) => setEditForm((f) => ({ ...f, title }))}
-                onSaveTitle={async (id, title) => {
-                  setEditForm((f) => ({ ...f, title }));
-                  setSubmitting(true);
-                  try {
-                    await updateLink(roomId, id, {
-                      title,
-                      url: link.url,
-                      thumbnailImageUrl: link.thumbnailImageUrl ?? "",
-                    });
-                    setEditingId(null);
-                  } finally {
-                    setSubmitting(false);
-                  }
-                }}
-                onCancelEdit={() => setEditingId(null)}
-                onKeyPress={(e, id) => {
-                  if (e.key === "Enter") {
-                    setSubmitting(true);
-                    updateLink(roomId, id, {
-                      title: editForm.title,
-                      url: link.url,
-                      thumbnailImageUrl: link.thumbnailImageUrl ?? "",
-                    })
-                      .then(() => setEditingId(null))
-                      .finally(() => setSubmitting(false));
-                  } else if (e.key === "Escape") {
-                    setEditingId(null);
-                  }
-                }}
-              />
-            ) : null
-          )}
-        </div>
-      ) : (
-        <p className="text-gray-500 text-center py-8">
-          이 링크룸에는 아직 공유된 링크가 없습니다.
-        </p>
-      )}
+      <div className="mb-6">
+        <RoomLinkListView
+          links={links}
+          editingLinkId={editingId}
+          editingLinkTitle={editForm.title}
+          submittingId={submitting ? editingId : null}
+          onEditLink={startEdit}
+          onDeleteLink={handleDelete}
+          onTitleChange={(title: string) =>
+            setEditForm((f) => ({ ...f, title }))
+          }
+          onSaveTitle={async (id: number, title: string) => {
+            setEditForm((f) => ({ ...f, title }));
+            setSubmitting(true);
+            try {
+              const linkToUpdate = links.find((link) => link.id === id);
+              if (linkToUpdate) {
+                await updateLink(roomId, id, {
+                  title,
+                  url: linkToUpdate.url,
+                  thumbnailImageUrl: linkToUpdate.thumbnailImageUrl ?? "",
+                });
+              }
+              setEditingId(null);
+            } finally {
+              setSubmitting(false);
+            }
+          }}
+          onCancelEdit={() => setEditingId(null)}
+          onKeyPress={(e: React.KeyboardEvent, id: number) => {
+            if (e.key === "Enter") {
+              const linkToUpdate = links.find((link) => link.id === id);
+              if (linkToUpdate) {
+                setSubmitting(true);
+                updateLink(roomId, id, {
+                  title: editForm.title,
+                  url: linkToUpdate.url,
+                  thumbnailImageUrl: linkToUpdate.thumbnailImageUrl ?? "",
+                })
+                  .then(() => setEditingId(null))
+                  .finally(() => setSubmitting(false));
+              }
+            } else if (e.key === "Escape") {
+              setEditingId(null);
+            }
+          }}
+        />
+      </div>
 
       {/* 링크 목록 아래에 채팅과 추가폼을 가로로 배치 (빈 공간 최소화, 높이 맞춤) */}
       <div className="flex flex-row gap-4 items-stretch mb-0">
