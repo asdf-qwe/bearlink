@@ -75,12 +75,9 @@ export const useRoomPage = ({ roomId, userId }: UseRoomPageProps) => {
 
     try {
       setLoadingInvitations(true);
-      console.log("받은 초대 목록 로딩 시작...");
       const invitationsList = await roomService.getMyInvitations();
-      console.log("받은 초대 목록:", invitationsList);
       setReceivedInvitations(invitationsList || []);
     } catch (err) {
-      console.error("초대 목록 로딩 실패:", err);
       setReceivedInvitations([]);
       setError(
         "초대 목록을 불러오는데 실패했습니다. 서버에 연결할 수 없거나 권한이 없습니다."
@@ -97,9 +94,7 @@ export const useRoomPage = ({ roomId, userId }: UseRoomPageProps) => {
 
       try {
         setLoadingFriends(true);
-        console.log(`방 ID ${roomId}에 대한 친구 목록 로딩 시작...`);
         const friendsList = await roomService.getInvitableFriends(roomId);
-        console.log("받은 친구 목록:", friendsList);
 
         if (friendsList && friendsList.length > 0) {
           // 초대 상태별로 친구 수 카운트
@@ -118,8 +113,6 @@ export const useRoomPage = ({ roomId, userId }: UseRoomPageProps) => {
               statusCount.NOT_INVITED++;
             }
           });
-
-          console.log("초대 상태 통계:", statusCount);
         }
 
         setInvitableFriends(friendsList || []);
@@ -159,7 +152,7 @@ export const useRoomPage = ({ roomId, userId }: UseRoomPageProps) => {
       // 3. 멤버 목록 받아오기
       try {
         const membersList = await roomService.getMembers(roomId);
-        console.log(`멤버 목록 조회 성공: ${membersList.length}명`);
+
         const transformedMembers = membersList.map((member: any) => ({
           id: member.userId,
           userId: member.userId,
@@ -169,12 +162,9 @@ export const useRoomPage = ({ roomId, userId }: UseRoomPageProps) => {
         }));
         setMembers(transformedMembers);
       } catch (err) {
-        console.warn("링크룸 멤버 가져오기 실패:", err);
         setMembers([]);
       }
-      console.log(`링크룸(ID: ${roomId}) 정보 및 데이터 로드 완료`);
     } catch (err) {
-      console.error("링크룸 로딩 실패:", err);
       setError("링크룸을 불러오는데 실패했습니다.");
     } finally {
       setLoading(false);
@@ -199,7 +189,6 @@ export const useRoomPage = ({ roomId, userId }: UseRoomPageProps) => {
 
         return true;
       } catch (error) {
-        console.error("사용자 초대 실패:", error);
         setError("사용자 초대에 실패했습니다. 다시 시도해주세요.");
         return false;
       }
@@ -220,7 +209,6 @@ export const useRoomPage = ({ roomId, userId }: UseRoomPageProps) => {
       setRoom(updatedRoom);
       setEditingRoom(false);
     } catch (error) {
-      console.error("링크룸 이름 업데이트 실패:", error);
       setError("링크룸 이름 수정에 실패했습니다. 다시 시도해주세요.");
       setRoomName(room.name);
     }
@@ -246,7 +234,6 @@ export const useRoomPage = ({ roomId, userId }: UseRoomPageProps) => {
         await loadRoom();
         return true;
       } catch (error) {
-        console.error("초대 수락 실패:", error);
         setError("초대 수락에 실패했습니다. 다시 시도해주세요.");
         return false;
       }
@@ -265,7 +252,6 @@ export const useRoomPage = ({ roomId, userId }: UseRoomPageProps) => {
         await loadReceivedInvitations();
         return true;
       } catch (error) {
-        console.error("초대 거절 실패:", error);
         setError("초대 거절에 실패했습니다. 다시 시도해주세요.");
         return false;
       }

@@ -5,8 +5,7 @@ spring:
     ansi:
       enabled: ALWAYS
   profiles:
-    active: prod
-    include: secret
+    active: dev
   config:
     import: optional:application-secret.yml  # ✅ 명시적 로딩 추가!
   datasource:
@@ -41,11 +40,11 @@ custom:
     frontUrl: "http://${custom.dev.cookieDomain}:3000"
     backUrl: "http://${custom.dev.cookieDomain}:${server.port}"
   prod:
-    cookieDomain: mingleservice.site
+    cookieDomain: bearlink.kr
     frontUrl: "https://www.${custom.prod.cookieDomain}"
     backUrl: "https://api.blog.${custom.prod.cookieDomain}"
   site:
-    name: "MINGLE DEV"
+    name: "BEARLINK"
     cookie:
       secure: false
       sameSite: Lax

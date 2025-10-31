@@ -28,7 +28,7 @@ public class Link extends BaseEntity {
 
     private String title;
     private String url;
-    private String thumbnailImageUrl;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")

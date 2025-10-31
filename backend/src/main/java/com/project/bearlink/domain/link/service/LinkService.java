@@ -31,7 +31,6 @@ public class LinkService {
     private final LinkRepository linkRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
-    private final LinkPreviewService linkPreviewService;
     private final RedisTemplate<String, String> redisStringTemplate;
 
     @Transactional(readOnly = false)
@@ -42,13 +41,9 @@ public class LinkService {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
 
-        LinkPreviewDto preview = linkPreviewService.extract(req.getUrl());
-        String title = StringUtils.hasText(req.getTitle()) ? req.getTitle() : preview.getTitle();
-
         Link link = Link.builder()
-                .title(title)
+                .title(req.getTitle())
                 .url(req.getUrl())
-                .thumbnailImageUrl(preview.getThumbnailImageUrl())
                 .category(category)
                 .user(user)
                 .build();
@@ -64,8 +59,7 @@ public class LinkService {
                 .map(link -> new LinkResponseDto(
                         link.getId(),
                         link.getTitle(),
-                        link.getUrl(),
-                        link.getThumbnailImageUrl()
+                        link.getUrl()
                 ))
                 .collect(Collectors.toList());
     }

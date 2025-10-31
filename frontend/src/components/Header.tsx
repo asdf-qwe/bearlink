@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { LogOut, LogIn, User } from "lucide-react";
 import { categoryService } from "@/features/category/service/categoryService";
 
@@ -19,33 +19,36 @@ export default function Header() {
       : "text-amber-100 hover:text-white";
   };
   // 링크룸 클릭 핸들러 - 첫 번째 카테고리 또는 메인 카테고리 페이지로 이동
-  const handleLinkRoomClick = async (e: React.MouseEvent) => {
-    e.preventDefault();
+  const handleLinkRoomClick = useCallback(
+    async (e: React.MouseEvent) => {
+      e.preventDefault();
 
-    if (!isLoggedIn || !userInfo) {
-      router.push("/auth/login");
-      return;
-    }
+      if (!isLoggedIn || !userInfo) {
+        router.push("/auth/login");
+        return;
+      }
 
-    try {
-      // 사용자의 카테고리 목록을 가져옴
-      const categories = await categoryService.getCategoriesByUserId(
-        userInfo.id
-      );
+      try {
+        // 사용자의 카테고리 목록을 가져옴
+        const categories = await categoryService.getCategoriesByUserId(
+          userInfo.id
+        );
 
-      if (categories && categories.length > 0) {
-        // 카테고리가 있으면 첫 번째 카테고리로 이동
-        router.push(`/main/category/${categories[0].id}`);
-      } else {
-        // 카테고리가 없으면 카테고리 메인 페이지로 이동
+        if (categories && categories.length > 0) {
+          // 카테고리가 있으면 첫 번째 카테고리로 이동
+          router.push(`/main/category/${categories[0].id}`);
+        } else {
+          // 카테고리가 없으면 카테고리 메인 페이지로 이동
+          router.push("/main/category");
+        }
+      } catch (error) {
+        console.error("카테고리 조회 실패:", error);
+        // 에러 발생 시 카테고리 메인 페이지로 이동
         router.push("/main/category");
       }
-    } catch (error) {
-      console.error("카테고리 조회 실패:", error);
-      // 에러 발생 시 카테고리 메인 페이지로 이동
-      router.push("/main/category");
-    }
-  };
+    },
+    [isLoggedIn, userInfo, router]
+  );
 
   // 사용자 메뉴 외부 클릭 시 닫기
   useEffect(() => {

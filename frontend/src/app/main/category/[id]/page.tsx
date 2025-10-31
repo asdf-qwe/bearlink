@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { useEffect, useRef } from "react";
 import { useCategoryPage } from "@/features/category/hooks/useCategoryPage";
 import {
   LoadingState,
@@ -9,8 +10,11 @@ import {
   NotFoundState,
 } from "@/features/category/components/PageStates";
 import { CategoryHeader } from "@/features/category/components/CategoryHeader";
-import { AddLinkForm } from "@/features/category/components/AddLinkForm";
-import { LinkGrid } from "@/features/category/components/LinkGrid";
+import {
+  AddLinkForm,
+  AddLinkButton,
+} from "@/features/category/components/AddLinkForm";
+import { LinkListView } from "@/features/category/components/LinkListView";
 import YouTubePlayer from "@/components/YouTubePlayer";
 
 export default function CategoryPage() {
@@ -18,6 +22,7 @@ export default function CategoryPage() {
   const router = useRouter();
   const { userInfo } = useAuth();
   const categoryId = Number(params.id as string);
+  const formContainerRef = useRef<HTMLDivElement>(null);
 
   const {
     // State
@@ -123,6 +128,24 @@ export default function CategoryPage() {
     setError(null);
   };
 
+  // 외부 클릭 시 폼 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        formContainerRef.current &&
+        !formContainerRef.current.contains(event.target as Node) &&
+        showAddLinkForm
+      ) {
+        handleAddLinkFormCancel();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showAddLinkForm]);
+
   // 로딩 상태
   if (loading) {
     return <LoadingState message="카테고리를 불러오는 중..." />;
@@ -140,17 +163,40 @@ export default function CategoryPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 bg-amber-50 min-h-screen">
-      {/* 카테고리 헤더 */}
-      <CategoryHeader
-        categoryName={categoryName}
-        editingCategory={editingCategory}
-        error={error && editingCategory ? error : null}
-        onEditStart={handleCategoryEditStart}
-        onCategoryNameChange={handleCategoryNameChange}
-        onSave={saveCategoryName}
-        onCancel={handleCategoryEditCancel}
-        onKeyPress={handleCategoryKeyPress}
-      />
+      {/* 헤더 영역 - 카테고리 제목과 새 링크 추가 버튼 */}
+      <div className="flex justify-between items-start mb-6">
+        <div className="flex-1">
+          <CategoryHeader
+            categoryName={categoryName}
+            editingCategory={editingCategory}
+            error={error && editingCategory ? error : null}
+            onEditStart={handleCategoryEditStart}
+            onCategoryNameChange={handleCategoryNameChange}
+            onSave={saveCategoryName}
+            onCancel={handleCategoryEditCancel}
+            onKeyPress={handleCategoryKeyPress}
+          />
+        </div>
+
+        {/* 새 링크 추가 버튼과 오버레이 폼 컨테이너 */}
+        <div className="ml-4 relative" ref={formContainerRef}>
+          <AddLinkButton onShowForm={() => setShowAddLinkForm(true)} />
+
+          {/* 오버레이 폼 */}
+          <AddLinkForm
+            newLinkData={newLinkData}
+            showAddLinkForm={showAddLinkForm}
+            addingLink={addingLink}
+            error={error && !editingCategory ? error : null}
+            onUrlChange={handleUrlChange}
+            onTitleChange={handleTitleChange}
+            onSubmit={addLink}
+            onCancel={handleAddLinkFormCancel}
+            onShowForm={() => setShowAddLinkForm(true)}
+            onKeyPress={handleLinkKeyPress}
+          />
+        </div>
+      </div>
 
       {/* YouTube 플레이어 */}
       {videoIds.length > 0 && (
@@ -159,22 +205,8 @@ export default function CategoryPage() {
         </div>
       )}
 
-      {/* 링크 추가 폼 */}
-      <AddLinkForm
-        newLinkData={newLinkData}
-        showAddLinkForm={showAddLinkForm}
-        addingLink={addingLink}
-        error={error && !editingCategory ? error : null}
-        onUrlChange={handleUrlChange}
-        onTitleChange={handleTitleChange}
-        onSubmit={addLink}
-        onCancel={handleAddLinkFormCancel}
-        onShowForm={() => setShowAddLinkForm(true)}
-        onKeyPress={handleLinkKeyPress}
-      />
-
-      {/* 링크 그리드 */}
-      <LinkGrid
+      {/* 링크 리스트 뷰 */}
+      <LinkListView
         links={category.links}
         categoryIndex={categoryIndex}
         editingLinkId={editingLinkId}
@@ -183,7 +215,9 @@ export default function CategoryPage() {
         onEditLink={startEditingLink}
         onDeleteLink={removeLink}
         onTitleChange={setEditingLinkTitle}
-        onSaveTitle={(linkId, title) => updateLinkTitle(linkId, title)}
+        onSaveTitle={(linkId: number, title: string) =>
+          updateLinkTitle(linkId, title)
+        }
         onCancelEdit={cancelEditingLink}
         onKeyPress={handleLinkTitleKeyPress}
       />

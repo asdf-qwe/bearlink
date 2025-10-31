@@ -17,6 +17,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "BearLink",
   description: "Link sharing platform",
+  icons: {
+    icon: "/bear_icon.ico",
+    shortcut: "/bear_icon.ico",
+    apple: "/bear_icon.ico",
+  },
 };
 
 export default function RootLayout({
@@ -26,6 +31,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
+      <head>
+        <link rel="icon" href="/bear_icon.ico" sizes="any" />
+        <link rel="icon" href="/bear_icon.ico" type="image/x-icon" />
+        <link rel="shortcut icon" href="/bear_icon.ico" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         style={{ backgroundColor: "#FFFBEB" }}

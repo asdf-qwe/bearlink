@@ -1,6 +1,7 @@
 import { Edit, Trash2, Loader2 } from "lucide-react";
 import { LinkItem } from "@/features/category/types/categoryPageTypes";
 import { getCategoryIcon } from "@/features/category/utils/categoryIcons";
+import { Favicon } from "@/components/Favicon";
 
 interface LinkCardProps {
   link: LinkItem;
@@ -83,7 +84,7 @@ export const LinkCard = ({
       </button>
 
       {/* 썸네일 */}
-      <div className="w-full h-48 bg-gray-100 flex items-center justify-center">
+      <div className="w-full h-48 bg-gray-100 flex items-center justify-center relative">
         {link.thumbnailImageUrl ? (
           <img
             src={link.thumbnailImageUrl}
@@ -98,6 +99,17 @@ export const LinkCard = ({
             className="w-24 h-24 object-contain"
           />
         )}
+
+        {/* 파비콘 오버레이 */}
+        <div className="absolute bottom-2 right-2 bg-white rounded-full p-1 shadow-md">
+          <Favicon
+            url={link.url}
+            fallbackIcon={getCategoryIcon(categoryIndex)}
+            size={24}
+            className="rounded"
+            alt={`${link.title} 사이트 아이콘`}
+          />
+        </div>
       </div>
 
       {/* 카드 내용 */}
@@ -141,15 +153,24 @@ export const LinkCard = ({
         )}
 
         {/* URL */}
-        <a
-          href={link.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-sm text-amber-600 hover:text-amber-800 hover:underline block truncate"
-          title={link.url}
-        >
-          {link.url}
-        </a>
+        <div className="flex items-center space-x-2">
+          <Favicon
+            url={link.url}
+            fallbackIcon={getCategoryIcon(categoryIndex)}
+            size={16}
+            className="rounded flex-shrink-0"
+            alt={`${link.title} 사이트 아이콘`}
+          />
+          <a
+            href={link.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-amber-600 hover:text-amber-800 hover:underline truncate flex-1"
+            title={link.url}
+          >
+            {link.url}
+          </a>
+        </div>
       </div>
 
       {/* 클릭 영역 (전체 카드) - 편집 모드가 아닐 때만 활성화 */}

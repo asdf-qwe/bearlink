@@ -36,16 +36,12 @@ export function connectToRoom(
     webSocketFactory: () => socket,
     reconnectDelay: 5000, // 자동 재연결
     onConnect: () => {
-      console.log(`✅ Connected to room ${roomId}`);
-
       stompClient?.subscribe(`/topic/room/${roomId}`, (message) => {
         const msg: RoomMessageDto = JSON.parse(message.body);
         onMessage(msg);
       });
     },
-    onDisconnect: () => {
-      console.log(`❌ Disconnected from room ${roomId}`);
-    },
+    onDisconnect: () => {},
     onStompError: (frame) => {
       console.error("STOMP Error:", frame.headers["message"]);
     },

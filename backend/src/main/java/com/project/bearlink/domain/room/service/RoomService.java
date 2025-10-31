@@ -156,8 +156,7 @@ public class RoomService {
                 .map(link -> new RoomLinkListDto(
                         link.getId(),
                         link.getTitle(),
-                        link.getUrl(),
-                        link.getThumbnailImageUrl()
+                        link.getUrl()
                 ))
                 .collect(Collectors.toList());
     }
