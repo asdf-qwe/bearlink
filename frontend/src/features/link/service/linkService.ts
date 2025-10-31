@@ -53,7 +53,6 @@ class LinkService {
       }
 
       const result = await response.json();
-      console.log("백엔드에서 받은 링크 데이터:", result);
 
       return Array.isArray(result) ? result : [];
     } catch (error) {
@@ -127,7 +126,6 @@ class LinkService {
       }
 
       const videoIds: string[] = await response.json();
-      console.log("백엔드에서 받은 YouTube 비디오 ID:", videoIds);
 
       return Array.isArray(videoIds) ? videoIds : [];
     } catch (error) {

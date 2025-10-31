@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -31,12 +31,32 @@ export default function CategoryPage() {
   const { userInfo } = useAuth();
   const router = useRouter();
 
+  // 계산된 값들 메모이제이션
+  const hasCategoriesData = useMemo(
+    () => categories.length > 0,
+    [categories.length]
+  );
+  const shouldShowIntro = useMemo(
+    () => !isLoading && !hasCategoriesData,
+    [isLoading, hasCategoriesData]
+  );
+
+  // 핸들러 메모이제이션
+  const handleSidebarAddClick = useCallback(() => {
+    const sidebarAddButton = document.querySelector(
+      '[aria-label="카테고리 추가 폼 열기"]'
+    );
+    if (sidebarAddButton) {
+      (sidebarAddButton as HTMLButtonElement).click();
+    }
+  }, []);
+
   // 첫 번째 카테고리로 자동 리디렉션 하기 위한 효과
   useEffect(() => {
-    if (!isLoading && categories.length > 0) {
+    if (!isLoading && hasCategoriesData) {
       router.push(`/main/category/${categories[0].id}`);
     }
-  }, [categories, isLoading, router]);
+  }, [categories, isLoading, router, hasCategoriesData]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -50,7 +70,6 @@ export default function CategoryPage() {
         );
         setCategories(categoriesData);
       } catch (err) {
-        console.error("카테고리 로딩 실패:", err);
         setError("카테고리를 불러오는데 문제가 발생했습니다.");
       } finally {
         setIsLoading(false);
@@ -59,6 +78,30 @@ export default function CategoryPage() {
 
     fetchCategories();
   }, [userInfo?.id]);
+
+  // 카테고리 그리드 컴포넌트 메모이제이션
+  const CategoryGrid = useMemo(() => {
+    if (!hasCategoriesData) return null;
+
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {categories.map((category, index) => (
+          <Link href={`/main/category/${category.id}`} key={category.id}>
+            <div className="bg-white shadow-md rounded-lg p-6 hover:shadow-lg transition-shadow cursor-pointer border border-gray-100">
+              <div className="flex items-center mb-3">
+                <img
+                  src={getCategoryIcon(index)}
+                  alt={`카테고리 아이콘`}
+                  className="w-8 h-8 object-contain mr-3"
+                />
+                <h3 className="font-bold text-xl">{category.name}</h3>
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+    );
+  }, [hasCategoriesData, categories]);
 
   if (isLoading) {
     return (
@@ -80,7 +123,7 @@ export default function CategoryPage() {
       </p>
 
       {/* 소개 영역 - 카테고리가 있는 경우 숨김 처리 */}
-      {!isLoading && categories.length === 0 && (
+      {shouldShowIntro && (
         <div className="mb-12 bg-amber-50 rounded-lg p-6">
           <h2 className="text-2xl font-semibold mb-4">베어링크 시작하기</h2>
           <div className="aspect-video rounded-lg overflow-hidden shadow-lg bg-white flex items-center justify-center">
@@ -122,7 +165,7 @@ export default function CategoryPage() {
           </div>
         )}
 
-        {!isLoading && categories.length === 0 && !error ? (
+        {shouldShowIntro && !error ? (
           <div className="bg-amber-50 border border-amber-200 p-6 rounded-lg text-center">
             <h3 className="text-lg font-semibold text-amber-700 mb-2">
               아직 카테고리가 없습니다
@@ -139,27 +182,12 @@ export default function CategoryPage() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {categories.map((category, index) => (
-              <Link href={`/main/category/${category.id}`} key={category.id}>
-                <div className="bg-white shadow-md rounded-lg p-6 hover:shadow-lg transition-shadow cursor-pointer border border-gray-100">
-                  <div className="flex items-center mb-3">
-                    <img
-                      src={getCategoryIcon(index)}
-                      alt={`카테고리 아이콘`}
-                      className="w-8 h-8 object-contain mr-3"
-                    />
-                    <h3 className="font-bold text-xl">{category.name}</h3>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+          CategoryGrid
         )}
       </div>
 
       {/* 시작하기 섹션 */}
-      {!isLoading && categories.length === 0 && (
+      {shouldShowIntro && (
         <div className="bg-amber-50 rounded-lg p-6">
           <h2 className="text-2xl font-semibold mb-2">지금 바로 시작하세요!</h2>
           <p className="mb-4">
@@ -167,14 +195,7 @@ export default function CategoryPage() {
           </p>
           <div className="flex space-x-4">
             <button
-              onClick={() => {
-                const sidebarAddButton = document.querySelector(
-                  '[aria-label="카테고리 추가 폼 열기"]'
-                );
-                if (sidebarAddButton) {
-                  (sidebarAddButton as HTMLButtonElement).click();
-                }
-              }}
+              onClick={handleSidebarAddClick}
               className="px-6 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors"
             >
               새 카테고리 만들기

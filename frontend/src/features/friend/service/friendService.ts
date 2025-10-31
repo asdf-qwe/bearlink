@@ -14,7 +14,6 @@ class FriendService {
       const response = await api.get("/api/v1/friend");
       return Array.isArray(response.data) ? response.data : response || [];
     } catch (error) {
-      console.error("친구 목록 조회 실패:", error);
       throw error;
     }
   }
@@ -22,9 +21,6 @@ class FriendService {
   // 친구 신청 보내기
   async sendFriendRequest(requestData: FriendRequestDto): Promise<void> {
     try {
-      console.log("친구 신청 요청 데이터:", requestData);
-      console.log("receiverId:", requestData.receiverId);
-
       if (!requestData.receiverId) {
         throw new Error("receiverId가 필요합니다.");
       }
@@ -83,8 +79,6 @@ class FriendService {
       const response = await api.get("/api/v1/friend/find-friend", {
         params: { keyword, page, size },
       });
-
-      console.log("친구 검색 API 원본 응답:", response);
 
       // 백엔드에서 이미 필터링된 결과만 반환하므로 모든 결과를 그대로 사용
       const content = Array.isArray(response?.content)

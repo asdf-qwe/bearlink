@@ -17,18 +17,14 @@ export const InvitationsList: React.FC<InvitationsListProps> = ({
     try {
       await roomService.acceptInvitation(id);
       onRefresh();
-    } catch (error) {
-      console.error("초대 수락 실패:", error);
-    }
+    } catch (error) {}
   };
 
   const handleDeclineInvitation = async (id: number) => {
     try {
       await roomService.declineInvitation(id);
       onRefresh();
-    } catch (error) {
-      console.error("초대 거절 실패:", error);
-    }
+    } catch (error) {}
   };
 
   if (loading) {
