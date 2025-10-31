@@ -21,7 +21,7 @@ public class RoomLink extends BaseEntity {
 
     private String title;
     private String url;
-    private String thumbnailImageUrl;
+
 
     @ManyToOne
     private LinkRoom room;

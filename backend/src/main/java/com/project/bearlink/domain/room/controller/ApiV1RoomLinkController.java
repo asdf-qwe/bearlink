@@ -2,7 +2,7 @@ package com.project.bearlink.domain.room.controller;
 
 import com.project.bearlink.domain.chat.entity.MessageType;
 import com.project.bearlink.domain.link.dto.LinkPreviewDto;
-import com.project.bearlink.domain.link.service.LinkPreviewService;
+
 import com.project.bearlink.domain.room.dto.RoomLinkDto;
 import com.project.bearlink.domain.room.dto.RoomLinkListDto;
 import com.project.bearlink.domain.room.dto.RoomMessageDto;
@@ -32,7 +32,7 @@ public class ApiV1RoomLinkController {
     private final RoomLinkRepository roomLinkRepository;
     private final UserRepository userRepository;
     private final SimpMessagingTemplate messagingTemplate;
-    private final LinkPreviewService linkPreviewService;
+
 
     @PostMapping
     public ResponseEntity<?> addLink(@PathVariable Long roomId, @RequestBody RoomLinkDto dto, @AuthenticationPrincipal SecurityUser currentUser) {
@@ -43,14 +43,9 @@ public class ApiV1RoomLinkController {
                 .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다"));
 
 
-        String thumbnail = linkPreviewService.extract(dto.getUrl()) != null
-                ? linkPreviewService.extract(dto.getUrl()).getThumbnailImageUrl()
-                : null;
-
         RoomLink saved = roomLinkRepository.save(RoomLink.builder()
                 .title(dto.getTitle())
                 .url(dto.getUrl())
-                .thumbnailImageUrl(thumbnail)
                 .room(room)
                 .creator(user)
                 .build());
@@ -63,7 +58,6 @@ public class ApiV1RoomLinkController {
                 .content(saved.getId().toString())
                 .linkTitle(saved.getTitle())
                 .linkUrl(saved.getUrl())
-                .linkThumbnail(saved.getThumbnailImageUrl())
                 .build();
 
         messagingTemplate.convertAndSend("/topic/room/" + roomId, message);
@@ -76,16 +70,8 @@ public class ApiV1RoomLinkController {
         RoomLink link = roomLinkRepository.findById(linkId)
                 .orElseThrow(() -> new IllegalArgumentException("링크를 찾을 수 없습니다"));
 
-
-        String thumbnail = link.getUrl().equals(dto.getUrl())
-                ? link.getThumbnailImageUrl()
-                : Optional.ofNullable(linkPreviewService.extract(dto.getUrl()))
-                .map(LinkPreviewDto::getThumbnailImageUrl)
-                .orElse(null);
-
         link.setTitle(dto.getTitle());
         link.setUrl(dto.getUrl());
-        link.setThumbnailImageUrl(thumbnail);
         roomLinkRepository.save(link);
 
         RoomMessageDto message = RoomMessageDto.builder()
@@ -96,7 +82,6 @@ public class ApiV1RoomLinkController {
                 .content(linkId.toString())
                 .linkTitle(dto.getTitle())
                 .linkUrl(dto.getUrl())
-                .linkThumbnail(thumbnail)
                 .build();
 
         messagingTemplate.convertAndSend("/topic/room/" + roomId, message);
@@ -129,8 +114,7 @@ public class ApiV1RoomLinkController {
                 .map(link -> new RoomLinkListDto(
                         link.getId(),
                         link.getTitle(),
-                        link.getUrl(),
-                        link.getThumbnailImageUrl()
+                        link.getUrl()
                 ))
                 .collect(Collectors.toList());
 

@@ -21,5 +21,4 @@ public class RoomMessageDto {
     // (선택) 링크 작업시 사용할 데이터
     private String linkTitle;
     private String linkUrl;
-    private String linkThumbnail;
 }

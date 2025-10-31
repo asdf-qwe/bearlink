@@ -11,5 +11,4 @@ public class RoomLinkListDto {
     private Long id;
     private String title;
     private String url;
-    private String thumbnailImageUrl;
 }
