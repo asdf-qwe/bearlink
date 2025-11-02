@@ -268,75 +268,42 @@ export default function RoomPage() {
         {MobileNavigation}
         {DesktopBreadcrumb}
 
-        {/* 헤더 영역 */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              {/* 뒤로가기 버튼 */}
+        {/* 헤더 영역 - 개인 카테고리 스타일로 변경 */}
+        <div className="flex justify-between items-start mb-6">
+          <div className="flex-1 ml-8">
+            <div className="flex items-center space-x-3 mb-2">
+              <h1 className="text-3xl font-bold text-amber-900">
+                {room?.name || "링크룸"}
+              </h1>
+              {isOwner && (
+                <span className="px-3 py-1 bg-amber-100 text-amber-700 text-sm font-medium rounded-full">
+                  방장
+                </span>
+              )}
+            </div>
+            <div className="flex items-center space-x-2 text-amber-700 text-sm">
               <button
                 onClick={handleBackToRoomList}
-                className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-colors group md:mr-2"
-                title="링크룸 목록으로 돌아가기"
+                className="hover:text-amber-600 transition-colors"
               >
-                <svg
-                  className="w-5 h-5 text-gray-600 group-hover:text-amber-600 transition-colors"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
+                링크룸 목록
               </button>
-              <div className="w-12 h-12 bg-amber-600 rounded-lg flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5z"
-                    clipRule="evenodd"
-                  />
-                  <path
-                    fillRule="evenodd"
-                    d="M7.414 15.414a2 2 0 01-2.828-2.828l3-3a2 2 0 012.828 0 1 1 0 001.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 00-1.414-1.414l-1.5 1.5z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <div>
-                <div className="flex items-center space-x-2">
-                  <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
-                    {room?.name || "링크룸"}
-                  </h1>
-                </div>
-                <div className="flex items-center space-x-2 text-gray-500 text-sm">
-                  <button
-                    onClick={handleBackToRoomList}
-                    className="hover:text-amber-600 transition-colors"
-                  >
-                    링크룸 목록
-                  </button>
-                  <span>•</span>
-                  <span>{memberCount}명의 멤버</span>
-                  <span>•</span>
-                  <span>{linkCount}개의 링크</span>
-                </div>
-              </div>
+              <span>•</span>
+              <span>{memberCount}명의 멤버</span>
+              <span>•</span>
+              <span>{linkCount}개의 링크</span>
             </div>
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={handleNewLinkClick}
-                className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors shadow-sm"
-              >
+          </div>
+
+          {/* 새 링크 추가 버튼 */}
+          <div className="ml-4">
+            <button
+              onClick={handleNewLinkClick}
+              className="group flex items-center gap-2 px-4 py-2.5 bg-white border border-amber-200 text-amber-700 rounded-lg shadow-sm hover:bg-amber-100 hover:border-amber-400 hover:shadow-lg active:scale-95 transition-all duration-200 font-medium text-sm"
+            >
+              <div className="w-5 h-5 bg-amber-100 group-hover:bg-amber-300 group-active:bg-amber-400 rounded-full flex items-center justify-center transition-colors duration-200">
                 <svg
-                  className="w-4 h-4"
+                  className="w-3 h-3 text-amber-600 group-hover:text-amber-700"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -348,14 +315,9 @@ export default function RoomPage() {
                     d="M12 4v16m8-8H4"
                   />
                 </svg>
-                <span>새 링크 추가</span>
-              </button>
-              {isOwner && (
-                <span className="px-3 py-1 bg-amber-100 text-amber-700 text-sm font-medium rounded-full">
-                  방장
-                </span>
-              )}
-            </div>
+              </div>
+              <span>링크 추가</span>
+            </button>
           </div>
         </div>
 
