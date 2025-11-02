@@ -4,14 +4,16 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useState, useRef, useEffect, useCallback } from "react";
-import { LogOut, LogIn, User } from "lucide-react";
+import { LogOut, LogIn, User, Menu, X } from "lucide-react";
 import { categoryService } from "@/features/category/service/categoryService";
 
 export default function Header() {
   const pathname = usePathname();
   const { isLoggedIn, userInfo, logout } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const isActive = (path: string) => {
     return pathname === path
@@ -50,11 +52,17 @@ export default function Header() {
     [isLoggedIn, userInfo, router]
   );
 
-  // 사용자 메뉴 외부 클릭 시 닫기
+  // 사용자 메뉴 및 모바일 메뉴 외부 클릭 시 닫기
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setShowUserMenu(false);
+      }
+      if (
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(event.target as Node)
+      ) {
+        setShowMobileMenu(false);
       }
     }
 
@@ -65,7 +73,7 @@ export default function Header() {
   }, []);
   return (
     <header
-      className="shadow-md border-b border-stone-300"
+      className="shadow-md border-b border-stone-300 relative"
       style={{
         backgroundImage: "url('/namu.jpg')",
         backgroundSize: "cover",
@@ -74,22 +82,23 @@ export default function Header() {
       }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex">
-            {" "}
+        <div className="flex justify-between h-14 sm:h-16">
+          <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center">
               <Link
                 href="/"
-                className="text-xl font-bold text-white"
+                className="text-lg sm:text-xl font-bold text-white"
                 style={{ textShadow: "2px 2px 4px rgba(0,0,0,0.5)" }}
               >
                 BearLink
               </Link>
             </div>
-            <nav className="ml-10 flex items-center space-x-8">
+
+            {/* Desktop Navigation */}
+            <nav className="hidden md:ml-8 lg:ml-10 md:flex items-center space-x-4 lg:space-x-8">
               <Link
                 href="/"
-                className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${isActive(
+                className={`inline-flex items-center px-1 pt-1 text-sm font-medium transition-colors ${isActive(
                   "/"
                 )}`}
               >
@@ -97,7 +106,7 @@ export default function Header() {
               </Link>
               <button
                 onClick={handleLinkRoomClick}
-                className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
+                className={`inline-flex items-center px-1 pt-1 text-sm font-medium transition-colors ${
                   pathname.startsWith("/main/category") ||
                   pathname.startsWith("/main/room")
                     ? "text-white border-b-[3px] border-amber-200"
@@ -108,7 +117,7 @@ export default function Header() {
               </button>
               <Link
                 href="/main/myPage"
-                className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
+                className={`inline-flex items-center px-1 pt-1 text-sm font-medium transition-colors ${
                   pathname.startsWith("/main/myPage")
                     ? "text-white border-b-[3px] border-amber-200"
                     : "text-amber-100 hover:text-white"
@@ -118,10 +127,12 @@ export default function Header() {
               </Link>
             </nav>
           </div>
+
           <div className="flex items-center">
-            <button className="p-2 rounded-full text-amber-100 hover:text-white focus:outline-none">
+            {/* Search Button - Hidden on small screens */}
+            <button className="hidden sm:block p-2 rounded-full text-amber-100 hover:text-white focus:outline-none transition-colors">
               <svg
-                className="h-6 w-6"
+                className="h-5 w-5 lg:h-6 lg:w-6"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -134,25 +145,29 @@ export default function Header() {
                 />
               </svg>
             </button>
-            <div className="ml-3 relative">
+
+            {/* Desktop User Menu */}
+            <div className="hidden md:block ml-3 relative">
               <div>
                 {isLoggedIn ? (
                   <button
                     onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="p-1 rounded-full text-amber-100 hover:text-white focus:outline-none flex items-center"
+                    className="p-1 rounded-full text-amber-100 hover:text-white focus:outline-none flex items-center transition-colors"
                   >
-                    <User className="h-6 w-6" />{" "}
-                    <span className="ml-2 hidden sm:inline-block">
+                    <User className="h-5 w-5 lg:h-6 lg:w-6" />
+                    <span className="ml-2 hidden lg:inline-block text-sm">
                       {userInfo?.nickname}
                     </span>
                   </button>
                 ) : (
                   <Link
                     href="/auth/login"
-                    className="p-1 rounded-full text-amber-100 hover:text-white focus:outline-none flex items-center"
+                    className="p-1 rounded-full text-amber-100 hover:text-white focus:outline-none flex items-center transition-colors"
                   >
-                    <LogIn className="h-6 w-6" />
-                    <span className="ml-2 hidden sm:inline-block">로그인</span>
+                    <LogIn className="h-5 w-5 lg:h-6 lg:w-6" />
+                    <span className="ml-2 hidden lg:inline-block text-sm">
+                      로그인
+                    </span>
                   </Link>
                 )}
               </div>
@@ -164,13 +179,17 @@ export default function Header() {
                 >
                   <Link
                     href="/main/myPage"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    onClick={() => setShowUserMenu(false)}
                   >
                     프로필
                   </Link>
                   <button
-                    onClick={logout}
-                    className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => {
+                      logout();
+                      setShowUserMenu(false);
+                    }}
+                    className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                   >
                     <div className="flex items-center">
                       <LogOut className="h-4 w-4 mr-2" />
@@ -180,8 +199,102 @@ export default function Header() {
                 </div>
               )}
             </div>
+
+            {/* Mobile Menu Button */}
+            <div className="md:hidden ml-2">
+              <button
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                className="p-2 rounded-full text-amber-100 hover:text-white focus:outline-none transition-colors"
+              >
+                {showMobileMenu ? (
+                  <X className="h-6 w-6" />
+                ) : (
+                  <Menu className="h-6 w-6" />
+                )}
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* Mobile Navigation Menu */}
+        {showMobileMenu && (
+          <div
+            ref={mobileMenuRef}
+            className="md:hidden absolute top-full left-0 right-0 bg-amber-900 bg-opacity-95 backdrop-blur-sm border-t border-amber-700 z-40"
+          >
+            <div className="px-4 py-3 space-y-1">
+              <Link
+                href="/"
+                className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                  pathname === "/"
+                    ? "text-white bg-amber-800"
+                    : "text-amber-100 hover:text-white hover:bg-amber-800"
+                }`}
+                onClick={() => setShowMobileMenu(false)}
+              >
+                홈
+              </Link>
+              <button
+                onClick={(e) => {
+                  handleLinkRoomClick(e);
+                  setShowMobileMenu(false);
+                }}
+                className={`w-full text-left block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                  pathname.startsWith("/main/category") ||
+                  pathname.startsWith("/main/room")
+                    ? "text-white bg-amber-800"
+                    : "text-amber-100 hover:text-white hover:bg-amber-800"
+                }`}
+              >
+                링크룸
+              </button>
+              <Link
+                href="/main/myPage"
+                className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                  pathname.startsWith("/main/myPage")
+                    ? "text-white bg-amber-800"
+                    : "text-amber-100 hover:text-white hover:bg-amber-800"
+                }`}
+                onClick={() => setShowMobileMenu(false)}
+              >
+                마이페이지
+              </Link>
+
+              <div className="border-t border-amber-700 pt-3 mt-3">
+                {isLoggedIn ? (
+                  <>
+                    <div className="px-3 py-2 text-amber-200 text-sm">
+                      {userInfo?.nickname}님
+                    </div>
+                    <button
+                      onClick={() => {
+                        logout();
+                        setShowMobileMenu(false);
+                      }}
+                      className="w-full text-left block px-3 py-2 rounded-md text-base font-medium text-amber-100 hover:text-white hover:bg-amber-800 transition-colors"
+                    >
+                      <div className="flex items-center">
+                        <LogOut className="h-4 w-4 mr-2" />
+                        로그아웃
+                      </div>
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    href="/auth/login"
+                    className="w-full text-left block px-3 py-2 rounded-md text-base font-medium text-amber-100 hover:text-white hover:bg-amber-800 transition-colors"
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    <div className="flex items-center">
+                      <LogIn className="h-4 w-4 mr-2" />
+                      로그인
+                    </div>
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );

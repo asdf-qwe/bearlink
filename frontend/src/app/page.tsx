@@ -39,38 +39,38 @@ export default function HomePage() {
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-amber-50 p-8">
+      <div className="min-h-screen bg-amber-50 p-4 sm:p-6 lg:p-8">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl font-bold text-center text-amber-900 mb-12">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-center text-amber-900 mb-8 sm:mb-10 lg:mb-12 px-4">
             산속 오두막에 링크를 모아보세요
           </h1>
 
           {/* 메인 컨텐츠 - 이미지와 서비스 안내 */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center mb-12 sm:mb-14 lg:mb-16">
             {/* 왼쪽: 삽화 이미지 */}
             <div className="order-2 lg:order-1">
               <BackgroundCard
                 imageUrl="/home.png"
-                className="h-[24rem] w-full"
+                className="h-48 sm:h-64 lg:h-80 xl:h-96 w-full"
               />
             </div>
 
             {/* 오른쪽: 서비스 안내 */}
-            <div className="order-1 lg:order-2 space-y-6">
+            <div className="order-1 lg:order-2 space-y-4 sm:space-y-6 px-4 sm:px-0">
               <div className="text-center lg:text-left">
-                <h2 className="text-3xl font-bold text-amber-900 mb-4">
+                <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-amber-900 mb-3 sm:mb-4 leading-tight">
                   BearLink와 함께하는 스마트 링크 관리
                 </h2>
-                <p className="text-lg text-amber-700 mb-6 leading-relaxed">
+                <p className="text-base sm:text-lg lg:text-xl text-amber-700 mb-4 sm:mb-6 leading-relaxed">
                   흩어진 링크들을 깔끔하게 정리하고, 친구들과 공유해보세요.
                 </p>
               </div>
 
-              <div className="space-y-4">
-                <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-white border-2 border-amber-600 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+              <div className="space-y-3 sm:space-y-4">
+                <div className="flex items-start space-x-3 sm:space-x-4">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 bg-white border-2 border-amber-600 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
                     <svg
-                      className="w-5 h-5 text-amber-600"
+                      className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -83,20 +83,20 @@ export default function HomePage() {
                       />
                     </svg>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-amber-900">
+                  <div className="flex-1">
+                    <h3 className="text-sm sm:text-base font-semibold text-amber-900">
                       카테고리별 정리
                     </h3>
-                    <p className="text-amber-700 text-sm">
+                    <p className="text-amber-700 text-xs sm:text-sm leading-relaxed">
                       웹사이트를 주제별로 깔끔하게 분류하여 관리하세요
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-white border-2 border-amber-600 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                <div className="flex items-start space-x-3 sm:space-x-4">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 bg-white border-2 border-amber-600 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
                     <svg
-                      className="w-5 h-5 text-amber-600"
+                      className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -109,20 +109,20 @@ export default function HomePage() {
                       />
                     </svg>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-amber-900">
+                  <div className="flex-1">
+                    <h3 className="text-sm sm:text-base font-semibold text-amber-900">
                       링크룸 공유
                     </h3>
-                    <p className="text-amber-700 text-sm">
+                    <p className="text-amber-700 text-xs sm:text-sm leading-relaxed">
                       친구들과 함께 링크를 공유하고 실시간으로 소통하세요
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-white border-2 border-amber-600 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                <div className="flex items-start space-x-3 sm:space-x-4">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 bg-white border-2 border-amber-600 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
                     <svg
-                      className="w-5 h-5 text-amber-600"
+                      className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -135,22 +135,24 @@ export default function HomePage() {
                       />
                     </svg>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-amber-900">빠른 접근</h3>
-                    <p className="text-amber-700 text-sm">
+                  <div className="flex-1">
+                    <h3 className="text-sm sm:text-base font-semibold text-amber-900">
+                      빠른 접근
+                    </h3>
+                    <p className="text-amber-700 text-xs sm:text-sm leading-relaxed">
                       즐겨찾기한 사이트에 클릭 한 번으로 바로 접속하세요
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="pt-4">
+              <div className="pt-3 sm:pt-4 lg:pt-6">
                 <button
                   onClick={handleStartClick}
-                  className="w-full lg:w-auto px-8 py-3 bg-white border-2 border-amber-600 text-amber-600 text-lg font-semibold rounded-lg hover:bg-amber-50 hover:border-amber-700 hover:text-amber-700 transition-colors shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                  className="w-full lg:w-auto px-6 sm:px-8 py-2.5 sm:py-3 bg-white border-2 border-amber-600 text-amber-600 text-base sm:text-lg font-semibold rounded-lg hover:bg-amber-50 hover:border-amber-700 hover:text-amber-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 flex items-center justify-center gap-2"
                 >
                   <svg
-                    className="w-5 h-5"
+                    className="w-4 h-4 sm:w-5 sm:h-5"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
