@@ -20,10 +20,12 @@ interface AddLinkFormProps {
 export const AddLinkButton = ({ onShowForm }: { onShowForm: () => void }) => (
   <button
     onClick={onShowForm}
-    className="flex items-center space-x-2 px-4 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors text-base font-medium"
+    className="group flex items-center gap-2 px-4 py-2.5 bg-white border border-amber-200 text-amber-700 rounded-lg shadow-sm hover:bg-amber-100 hover:border-amber-400 hover:shadow-lg active:scale-95 transition-all duration-200 font-medium text-sm"
   >
-    <Plus size={20} />
-    <span>새 링크 추가</span>
+    <div className="w-5 h-5 bg-amber-100 group-hover:bg-amber-300 group-active:bg-amber-400 rounded-full flex items-center justify-center transition-colors duration-200">
+      <Plus size={14} className="text-amber-600 group-hover:text-amber-700" />
+    </div>
+    <span>링크 추가</span>
   </button>
 );
 

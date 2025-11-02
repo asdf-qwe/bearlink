@@ -84,7 +84,7 @@ export const AddLinkOverlay: React.FC<AddLinkOverlayProps> = ({
           {/* 폼 */}
           <div className="space-y-4 mb-4">
             <div>
-              <label className="block text-sm font-medium text-amber-700 mb-1">
+              <label className="block text-xs font-medium text-amber-700 mb-1">
                 URL
               </label>
               <input
@@ -95,13 +95,13 @@ export const AddLinkOverlay: React.FC<AddLinkOverlayProps> = ({
                 }
                 onKeyPress={handleKeyPress}
                 placeholder="https://example.com"
-                className="w-full p-3 border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
+                className="w-full p-2 text-sm border border-amber-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500"
                 disabled={submitting}
                 autoFocus
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-amber-700 mb-1">
+              <label className="block text-xs font-medium text-amber-700 mb-1">
                 제목
               </label>
               <input
@@ -111,8 +111,8 @@ export const AddLinkOverlay: React.FC<AddLinkOverlayProps> = ({
                   setForm((f) => ({ ...f, title: e.target.value }))
                 }
                 onKeyPress={handleKeyPress}
-                placeholder="제목 (선택사항)"
-                className="w-full p-3 border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
+                placeholder="제목 (유튜브는 자동 생성)"
+                className="w-full p-2 text-sm border border-amber-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500"
                 disabled={submitting}
               />
             </div>
@@ -123,10 +123,10 @@ export const AddLinkOverlay: React.FC<AddLinkOverlayProps> = ({
             <button
               onClick={handleAdd}
               disabled={!form.url.trim() || submitting}
-              className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+              className="flex items-center space-x-1 px-3 py-1.5 text-sm bg-amber-600 text-white rounded hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting && (
-                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24">
+                <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24">
                   <circle
                     className="opacity-25"
                     cx="12"
@@ -146,7 +146,7 @@ export const AddLinkOverlay: React.FC<AddLinkOverlayProps> = ({
             </button>
             <button
               onClick={handleClose}
-              className="px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm"
+              className="px-3 py-1.5 text-sm bg-gray-600 text-white rounded hover:bg-gray-700"
               disabled={submitting}
             >
               취소
