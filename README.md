@@ -59,6 +59,10 @@ BearLink는 흩어져 있는 링크들을 손쉽게 저장하고 분류할 수 �
 - 사용자 개인정보 관리
 - 친구 목록 및 수락/삭제 기능
 
+### ERD
+<img width="2196" height="729" alt="e0a4fe4d-8c1e-4171-9091-73593a3fdd70" src="https://github.com/user-attachments/assets/192c5a4c-b4c6-4ba8-8b1f-6c828b106491" />
+
+
 <br/>
 
 ### 🧩 System Architecture
