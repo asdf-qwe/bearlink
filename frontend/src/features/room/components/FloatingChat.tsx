@@ -102,10 +102,16 @@ export const FloatingChat: React.FC<FloatingChatProps> = ({
     return (
       <button
         onClick={onToggle}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-amber-600 hover:bg-amber-700 text-white rounded-full shadow-lg flex items-center justify-center z-50 transition-all duration-200 hover:scale-105"
+        className="group fixed bottom-6 right-6 flex items-center gap-2 px-4 py-2.5 bg-white border border-amber-200 text-amber-700 rounded-lg shadow-lg hover:bg-amber-100 hover:border-amber-400 hover:shadow-xl active:scale-95 transition-all duration-200 font-medium text-sm z-50"
         aria-label="채팅 열기"
       >
-        <MessageCircle size={24} />
+        <div className="w-5 h-5 bg-amber-100 group-hover:bg-amber-300 group-active:bg-amber-400 rounded-full flex items-center justify-center transition-colors duration-200">
+          <MessageCircle
+            size={14}
+            className="text-amber-600 group-hover:text-amber-700"
+          />
+        </div>
+        <span>채팅</span>
       </button>
     );
   }
@@ -226,7 +232,7 @@ export const FloatingChat: React.FC<FloatingChatProps> = ({
               {/* 폼 */}
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-amber-700 mb-1">
+                  <label className="block text-xs font-medium text-amber-700 mb-1">
                     URL
                   </label>
                   <input
@@ -245,13 +251,13 @@ export const FloatingChat: React.FC<FloatingChatProps> = ({
                       }
                     }}
                     placeholder="https://example.com"
-                    className="w-full p-3 border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
+                    className="w-full p-2 text-sm border border-amber-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500"
                     disabled={submittingLink}
                     autoFocus
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-amber-700 mb-1">
+                  <label className="block text-xs font-medium text-amber-700 mb-1">
                     제목
                   </label>
                   <input
@@ -269,8 +275,8 @@ export const FloatingChat: React.FC<FloatingChatProps> = ({
                         handleAddLink();
                       }
                     }}
-                    placeholder="제목 (선택사항)"
-                    className="w-full p-3 border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
+                    placeholder="제목 (유튜브는 자동 생성)"
+                    className="w-full p-2 text-sm border border-amber-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500"
                     disabled={submittingLink}
                   />
                 </div>
@@ -283,10 +289,10 @@ export const FloatingChat: React.FC<FloatingChatProps> = ({
                 <button
                   onClick={handleAddLink}
                   disabled={!linkForm.url.trim() || submittingLink}
-                  className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+                  className="flex items-center space-x-1 px-3 py-1.5 text-sm bg-amber-600 text-white rounded hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {submittingLink && (
-                    <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24">
+                    <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24">
                       <circle
                         className="opacity-25"
                         cx="12"
@@ -310,7 +316,7 @@ export const FloatingChat: React.FC<FloatingChatProps> = ({
                     setLinkError("");
                     onToggle(); // 채팅창을 닫음
                   }}
-                  className="px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm"
+                  className="px-3 py-1.5 text-sm bg-gray-600 text-white rounded hover:bg-gray-700"
                   disabled={submittingLink}
                 >
                   취소
