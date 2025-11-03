@@ -111,12 +111,15 @@ export class ApiClient {
       method: "GET",
     });
 
-    if (!response.ok) {
-      throw new Error(`GET ${finalUrl} failed: ${response.status}`);
+    const text = await response.text();
+    const result = text ? JSON.parse(text) : null;
+
+    // ApiResponse 형태인지 확인하고 에러 처리
+    if (result && result.success !== undefined && !result.success) {
+      throw new Error(result.message);
     }
 
-    const text = await response.text();
-    return text ? JSON.parse(text) : null;
+    return result;
   }
 
   async post(url: string, data?: any, options: RequestInit = {}): Promise<any> {
@@ -126,13 +129,16 @@ export class ApiClient {
       body: data ? JSON.stringify(data) : undefined,
     });
 
-    if (!response.ok) {
-      throw new Error(`POST ${url} failed: ${response.status}`);
-    }
-
     // 응답이 비어있을 수 있으므로 체크
     const text = await response.text();
-    return text ? JSON.parse(text) : null;
+    const result = text ? JSON.parse(text) : null;
+
+    // ApiResponse 형태인지 확인하고 에러 처리
+    if (result && result.success !== undefined && !result.success) {
+      throw new Error(result.message);
+    }
+
+    return result;
   }
 
   async put(url: string, data?: any, options: RequestInit = {}): Promise<any> {
@@ -142,12 +148,15 @@ export class ApiClient {
       body: data ? JSON.stringify(data) : undefined,
     });
 
-    if (!response.ok) {
-      throw new Error(`PUT ${url} failed: ${response.status}`);
+    const text = await response.text();
+    const result = text ? JSON.parse(text) : null;
+
+    // ApiResponse 형태인지 확인하고 에러 처리
+    if (result && result.success !== undefined && !result.success) {
+      throw new Error(result.message);
     }
 
-    const text = await response.text();
-    return text ? JSON.parse(text) : null;
+    return result;
   }
 
   async delete(url: string, options: RequestInit = {}): Promise<any> {
@@ -156,12 +165,15 @@ export class ApiClient {
       method: "DELETE",
     });
 
-    if (!response.ok) {
-      throw new Error(`DELETE ${url} failed: ${response.status}`);
+    const text = await response.text();
+    const result = text ? JSON.parse(text) : null;
+
+    // ApiResponse 형태인지 확인하고 에러 처리
+    if (result && result.success !== undefined && !result.success) {
+      throw new Error(result.message);
     }
 
-    const text = await response.text();
-    return text ? JSON.parse(text) : null;
+    return result;
   }
 }
 

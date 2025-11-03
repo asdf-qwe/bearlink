@@ -1,5 +1,6 @@
 package com.project.bearlink.global.exception;
 
+import com.project.bearlink.global.response.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -9,17 +10,17 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ApiException.class)
-    public ResponseEntity<ErrorResponse> handleApiException(ApiException e) {
-        ErrorCode errorCode = e.getErrorCode();
+    public ResponseEntity<ApiResponse<Void>> handleApiException(ApiException e) {
+        ErrorCode code = e.getErrorCode();
         return ResponseEntity
-                .status(errorCode.getHttpStatus())
-                .body(new ErrorResponse(errorCode));
+                .status(code.getHttpStatus())
+                .body(ApiResponse.fail(code.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGeneralException(Exception e) {
+    public ResponseEntity<ApiResponse<Void>> handleGeneralException(Exception e) {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("INTERNAL_ERROR", e.getMessage()));
+                .body(ApiResponse.fail("서버 내부 오류가 발생했습니다."));
     }
 }

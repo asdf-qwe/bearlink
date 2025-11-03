@@ -21,11 +21,13 @@ class LinkService {
         }
       );
 
-      if (!response.ok) {
-        throw new Error(`링크 생성 실패: ${response.status}`);
+      const result: ApiResponse<string> = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message);
       }
 
-      return await response.text();
+      return result.message; // 성공 메시지 반환
     } catch (error) {
       console.error("링크 생성 중 오류:", error);
       throw error;
@@ -48,13 +50,13 @@ class LinkService {
         }
       );
 
-      if (!response.ok) {
-        throw new Error(`링크 조회 실패: ${response.status}`);
+      const result: ApiResponse<LinkResponseDto[]> = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message);
       }
 
-      const result = await response.json();
-
-      return Array.isArray(result) ? result : [];
+      return Array.isArray(result.data) ? result.data : [];
     } catch (error) {
       console.error("링크 조회 중 오류:", error);
       throw error;
@@ -75,18 +77,20 @@ class LinkService {
         }
       );
 
-      if (!response.ok) {
-        throw new Error(`링크 제목 수정 실패: ${response.status}`);
+      const result: ApiResponse<string> = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message);
       }
 
-      return await response.text();
+      return result.message; // 성공 메시지 반환
     } catch (error) {
       console.error("링크 제목 수정 중 오류:", error);
       throw error;
     }
   }
 
-  async deleteLink(linkId: number): Promise<void> {
+  async deleteLink(linkId: number): Promise<string> {
     try {
       const response = await fetch(
         `${API_BASE_URL}/api/v1/link?linkId=${linkId}`,
@@ -99,9 +103,13 @@ class LinkService {
         }
       );
 
-      if (!response.ok) {
-        throw new Error(`링크 삭제 실패: ${response.status}`);
+      const result: ApiResponse<string> = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message);
       }
+
+      return result.message; // 성공 메시지 반환
     } catch (error) {
       console.error("링크 삭제 중 오류:", error);
       throw error;

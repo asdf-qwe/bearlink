@@ -5,12 +5,54 @@ import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { categoryService } from "@/features/category/service/categoryService";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import Header from "@/components/Header";
 import BackgroundCard from "@/components/BackgroundCard";
 
 export default function HomePage() {
-  const { isLoggedIn, userInfo } = useAuth();
+  const { isLoggedIn, userInfo, loading } = useAuth();
   const router = useRouter();
+
+  // 사이트 첫 접속 시에만 로그인 상태 확인하여 자동 리다이렉트
+  useEffect(() => {
+    const autoRedirect = async () => {
+      // 로딩 중이면 대기
+      if (loading) return;
+
+      // 이미 초기 리다이렉트를 체크했는지 확인
+      const hasCheckedInitialRedirect = sessionStorage.getItem(
+        "hasCheckedInitialRedirect"
+      );
+
+      // 이미 체크했다면 리다이렉트하지 않음
+      if (hasCheckedInitialRedirect) return;
+
+      // 로그인되어 있으면 카테고리 페이지로 리다이렉트
+      if (isLoggedIn && userInfo) {
+        try {
+          const categories = await categoryService.getCategoriesByUserId(
+            userInfo.id
+          );
+          if (categories && categories.length > 0) {
+            // 첫 번째 카테고리로 이동
+            router.push(`/main/category/${categories[0].id}`);
+          } else {
+            // 카테고리가 없으면 마이페이지로 이동
+            router.push("/main/myPage");
+          }
+        } catch (error) {
+          console.error("카테고리 로딩 실패:", error);
+          // 에러 발생 시 마이페이지로 이동
+          router.push("/main/myPage");
+        }
+      }
+
+      // 초기 체크 완료 표시
+      sessionStorage.setItem("hasCheckedInitialRedirect", "true");
+    };
+
+    autoRedirect();
+  }, [loading, isLoggedIn, userInfo, router]);
 
   const handleStartClick = async () => {
     if (!isLoggedIn || !userInfo) {
@@ -36,6 +78,22 @@ export default function HomePage() {
       router.push("/main/myPage");
     }
   };
+
+  // 로딩 중이면 로딩 화면 표시
+  if (loading) {
+    return (
+      <>
+        <Header />
+        <div className="min-h-screen bg-amber-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
+            <p className="text-amber-700 text-lg">로딩 중...</p>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <Header />

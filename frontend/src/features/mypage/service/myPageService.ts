@@ -15,11 +15,13 @@ class MyPageService {
         credentials: "include", // 쿠키 인증 추가
       });
 
-      if (!response.ok) {
-        throw new Error(`프로필 업데이트 실패: ${response.status}`);
+      const result: ApiResponse<string> = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message);
       }
 
-      return await response.text();
+      return result.message;
     } catch (error) {
       console.error("프로필 업데이트 실패:", error);
       throw new Error("프로필 업데이트에 실패했습니다.");
@@ -60,13 +62,14 @@ class MyPageService {
         credentials: "include", // 쿠키 인증 추가
       });
 
-      if (!response.ok) {
-        throw new Error(`이미지 업로드 실패: ${response.status}`);
+      const result: ApiResponse<string> = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message);
       }
 
       // 업로드된 이미지 URL 반환
-      const result = await response.json();
-      return result.imageUrl || result.url || result;
+      return result.data;
     } catch (error) {
       throw new Error("이미지 업로드에 실패했습니다.");
     }
