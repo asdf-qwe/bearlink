@@ -21,6 +21,10 @@ public class ApiResponse<T> {
         return new ApiResponse<>(true, "요청이 성공했습니다.", null);
     }
 
+    public static <T> ApiResponse<T> ok(String message) {
+        return new ApiResponse<>(true, message, null);
+    }
+
     // 실패 응답
     public static <T> ApiResponse<T> fail(String message) {
         return new ApiResponse<>(false, message, null);

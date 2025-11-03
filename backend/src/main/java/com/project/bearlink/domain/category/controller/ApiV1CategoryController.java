@@ -4,7 +4,9 @@ import com.project.bearlink.domain.category.dto.CategoryRequest;
 import com.project.bearlink.domain.category.dto.CategoryResponse;
 import com.project.bearlink.domain.category.entity.Category;
 import com.project.bearlink.domain.category.service.CategoryService;
+import com.project.bearlink.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,27 +20,27 @@ public class ApiV1CategoryController {
 
 
     @PostMapping
-    public ResponseEntity<String> createCategory (@RequestBody CategoryRequest req,
+    public ResponseEntity<ApiResponse<String>> createCategory (@RequestBody CategoryRequest req,
                                                @RequestParam Long userId) {
         Category category = categoryService.createCategory(req, userId);
-        return ResponseEntity.ok("카테고리 생성12 " + category);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("생성 완료"));
     }
 
     @GetMapping
-    public ResponseEntity<List<CategoryResponse>> readCategory (@RequestParam Long userId) {
+    public ResponseEntity<ApiResponse<List<CategoryResponse>>> readCategory (@RequestParam Long userId) {
         List<CategoryResponse> categories = categoryService.getCategoriesByUserId(userId);
-        return ResponseEntity.ok(categories);
+        return ResponseEntity.ok(ApiResponse.ok(categories));
     }
 
     @PutMapping
-    public ResponseEntity<String> updateCategory(@RequestBody CategoryRequest req, @RequestParam Long categoryId) {
+    public ResponseEntity<ApiResponse<String>> updateCategory(@RequestBody CategoryRequest req, @RequestParam Long categoryId) {
         Category category = categoryService.updateCategory(req, categoryId);
-        return ResponseEntity.ok("수정 완료 " + category);
+        return ResponseEntity.ok(ApiResponse.ok("수정 완료"));
     }
 
     @DeleteMapping
-    public ResponseEntity<String> deleteCategory(@RequestParam Long categoryId) {
+    public ResponseEntity<ApiResponse<String>> deleteCategory(@RequestParam Long categoryId) {
         categoryService.deleteCategory(categoryId);
-        return ResponseEntity.ok("삭제 되었습니다");
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponse.ok("삭제 되었습니다"));
     }
 }

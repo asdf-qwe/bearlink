@@ -12,6 +12,17 @@ class FriendService {
   async getFriends(): Promise<FriendResponseDto[]> {
     try {
       const response = await api.get("/api/v1/friend");
+
+      // ApiResponse 형태인지 확인하고 처리
+      if (response.success !== undefined) {
+        const apiResponse = response as ApiResponse<FriendResponseDto[]>;
+        if (!apiResponse.success) {
+          throw new Error(apiResponse.message);
+        }
+        return Array.isArray(apiResponse.data) ? apiResponse.data : [];
+      }
+
+      // 기존 형태 호환성 유지
       return Array.isArray(response.data) ? response.data : response || [];
     } catch (error) {
       throw error;
@@ -19,13 +30,24 @@ class FriendService {
   }
 
   // 친구 신청 보내기
-  async sendFriendRequest(requestData: FriendRequestDto): Promise<void> {
+  async sendFriendRequest(requestData: FriendRequestDto): Promise<string> {
     try {
       if (!requestData.receiverId) {
         throw new Error("receiverId가 필요합니다.");
       }
 
-      await api.post("/api/v1/friend/request", requestData);
+      const response = await api.post("/api/v1/friend/request", requestData);
+
+      // ApiResponse 형태인지 확인하고 처리
+      if (response.success !== undefined) {
+        const apiResponse = response as ApiResponse<string>;
+        if (!apiResponse.success) {
+          throw new Error(apiResponse.message);
+        }
+        return apiResponse.message;
+      }
+
+      return "친구 신청이 완료되었습니다.";
     } catch (error) {
       console.error("친구 신청 실패:", error);
       throw error;
@@ -36,6 +58,17 @@ class FriendService {
   async getFriendRequests(): Promise<FriendResponseDto[]> {
     try {
       const response = await api.get("/api/v1/friend/requests");
+
+      // ApiResponse 형태인지 확인하고 처리
+      if (response.success !== undefined) {
+        const apiResponse = response as ApiResponse<FriendResponseDto[]>;
+        if (!apiResponse.success) {
+          throw new Error(apiResponse.message);
+        }
+        return Array.isArray(apiResponse.data) ? apiResponse.data : [];
+      }
+
+      // 기존 형태 호환성 유지
       return Array.isArray(response.data) ? response.data : response || [];
     } catch (error) {
       console.error("친구 신청 목록 조회 실패:", error);
@@ -44,9 +77,22 @@ class FriendService {
   }
 
   // 친구 신청 수락
-  async acceptFriendRequest(requestId: number): Promise<void> {
+  async acceptFriendRequest(requestId: number): Promise<string> {
     try {
-      await api.post(`/api/v1/friend/request/${requestId}/accept`);
+      const response = await api.post(
+        `/api/v1/friend/request/${requestId}/accept`
+      );
+
+      // ApiResponse 형태인지 확인하고 처리
+      if (response.success !== undefined) {
+        const apiResponse = response as ApiResponse<string>;
+        if (!apiResponse.success) {
+          throw new Error(apiResponse.message);
+        }
+        return apiResponse.message;
+      }
+
+      return "친구 신청을 수락했습니다.";
     } catch (error) {
       console.error("친구 신청 수락 실패:", error);
       throw error;
@@ -54,9 +100,22 @@ class FriendService {
   }
 
   // 친구 신청 거절
-  async rejectFriendRequest(requestId: number): Promise<void> {
+  async rejectFriendRequest(requestId: number): Promise<string> {
     try {
-      await api.post(`/api/v1/friend/request/${requestId}/reject`);
+      const response = await api.post(
+        `/api/v1/friend/request/${requestId}/reject`
+      );
+
+      // ApiResponse 형태인지 확인하고 처리
+      if (response.success !== undefined) {
+        const apiResponse = response as ApiResponse<string>;
+        if (!apiResponse.success) {
+          throw new Error(apiResponse.message);
+        }
+        return apiResponse.message;
+      }
+
+      return "친구 신청을 거절했습니다.";
     } catch (error) {
       console.error("친구 신청 거절 실패:", error);
       throw error;

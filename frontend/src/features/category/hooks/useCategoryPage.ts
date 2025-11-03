@@ -108,7 +108,12 @@ export const useCategoryPage = ({
         ...(newLinkData.title.trim() && { title: newLinkData.title.trim() }),
       };
 
-      await linkService.createLink(userId, category.id, linkRequestDto);
+      const createMessage = await linkService.createLink(
+        userId,
+        category.id,
+        linkRequestDto
+      );
+      console.log("링크 생성 성공:", createMessage); // 성공 메시지 로깅
 
       const updatedLinks = await linkService.getLinks(userId, category.id);
       const convertedLinks: LinkItem[] = updatedLinks.map((link) => ({
@@ -153,7 +158,9 @@ export const useCategoryPage = ({
       setError(null);
 
       try {
-        await linkService.deleteLink(linkId);
+        const deleteMessage = await linkService.deleteLink(linkId);
+        console.log("링크 삭제 성공:", deleteMessage); // 성공 메시지 로깅
+
         const updatedCategory = {
           ...category,
           links: category.links.filter((link) => link.id !== linkId),
@@ -177,7 +184,10 @@ export const useCategoryPage = ({
 
       try {
         setError(null);
-        await linkService.updateTitle(linkId, { title: newTitle.trim() });
+        const updateMessage = await linkService.updateTitle(linkId, {
+          title: newTitle.trim(),
+        });
+        console.log("링크 제목 수정 성공:", updateMessage); // 성공 메시지 로깅
 
         const updatedLinks = await linkService.getLinks(userId, category.id);
         const convertedLinks: LinkItem[] = updatedLinks.map((link) => ({

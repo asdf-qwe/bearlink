@@ -12,6 +12,7 @@ import com.project.bearlink.domain.room.repository.LinkRoomRepository;
 import com.project.bearlink.domain.room.repository.RoomLinkRepository;
 import com.project.bearlink.domain.user.user.entity.User;
 import com.project.bearlink.domain.user.user.repository.UserRepository;
+import com.project.bearlink.global.response.ApiResponse;
 import com.project.bearlink.global.security.auth.SecurityUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +36,7 @@ public class ApiV1RoomLinkController {
 
 
     @PostMapping
-    public ResponseEntity<?> addLink(@PathVariable Long roomId, @RequestBody RoomLinkDto dto, @AuthenticationPrincipal SecurityUser currentUser) {
+    public ResponseEntity<ApiResponse<?>> addLink(@PathVariable Long roomId, @RequestBody RoomLinkDto dto, @AuthenticationPrincipal SecurityUser currentUser) {
         LinkRoom room = linkRoomRepository.findById(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("방을 찾을 수 없습니다"));
 
@@ -62,11 +63,11 @@ public class ApiV1RoomLinkController {
 
         messagingTemplate.convertAndSend("/topic/room/" + roomId, message);
 
-        return ResponseEntity.ok(saved.getId());
+        return ResponseEntity.ok(ApiResponse.ok(saved.getId()));
     }
 
     @PutMapping("/{linkId}")
-    public ResponseEntity<?> updateLink(@PathVariable Long roomId, @PathVariable Long linkId, @RequestBody RoomLinkDto dto, @AuthenticationPrincipal SecurityUser currentUser) {
+    public ResponseEntity<ApiResponse<Void>> updateLink(@PathVariable Long roomId, @PathVariable Long linkId, @RequestBody RoomLinkDto dto, @AuthenticationPrincipal SecurityUser currentUser) {
         RoomLink link = roomLinkRepository.findById(linkId)
                 .orElseThrow(() -> new IllegalArgumentException("링크를 찾을 수 없습니다"));
 
@@ -86,11 +87,11 @@ public class ApiV1RoomLinkController {
 
         messagingTemplate.convertAndSend("/topic/room/" + roomId, message);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.ok());
     }
 
     @DeleteMapping("/{linkId}")
-    public ResponseEntity<?> deleteLink(@PathVariable Long roomId, @PathVariable Long linkId, @AuthenticationPrincipal SecurityUser currentUser) {
+    public ResponseEntity<ApiResponse<Void>> deleteLink(@PathVariable Long roomId, @PathVariable Long linkId, @AuthenticationPrincipal SecurityUser currentUser) {
         roomLinkRepository.deleteById(linkId);
 
         RoomMessageDto message = RoomMessageDto.builder()
@@ -103,11 +104,11 @@ public class ApiV1RoomLinkController {
 
         messagingTemplate.convertAndSend("/topic/room/" + roomId, message);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.ok());
     }
 
     @GetMapping
-    public ResponseEntity<List<RoomLinkListDto>> getLinks(@PathVariable Long roomId) {
+    public ResponseEntity<ApiResponse<List<RoomLinkListDto>>> getLinks(@PathVariable Long roomId) {
         List<RoomLink> links = roomLinkRepository.findByRoomId(roomId);
 
         List<RoomLinkListDto> result = links.stream()
@@ -118,6 +119,6 @@ public class ApiV1RoomLinkController {
                 ))
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 }

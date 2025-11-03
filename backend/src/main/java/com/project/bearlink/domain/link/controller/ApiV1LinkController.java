@@ -9,6 +9,7 @@ import com.project.bearlink.domain.link.service.LinkService;
 import com.project.bearlink.global.response.ApiResponse;
 import com.project.bearlink.global.security.auth.SecurityUser;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -24,23 +25,24 @@ public class ApiV1LinkController {
     @PostMapping
     public ResponseEntity<ApiResponse<String>> createLink (@RequestParam Long userId, @RequestBody LinkRequestDto req, @RequestParam Long categoryId) {
            linkService.createLink(req, userId, categoryId);
-        return ResponseEntity.ok(ApiResponse.ok("링크 생성 성공"));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("링크 생성 성공"));
     }
 
     @GetMapping
-    public ResponseEntity<List<LinkResponseDto>> getLinks (@RequestParam Long userId, @RequestParam Long categoryId){
+    public ResponseEntity<ApiResponse<List<LinkResponseDto>>> getLinks (@RequestParam Long userId, @RequestParam Long categoryId){
         List<LinkResponseDto> links = linkService.getLinks(userId, categoryId);
-        return ResponseEntity.ok(links);
+        return ResponseEntity.ok(ApiResponse.ok(links));
     }
 
     @PutMapping
-    public ResponseEntity<String> updateTitle (@RequestBody LinkUpdateDto dto, @RequestParam Long linkId) {
+    public ResponseEntity<ApiResponse<String>> updateTitle (@RequestBody LinkUpdateDto dto, @RequestParam Long linkId) {
         Link link = linkService.updateTitle(linkId, dto);
-        return ResponseEntity.ok().body("링크 제목 수정 완료");
+        return ResponseEntity.ok().body(ApiResponse.ok("링크 제목 수정 완료"));
     }
 
     @DeleteMapping
     public void deleteLink(@RequestParam Long linkId) {
+
         linkService.deleteLink(linkId);
     }
 

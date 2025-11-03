@@ -25,9 +25,20 @@ export const roomService = {
    * @param roomId 삭제할 방 ID
    * @returns void
    */
-  deleteRoom: async (roomId: number): Promise<void> => {
+  deleteRoom: async (roomId: number): Promise<string> => {
     try {
-      await api.delete(`/api/v1/room?roomId=${roomId}`);
+      const response = await api.delete(`/api/v1/room?roomId=${roomId}`);
+
+      // ApiResponse 형태인지 확인하고 처리
+      if (response && response.success !== undefined) {
+        const apiResponse = response as ApiResponse<string>;
+        if (!apiResponse.success) {
+          throw new Error(apiResponse.message);
+        }
+        return apiResponse.message;
+      }
+
+      return "방이 삭제되었습니다.";
     } catch (error) {
       throw error;
     }
@@ -49,6 +60,16 @@ export const roomService = {
         },
       };
       const response = await api.post("/api/v1/room", request, options);
+
+      // ApiResponse 형태인지 확인하고 처리
+      if (response && response.success !== undefined) {
+        const apiResponse = response as ApiResponse<CreateLinkRoomResponse>;
+        if (!apiResponse.success) {
+          throw new Error(apiResponse.message);
+        }
+        return apiResponse.data;
+      }
+
       return response as CreateLinkRoomResponse;
     } catch (error) {
       throw error;
@@ -63,10 +84,21 @@ export const roomService = {
    * @param userId 초대할 사용자 ID
    * @returns 초대 결과
    */
-  async inviteUser(roomId: number, userId: number): Promise<void> {
+  async inviteUser(roomId: number, userId: number): Promise<string> {
     try {
       const request: RoomInviteRequest = { userId };
-      await api.post(`/api/v1/room/${roomId}/invite`, request);
+      const response = await api.post(`/api/v1/room/${roomId}/invite`, request);
+
+      // ApiResponse 형태인지 확인하고 처리
+      if (response && response.success !== undefined) {
+        const apiResponse = response as ApiResponse<string>;
+        if (!apiResponse.success) {
+          throw new Error(apiResponse.message);
+        }
+        return apiResponse.message;
+      }
+
+      return "초대가 완료되었습니다.";
     } catch (error) {
       throw error;
     }
@@ -81,6 +113,16 @@ export const roomService = {
   async getRooms(): Promise<RoomsDto[]> {
     try {
       const response = await api.get("/api/v1/room");
+
+      // ApiResponse 형태인지 확인하고 처리
+      if (response && response.success !== undefined) {
+        const apiResponse = response as ApiResponse<RoomsDto[]>;
+        if (!apiResponse.success) {
+          throw new Error(apiResponse.message);
+        }
+        return Array.isArray(apiResponse.data) ? apiResponse.data : [];
+      }
+
       return response as RoomsDto[];
     } catch (error) {
       throw error;
@@ -97,6 +139,16 @@ export const roomService = {
   async getRoomById(roomId: number): Promise<RoomsDto> {
     try {
       const response = await api.get(`/api/v1/room/${roomId}`);
+
+      // ApiResponse 형태인지 확인하고 처리
+      if (response && response.success !== undefined) {
+        const apiResponse = response as ApiResponse<RoomsDto>;
+        if (!apiResponse.success) {
+          throw new Error(apiResponse.message);
+        }
+        return apiResponse.data;
+      }
+
       return response as RoomsDto;
     } catch (error) {
       throw error;
@@ -110,9 +162,22 @@ export const roomService = {
    * @param roomMemberId 수락할 초대의 room member ID
    * @returns void
    */
-  async acceptInvitation(roomMemberId: number): Promise<void> {
+  async acceptInvitation(roomMemberId: number): Promise<string> {
     try {
-      await api.post(`/api/v1/room/invitations/${roomMemberId}/accept`);
+      const response = await api.post(
+        `/api/v1/room/invitations/${roomMemberId}/accept`
+      );
+
+      // ApiResponse 형태인지 확인하고 처리
+      if (response && response.success !== undefined) {
+        const apiResponse = response as ApiResponse<string>;
+        if (!apiResponse.success) {
+          throw new Error(apiResponse.message);
+        }
+        return apiResponse.message;
+      }
+
+      return "초대를 수락했습니다.";
     } catch (error) {
       throw error;
     }
@@ -125,9 +190,22 @@ export const roomService = {
    * @param roomMemberId 거절할 초대의 room member ID
    * @returns void
    */
-  async declineInvitation(roomMemberId: number): Promise<void> {
+  async declineInvitation(roomMemberId: number): Promise<string> {
     try {
-      await api.post(`/api/v1/room/invitations/${roomMemberId}/decline`);
+      const response = await api.post(
+        `/api/v1/room/invitations/${roomMemberId}/decline`
+      );
+
+      // ApiResponse 형태인지 확인하고 처리
+      if (response && response.success !== undefined) {
+        const apiResponse = response as ApiResponse<string>;
+        if (!apiResponse.success) {
+          throw new Error(apiResponse.message);
+        }
+        return apiResponse.message;
+      }
+
+      return "초대를 거절했습니다.";
     } catch (error) {
       throw error;
     }
@@ -143,6 +221,15 @@ export const roomService = {
   async getMembers(roomId: number): Promise<RoomMemberList[]> {
     try {
       const response = await api.get(`/api/v1/room/${roomId}/members`);
+
+      // ApiResponse 형태인지 확인하고 처리
+      if (response && response.success !== undefined) {
+        const apiResponse = response as ApiResponse<RoomMemberList[]>;
+        if (!apiResponse.success) {
+          throw new Error(apiResponse.message);
+        }
+        return Array.isArray(apiResponse.data) ? apiResponse.data : [];
+      }
 
       if (Array.isArray(response)) {
         return response as RoomMemberList[];
@@ -164,6 +251,16 @@ export const roomService = {
   async getRoomLinks(roomId: number): Promise<RoomLinkListDto[]> {
     try {
       const response = await api.get(`/api/v1/room/links?roomId=${roomId}`);
+
+      // ApiResponse 형태인지 확인하고 처리
+      if (response && response.success !== undefined) {
+        const apiResponse = response as ApiResponse<RoomLinkListDto[]>;
+        if (!apiResponse.success) {
+          throw new Error(apiResponse.message);
+        }
+        return Array.isArray(apiResponse.data) ? apiResponse.data : [];
+      }
+
       return response as RoomLinkListDto[];
     } catch (error) {
       throw error;
@@ -187,6 +284,17 @@ export const roomService = {
         `/api/v1/room/${roomId}/invite-friends?_t=${timestamp}`
       );
 
+      // ApiResponse 형태인지 확인하고 처리
+      if (response && response.success !== undefined) {
+        const apiResponse = response as ApiResponse<
+          InviteFriendWithStatusResponse[]
+        >;
+        if (!apiResponse.success) {
+          throw new Error(apiResponse.message);
+        }
+        return Array.isArray(apiResponse.data) ? apiResponse.data : [];
+      }
+
       // 응답 데이터가 유효한지 확인
       if (Array.isArray(response)) {
         return response as InviteFriendWithStatusResponse[];
@@ -207,6 +315,15 @@ export const roomService = {
   async getMyInvitations(): Promise<InvitationResponse[]> {
     try {
       const response = await api.get("/api/v1/room/invitations");
+
+      // ApiResponse 형태인지 확인하고 처리
+      if (response && response.success !== undefined) {
+        const apiResponse = response as ApiResponse<InvitationResponse[]>;
+        if (!apiResponse.success) {
+          throw new Error(apiResponse.message);
+        }
+        return Array.isArray(apiResponse.data) ? apiResponse.data : [];
+      }
 
       // 응답 형식 검증
       if (Array.isArray(response)) {
