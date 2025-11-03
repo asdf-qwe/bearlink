@@ -6,6 +6,7 @@ import com.project.bearlink.domain.link.dto.LinkUpdateDto;
 import com.project.bearlink.domain.link.entity.Link;
 
 import com.project.bearlink.domain.link.service.LinkService;
+import com.project.bearlink.global.response.ApiResponse;
 import com.project.bearlink.global.security.auth.SecurityUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,9 +22,9 @@ public class ApiV1LinkController {
     private final LinkService linkService;
 
     @PostMapping
-    public ResponseEntity<String> createLink (@RequestParam Long userId, @RequestBody LinkRequestDto req, @RequestParam Long categoryId) {
-           Link link = linkService.createLink(req, userId, categoryId);
-        return ResponseEntity.ok().body("링크 생성 성공");
+    public ResponseEntity<ApiResponse<String>> createLink (@RequestParam Long userId, @RequestBody LinkRequestDto req, @RequestParam Long categoryId) {
+           linkService.createLink(req, userId, categoryId);
+        return ResponseEntity.ok(ApiResponse.ok("링크 생성 성공"));
     }
 
     @GetMapping
