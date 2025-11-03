@@ -5,6 +5,8 @@ import com.project.bearlink.domain.user.user.dto.TokenResponseDto;
 import com.project.bearlink.domain.user.user.entity.User;
 import com.project.bearlink.domain.user.user.entity.UserRole;
 import com.project.bearlink.domain.user.user.repository.UserRepository;
+import com.project.bearlink.global.exception.ApiException;
+import com.project.bearlink.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -34,10 +36,10 @@ public class AuthLoginService {
                 : userRepository.findByLoginId(identifier);
 
         User user = userOptional
-                .orElseThrow(() -> new IllegalArgumentException("아이디 또는 비밀번호가 올바르지 않습니다."));
+                .orElseThrow(() -> new ApiException(ErrorCode.INVALID_CREDENTIALS));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+            throw new ApiException(ErrorCode.INVALID_PASSWORD);
         }
 
         String accessToken = authTokenService.genAccessToken(user);
@@ -60,12 +62,12 @@ public class AuthLoginService {
     @Transactional(readOnly = false)
     public TokenResponseDto refreshToken(String refreshToken) {
         if (!authTokenService.isValid(refreshToken)) {
-            throw new IllegalArgumentException("토큰이 유효하지 않습니다.");
+            throw new ApiException(ErrorCode.INVALID_TOKEN);
         }
 
         User user = userRepository.findByRefreshToken(refreshToken)
                 .filter(u -> u.getRefreshToken().equals(refreshToken)) // 재확인
-                .orElseThrow(() -> new IllegalArgumentException("토큰이 유효하지 않습니다."));
+                .orElseThrow(() -> new ApiException(ErrorCode.INVALID_TOKEN));
 
         String newAccessToken = authTokenService.genAccessToken(user);
         String newRefreshToken = authTokenService.genRefreshToken(user);

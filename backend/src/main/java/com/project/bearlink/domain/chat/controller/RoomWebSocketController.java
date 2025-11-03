@@ -9,6 +9,8 @@ import com.project.bearlink.domain.room.entity.LinkRoom;
 import com.project.bearlink.domain.room.repository.LinkRoomRepository;
 import com.project.bearlink.domain.user.user.entity.User;
 import com.project.bearlink.domain.user.user.repository.UserRepository;
+import com.project.bearlink.global.exception.ApiException;
+import com.project.bearlink.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -34,10 +36,10 @@ public class RoomWebSocketController {
     public void handleRoomMessage(@DestinationVariable Long roomId, RoomMessageDto messageDto) {
 
         LinkRoom room = linkRoomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("Room not found"));
+                .orElseThrow(() -> new ApiException(ErrorCode.ROOM_NOT_FOUND));
 
         User sender = userRepository.findById(messageDto.getSenderId())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
 
 
         if (messageDto.getType() == MessageType.TALK ||
@@ -63,7 +65,7 @@ public class RoomWebSocketController {
     @ResponseBody
     public List<RoomMessageDto> getChatHistory(@PathVariable Long roomId) {
         LinkRoom room = linkRoomRepository.findById(roomId)
-                .orElseThrow(() -> new RuntimeException("Room not found"));
+                .orElseThrow(() -> new ApiException(ErrorCode.ROOM_NOT_FOUND));
 
         return chatMessageRepository.findTop50ByRoomOrderByCreatedAtDesc(room).stream()
                 .map(entity -> RoomMessageDto.builder()

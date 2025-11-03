@@ -15,6 +15,8 @@ import com.project.bearlink.domain.room.repository.RoomMemberRepository;
 
 import com.project.bearlink.domain.user.user.entity.User;
 import com.project.bearlink.domain.user.user.repository.UserRepository;
+import com.project.bearlink.global.exception.ApiException;
+import com.project.bearlink.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -60,7 +62,7 @@ public class RoomService {
 
     public List<RoomsDto> getRooms(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다"));
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
 
         List<LinkRoom> linkRooms = roomMemberRepository.findAcceptedRoomsByUserId(userId);
 
@@ -73,7 +75,7 @@ public class RoomService {
     @Transactional(readOnly = false)
     public void deleteRooms(Long roomId){
         LinkRoom linkRoom= linkRoomRepository.findById(roomId)
-                .orElseThrow(()-> new IllegalArgumentException("방을 찾을 수 없음"));
+                .orElseThrow(()-> new ApiException(ErrorCode.ROOM_NOT_FOUND));
         List<RoomLink> links = roomLinkRepository.findByRoomId(roomId);
 
         roomLinkRepository.deleteAll(links);
@@ -83,17 +85,17 @@ public class RoomService {
     @Transactional(readOnly = false)
     public void inviteUser(Long roomId, Long userId, User inviter) {
         LinkRoom room = linkRoomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("방을 찾을 수 없음"));
+                .orElseThrow(() -> new ApiException(ErrorCode.ROOM_NOT_FOUND));
         if (!room.getOwner().getId().equals(inviter.getId())) {
-            throw new AccessDeniedException("방장만 초대할 수 있습니다.");
+            throw new ApiException(ErrorCode.ROOM_INVITE_FORBIDDEN);
         }
 
         User invitee = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없음"));
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
 
 
         if (roomMemberRepository.existsByRoomAndUser(room, invitee)) {
-            throw new IllegalStateException("이미 초대된 멤버 입니다.");
+            throw new ApiException(ErrorCode.ALREADY_INVITED_MEMBER);
         }
 
         RoomMember member = RoomMember.builder()
@@ -121,12 +123,12 @@ public class RoomService {
     @Transactional(readOnly = false)
     public void acceptInvitation(Long roomMemberId, User user) {
         RoomMember member = roomMemberRepository.findById(roomMemberId)
-                .orElseThrow(() -> new IllegalArgumentException("멤버를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ApiException(ErrorCode.ROOM_MEMBER_NOT_FOUND));
         if (!member.getUser().getId().equals(user.getId())) {
-            throw new AccessDeniedException("초대 받지 못한 사용자입니다.");
+            throw new ApiException(ErrorCode.INVITATION_ACCESS_DENIED);
         }
         if (member.getStatus() != InvitationStatus.INVITED) {
-            throw new IllegalStateException("이미 초대 되었습니다.");
+            throw new ApiException(ErrorCode.INVITATION_ALREADY_ACCEPTED);
         }
 
         member.setStatus(InvitationStatus.ACCEPTED);
@@ -137,12 +139,12 @@ public class RoomService {
     @Transactional(readOnly = false)
     public void declineInvitation(Long roomMemberId, User user) {
         RoomMember member = roomMemberRepository.findById(roomMemberId)
-                .orElseThrow(() -> new IllegalArgumentException("멤버를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ApiException(ErrorCode.ROOM_MEMBER_NOT_FOUND));
         if (!member.getUser().getId().equals(user.getId())) {
-            throw new AccessDeniedException("초대 받지 못한 사용자입니다.");
+            throw new ApiException(ErrorCode.INVITATION_ACCESS_DENIED);
         }
         if (member.getStatus() != InvitationStatus.INVITED) {
-            throw new IllegalStateException("이미 초대 되었습니다.");
+            throw new ApiException(ErrorCode.INVITATION_ALREADY_ACCEPTED);
         }
 
         member.setStatus(InvitationStatus.DECLINED);
@@ -164,7 +166,7 @@ public class RoomService {
 
     public List<InviteFriendWithStatusResponse> getInviteFriendsWithStatus(User currentUser, Long roomId) {
         LinkRoom room = linkRoomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("링크룸을 찾을 수 없습니다."));
+                .orElseThrow(() -> new ApiException(ErrorCode.ROOM_NOT_FOUND));
 
         List<FriendRequest> acceptedFriends = friendRequestRepository.findByRequesterOrReceiverAndStatus(
                 currentUser,
@@ -212,7 +214,7 @@ public class RoomService {
 
     public List<RoomMemberList> getMembers(Long roomId){
         LinkRoom room = linkRoomRepository.findById(roomId)
-                .orElseThrow(()-> new IllegalArgumentException("유저를 찾을 수 없습니다"));
+                .orElseThrow(()-> new ApiException(ErrorCode.USER_NOT_FOUND));
 
         List<RoomMember> members = roomMemberRepository.findByRoomAndStatus(room, InvitationStatus.ACCEPTED);
 
@@ -227,7 +229,7 @@ public class RoomService {
     public RoomsDto getRoom(Long roomId){
 
         LinkRoom linkRoom = linkRoomRepository.findById(roomId)
-                .orElseThrow(()-> new IllegalArgumentException("방을 찾을 수 없습니다"));
+                .orElseThrow(()->new ApiException(ErrorCode.ROOM_NOT_FOUND));
         return new RoomsDto(
                 linkRoom.getId(),
                 linkRoom.getName()

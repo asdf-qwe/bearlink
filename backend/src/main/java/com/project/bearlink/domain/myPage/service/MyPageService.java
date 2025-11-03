@@ -3,6 +3,8 @@ package com.project.bearlink.domain.myPage.service;
 import com.project.bearlink.domain.myPage.dto.UpdateProfileDto;
 import com.project.bearlink.domain.user.user.entity.User;
 import com.project.bearlink.domain.user.user.repository.UserRepository;
+import com.project.bearlink.global.exception.ApiException;
+import com.project.bearlink.global.exception.ErrorCode;
 import com.project.bearlink.global.security.auth.SecurityUser;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +20,7 @@ public class MyPageService {
     @Transactional(readOnly = false)
     public void updateProfile(Long userId, UpdateProfileDto dto) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다"));
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
 
         if (dto.getBio() != null) {
             user.setBio(dto.getBio());
