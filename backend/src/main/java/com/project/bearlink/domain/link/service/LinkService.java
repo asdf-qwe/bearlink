@@ -10,6 +10,8 @@ import com.project.bearlink.domain.link.entity.Link;
 import com.project.bearlink.domain.link.repository.LinkRepository;
 import com.project.bearlink.domain.user.user.entity.User;
 import com.project.bearlink.domain.user.user.repository.UserRepository;
+import com.project.bearlink.global.exception.ApiException;
+import com.project.bearlink.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -36,10 +38,10 @@ public class LinkService {
     @Transactional(readOnly = false)
     public Link createLink(LinkRequestDto req, Long userId, Long categoryId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다"));
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
 
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ApiException(ErrorCode.CATEGORY_NOT_FOUND));
 
         Link link = Link.builder()
                 .title(req.getTitle())
@@ -67,7 +69,7 @@ public class LinkService {
     @Transactional(readOnly = false)
     public Link updateTitle (Long linkId, LinkUpdateDto dto) {
         Link link = linkRepository.findById(linkId)
-                        .orElseThrow(()-> new IllegalArgumentException("링크를 찾을 수 없습니다"));
+                        .orElseThrow(()-> new ApiException(ErrorCode.LINK_NOT_FOUND));
 
         link.setTitle(dto.getTitle());
         return linkRepository.save(link);
@@ -76,7 +78,7 @@ public class LinkService {
     @Transactional(readOnly = false)
     public void deleteLink (Long linkId) {
         Link link = linkRepository.findById(linkId)
-                .orElseThrow(()->new IllegalArgumentException("링크를 찾을 수 없습니다"));
+                .orElseThrow(()->new ApiException(ErrorCode.LINK_NOT_FOUND));
         linkRepository.delete(link);
     }
 

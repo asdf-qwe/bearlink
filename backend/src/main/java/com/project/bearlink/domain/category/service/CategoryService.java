@@ -8,6 +8,8 @@ import com.project.bearlink.domain.link.entity.Link;
 import com.project.bearlink.domain.link.repository.LinkRepository;
 import com.project.bearlink.domain.user.user.entity.User;
 import com.project.bearlink.domain.user.user.repository.UserRepository;
+import com.project.bearlink.global.exception.ApiException;
+import com.project.bearlink.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +29,7 @@ public class CategoryService {
     @Transactional(readOnly = false)
     public Category createCategory(CategoryRequest req, Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
 
         Category category = Category.builder()
                 .name(req.getName())
@@ -41,7 +43,7 @@ public class CategoryService {
     public Category readCategory(Long categoryId) {
 
         return categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다"));
+                .orElseThrow(() -> new ApiException(ErrorCode.CATEGORY_NOT_FOUND));
     }
 
 
@@ -59,7 +61,7 @@ public class CategoryService {
     @Transactional(readOnly = false)
     public Category updateCategory (CategoryRequest req, Long categoryId) {
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(()-> new IllegalArgumentException("카테고리가 없습니다"));
+                .orElseThrow(()-> new ApiException(ErrorCode.CATEGORY_NOT_FOUND));
 
         category.setName(req.getName());
 
@@ -69,7 +71,7 @@ public class CategoryService {
     @Transactional(readOnly = false)
     public void deleteCategory (Long categoryId) {
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(()-> new IllegalArgumentException("카테고리가 없습니다"));
+                .orElseThrow(()-> new ApiException(ErrorCode.CATEGORY_NOT_FOUND));
         List<Link> links = linkRepository.findByCategoryId(categoryId);
 
         linkRepository.deleteAll(links);

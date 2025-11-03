@@ -8,6 +8,8 @@ import com.project.bearlink.domain.friend.entity.FriendRequestStatus;
 import com.project.bearlink.domain.friend.repository.FriendRequestRepository;
 import com.project.bearlink.domain.user.user.entity.User;
 import com.project.bearlink.domain.user.user.repository.UserRepository;
+import com.project.bearlink.global.exception.ApiException;
+import com.project.bearlink.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,19 +32,19 @@ public class FriendService {
     public void sendRequest(Long requesterId, FriendRequestDto dto) {
 
         if(requesterId.equals(dto.getReceiverId())){
-            throw new IllegalArgumentException("본인에게 친구 요청을 보낼 수 없음");
+            throw new ApiException(ErrorCode.SELF_REQUEST_NOT_ALLOWED);
         }
 
         if(friendRequestRepository.existsByRequesterIdAndReceiverIdAndStatus(
                 requesterId,dto.getReceiverId(),FriendRequestStatus.PENDING)){
-            throw new IllegalArgumentException("이미 요청을 보낸 사용자 입니다");
+            throw new ApiException(ErrorCode.DUPLICATE_REQUEST_PENDING);
         }
 
         User requester = userRepository.findById(requesterId)
-                .orElseThrow(()-> new IllegalArgumentException("유저 찾을 수 없음"));
+                .orElseThrow(()-> new ApiException(ErrorCode.REQUESTER_NOT_FOUND));
 
         User receiver = userRepository.findById(dto.getReceiverId())
-                .orElseThrow(()-> new IllegalArgumentException("유저 찾을 수 없음"));
+                .orElseThrow(()-> new ApiException(ErrorCode.RECEIVER_NOT_FOUND));
 
         FriendRequest friendRequest = FriendRequest.builder()
                 .requester(requester)
@@ -56,12 +58,12 @@ public class FriendService {
     @Transactional(readOnly = false)
     public void accept(Long requesterId, Long receiverId) {
         User requester = userRepository.findById(requesterId)
-                .orElseThrow(() -> new IllegalArgumentException("신청자 없음"));
+                .orElseThrow(() -> new ApiException(ErrorCode.REQUESTER_NOT_FOUND));
         User receiver = userRepository.findById(receiverId)
-                .orElseThrow(() -> new IllegalArgumentException("수신자 없음"));
+                .orElseThrow(() -> new ApiException(ErrorCode.RECEIVER_NOT_FOUND));
 
         FriendRequest friendRequest = friendRequestRepository.findByRequesterAndReceiverAndStatus(requester, receiver, FriendRequestStatus.PENDING)
-                .orElseThrow(() -> new IllegalArgumentException("요청이 존재하지 않습니다"));
+                .orElseThrow(() -> new ApiException(ErrorCode.FRIEND_REQUEST_NOT_FOUND));
 
         friendRequest.setStatus(FriendRequestStatus.ACCEPTED);
         friendRequest.setRespondedAt(LocalDateTime.now());
@@ -71,10 +73,10 @@ public class FriendService {
     @Transactional(readOnly = false)
     public void rejectRequest(Long requestId, Long receiverId) {
         FriendRequest request = friendRequestRepository.findById(requestId)
-                .orElseThrow(() -> new IllegalArgumentException("요청이 존재하지 않습니다."));
+                .orElseThrow(() -> new ApiException(ErrorCode.FRIEND_REQUEST_NOT_FOUND));
 
         if (!request.getReceiver().getId().equals(receiverId)) {
-            throw new SecurityException("이 요청을 거절할 수 있는 권한이 없습니다.");
+            throw new ApiException(ErrorCode.FORBIDDEN_REQUEST_ACTION);
         }
 
         request.setStatus(FriendRequestStatus.REJECTED);
