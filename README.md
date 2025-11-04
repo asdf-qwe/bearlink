@@ -26,6 +26,7 @@ BearLink는 흩어져 있는 링크들을 손쉽게 저장하고 분류할 수 �
 - AWS EC2, AWS S3
 - MySQL
 - YouTube Data API & Embed API
+- Electron
 
 <br/>
 
