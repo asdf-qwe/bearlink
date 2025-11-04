@@ -86,6 +86,7 @@ BearLink는 아래 구조로 구성되어 있습니다.
 
 - **External Services**
   - YouTube Data API · Embedded Player API 활용
+  - electron활용으로 데스크탑 앱 지원
 <br/>
 
 ## 배포 및 데모  
