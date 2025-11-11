@@ -48,9 +48,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
           setIsLoggedIn(true);
         }
       } catch (err) {
-        console.error("인증 상태 확인 실패:", err);
-        // 오류 발생 시 로그아웃 처리
-        await authService.logout();
+        // 홈페이지에서는 인증 실패가 정상이므로 조용히 처리
+        // console.error("인증 상태 확인 실패:", err);
         setIsLoggedIn(false);
         setUserInfo(null);
       } finally {
