@@ -20,32 +20,32 @@ export const MemberList: React.FC<MemberListProps> = ({
   return (
     <div className="space-y-4">
       <div className="flex items-center space-x-3 mb-6">
-        <div className="w-8 h-8 bg-amber-600 rounded-lg flex items-center justify-center">
+        <div className="w-8 h-8 bg-white border-2 border-amber-600 rounded-lg flex items-center justify-center">
           <svg
-            className="w-5 h-5 text-white"
+            className="w-5 h-5 text-amber-700"
             fill="currentColor"
             viewBox="0 0 20 20"
           >
             <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
           </svg>
         </div>
-        <h2 className="text-xl font-semibold text-gray-800">
+        <h2 className="text-xl font-semibold text-amber-900">
           멤버 목록 ({members.length}명)
         </h2>
       </div>
 
       {members.length === 0 ? (
         <div className="text-center py-12">
-          <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-white border-2 border-amber-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg
-              className="w-8 h-8 text-amber-600"
+              className="w-8 h-8 text-amber-700"
               fill="currentColor"
               viewBox="0 0 20 20"
             >
               <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
             </svg>
           </div>
-          <p className="text-gray-500">아직 멤버가 없습니다</p>
+          <p className="text-amber-700">아직 멤버가 없습니다</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -54,13 +54,13 @@ export const MemberList: React.FC<MemberListProps> = ({
               key={member.userId}
               className={`p-4 rounded-lg border transition-all duration-200 hover:shadow-md ${
                 member.userId === currentUserId
-                  ? "bg-amber-50 border-amber-300 shadow-md"
-                  : "bg-white border-gray-200 hover:border-amber-300 hover:bg-amber-50"
+                  ? "bg-amber-50 border-amber-600 shadow-md"
+                  : "bg-white border-amber-200 hover:border-amber-600 hover:bg-amber-50"
               }`}
             >
               <div className="flex items-center space-x-4">
                 <div className="relative">
-                  <div className="h-12 w-12 rounded-full bg-amber-600 flex items-center justify-center overflow-hidden shadow-sm">
+                  <div className="h-12 w-12 rounded-full bg-amber-700 flex items-center justify-center overflow-hidden shadow-sm">
                     {member.profileImage ? (
                       <img
                         src={member.profileImage}
@@ -92,7 +92,7 @@ export const MemberList: React.FC<MemberListProps> = ({
 
                 <div className="flex-1">
                   <div className="flex items-center space-x-2">
-                    <h3 className="font-semibold text-gray-800">
+                    <h3 className="font-semibold text-amber-900">
                       {member.username}
                     </h3>
                     {member.userId === currentUserId && (

@@ -5,6 +5,7 @@ import com.project.bearlink.domain.friend.dto.FriendRequestDto;
 import com.project.bearlink.domain.friend.dto.FriendResponseDto;
 import com.project.bearlink.domain.friend.service.FriendService;
 import com.project.bearlink.domain.user.user.entity.User;
+import com.project.bearlink.global.response.ApiResponse;
 import com.project.bearlink.global.security.auth.SecurityUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -18,42 +19,42 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/friend")
-public class Ap1V1FriendController {
+public class ApiV1FriendController {
 
     private final FriendService friendService;
 
     @PostMapping("/request")
-    public ResponseEntity<Void> sendRequest(@AuthenticationPrincipal SecurityUser user, @RequestBody FriendRequestDto dto){
+    public ResponseEntity<ApiResponse<Void>> sendRequest(@AuthenticationPrincipal SecurityUser user, @RequestBody FriendRequestDto dto){
         friendService.sendRequest(user.getId(), dto);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.ok());
     }
 
     @PostMapping("/request/{requestId}/accept")
-    public ResponseEntity<Void> accept(@PathVariable Long requestId, @AuthenticationPrincipal SecurityUser user){
+    public ResponseEntity<ApiResponse<Void>> accept(@PathVariable Long requestId, @AuthenticationPrincipal SecurityUser user){
         friendService.accept(requestId, user.getId());
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.ok());
     }
 
     @PostMapping("/request/{requestId}/reject")
-    public ResponseEntity<Void> reject(@PathVariable Long requestId, @AuthenticationPrincipal SecurityUser user){
+    public ResponseEntity<ApiResponse<Void>> reject(@PathVariable Long requestId, @AuthenticationPrincipal SecurityUser user){
         friendService.rejectRequest(requestId, user.getId());
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.ok());
     }
 
     @GetMapping("/requests")
-    public ResponseEntity<List<FriendResponseDto>> getReceivedRequests(@AuthenticationPrincipal SecurityUser user){
+    public ResponseEntity<ApiResponse<List<FriendResponseDto>>> getReceivedRequests(@AuthenticationPrincipal SecurityUser user){
 
-        return ResponseEntity.ok(friendService.getReceived(user.getId()));
+        return ResponseEntity.ok(ApiResponse.ok(friendService.getReceived(user.getId())));
     }
 
     @GetMapping
-    public ResponseEntity<List<FriendResponseDto>> getFriends(
+    public ResponseEntity<ApiResponse<List<FriendResponseDto>>> getFriends(
             @AuthenticationPrincipal SecurityUser user) {
-        return ResponseEntity.ok(friendService.getFriends(user.getId()));
+        return ResponseEntity.ok(ApiResponse.ok(friendService.getReceived(user.getId())));
     }
 
     @GetMapping("/find-friend")
-    public ResponseEntity<Page<FindFriendDto>> findFriend(
+    public ResponseEntity<ApiResponse<Page<FindFriendDto>>> findFriend(
             @RequestParam String keyword,
             @AuthenticationPrincipal SecurityUser user,
             Pageable pageable) {
@@ -64,6 +65,6 @@ public class Ap1V1FriendController {
                 new FindFriendDto(f.id(), f.nickname(), f.imageUrl(), f.status())
         );
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.ok(response));
     }
 }

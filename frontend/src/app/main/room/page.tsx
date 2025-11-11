@@ -239,9 +239,9 @@ export default function RoomListPage() {
       <div className="mb-8">
         <div className="bg-slate-50 rounded-xl p-6 border border-slate-200">
           <div className="flex items-center mb-6">
-            <div className="w-10 h-10 bg-amber-600 rounded-lg flex items-center justify-center mr-4">
+            <div className="w-10 h-10 bg-white border-2 border-amber-600 rounded-lg flex items-center justify-center mr-4">
               <svg
-                className="w-5 h-5 text-white"
+                className="w-5 h-5 text-amber-700"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -252,7 +252,7 @@ export default function RoomListPage() {
                 />
               </svg>
             </div>
-            <h2 className="text-2xl font-semibold text-gray-800">
+            <h2 className="text-2xl font-semibold text-amber-900">
               새 링크룸 만들기
             </h2>
           </div>
@@ -287,7 +287,7 @@ export default function RoomListPage() {
               </button>
               <button
                 type="submit"
-                className={`px-6 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-all duration-200 font-medium shadow-sm hover:shadow-md ${
+                className={`px-6 py-3 bg-amber-700 text-white rounded-lg hover:bg-amber-800 transition-all duration-200 font-medium shadow-sm hover:shadow-md ${
                   creating ? "opacity-70 cursor-not-allowed" : ""
                 }`}
                 disabled={creating || !newRoomName.trim()}
@@ -336,9 +336,9 @@ export default function RoomListPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex justify-center items-center">
         <div className="bg-white rounded-2xl shadow-lg p-8 text-center border border-amber-100">
-          <div className="w-16 h-16 bg-gradient-to-r from-amber-400 to-orange-400 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-white border-2 border-amber-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg
-              className="animate-spin h-8 w-8 text-white"
+              className="animate-spin h-8 w-8 text-amber-700"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -358,10 +358,10 @@ export default function RoomListPage() {
               ></path>
             </svg>
           </div>
-          <h3 className="text-xl font-semibold text-gray-800 mb-2">
+          <h3 className="text-xl font-semibold text-amber-900 mb-2">
             링크룸을 불러오는 중...
           </h3>
-          <p className="text-gray-600">잠시만 기다려주세요</p>
+          <p className="text-amber-700">잠시만 기다려주세요</p>
         </div>
       </div>
     );
@@ -376,31 +376,34 @@ export default function RoomListPage() {
             <div className="p-6 border-b border-gray-200">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                  <h1 className="text-3xl font-bold text-amber-900 mb-2">
                     링크룸 관리
                   </h1>
-                  <p className="text-gray-600">
+                  <p className="text-amber-700">
                     친구들과 링크를 공유하고 소통해보세요
                   </p>
                 </div>
                 {activeTab === "myRooms" && (
                   <button
                     onClick={handleShowCreateForm}
-                    className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-lg transition-all duration-200 flex items-center shadow-sm hover:shadow-md"
+                    className="group flex items-center gap-2 px-4 py-2.5 bg-white border border-amber-200 text-amber-700 rounded-lg shadow-sm hover:bg-amber-100 hover:border-amber-400 hover:shadow-lg active:scale-95 transition-all duration-200 font-medium text-sm"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 mr-2"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    새 링크룸 만들기
+                    <div className="w-5 h-5 bg-amber-100 group-hover:bg-amber-300 group-active:bg-amber-400 rounded-full flex items-center justify-center transition-colors duration-200">
+                      <svg
+                        className="w-3 h-3 text-amber-600 group-hover:text-amber-700"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 4v16m8-8H4"
+                        />
+                      </svg>
+                    </div>
+                    <span>새 링크룸 만들기</span>
                   </button>
                 )}
               </div>
@@ -441,10 +444,10 @@ export default function RoomListPage() {
               {/* 내 링크룸 목록 */}
               {rooms.length === 0 ? (
                 <div className="text-center py-16">
-                  <div className="w-24 h-24 mx-auto mb-4 bg-amber-100 rounded-full flex items-center justify-center">
+                  <div className="w-24 h-24 mx-auto mb-4 bg-white border-2 border-amber-600 rounded-full flex items-center justify-center">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="h-12 w-12 text-amber-600"
+                      className="h-12 w-12 text-amber-700"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -457,17 +460,32 @@ export default function RoomListPage() {
                       />
                     </svg>
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                  <h3 className="text-xl font-semibold text-amber-900 mb-2">
                     아직 링크룸이 없어요
                   </h3>
-                  <p className="text-gray-600 mb-6">
+                  <p className="text-amber-700 mb-6">
                     첫 번째 링크룸을 만들어보세요!
                   </p>
                   <button
                     onClick={handleShowCreateForm}
-                    className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+                    className="group flex items-center gap-2 px-6 py-3 bg-white border border-amber-200 text-amber-700 rounded-lg shadow-sm hover:bg-amber-100 hover:border-amber-400 hover:shadow-lg active:scale-95 transition-all duration-200 font-medium"
                   >
-                    링크룸 만들기
+                    <div className="w-5 h-5 bg-amber-100 group-hover:bg-amber-300 group-active:bg-amber-400 rounded-full flex items-center justify-center transition-colors duration-200">
+                      <svg
+                        className="w-3 h-3 text-amber-600 group-hover:text-amber-700"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 4v16m8-8H4"
+                        />
+                      </svg>
+                    </div>
+                    <span>링크룸 만들기</span>
                   </button>
                 </div>
               ) : (
@@ -480,9 +498,9 @@ export default function RoomListPage() {
                     >
                       <div className="flex items-center space-x-4 flex-1">
                         {/* 룸 아이콘 */}
-                        <div className="w-12 h-12 bg-amber-600 rounded-lg flex items-center justify-center group-hover:bg-amber-700 transition-all duration-200 shadow-sm">
+                        <div className="w-12 h-12 bg-white border-2 border-amber-600 rounded-lg flex items-center justify-center group-hover:border-amber-700 transition-all duration-200 shadow-sm">
                           <svg
-                            className="w-6 h-6 text-white"
+                            className="w-6 h-6 text-amber-700 group-hover:text-amber-800"
                             fill="currentColor"
                             viewBox="0 0 20 20"
                           >
@@ -496,10 +514,10 @@ export default function RoomListPage() {
 
                         {/* 룸 정보 */}
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-lg font-semibold text-gray-800 group-hover:text-amber-700 transition-colors duration-200 truncate">
+                          <h3 className="text-lg font-semibold text-amber-900 group-hover:text-amber-800 transition-colors duration-200 truncate">
                             {room.name}
                           </h3>
-                          <div className="flex items-center text-sm text-gray-500 mt-1">
+                          <div className="flex items-center text-sm text-amber-700 mt-1">
                             <svg
                               className="w-4 h-4 mr-1"
                               fill="currentColor"
@@ -523,11 +541,11 @@ export default function RoomListPage() {
 
                       {/* 입장 버튼 */}
                       <div className="flex items-center space-x-3">
-                        <span className="hidden sm:inline-block text-sm text-amber-600 font-medium group-hover:text-amber-700 transition-colors duration-200">
+                        <span className="hidden sm:inline-block text-sm text-amber-700 font-medium group-hover:text-amber-800 transition-colors duration-200">
                           룸 입장하기
                         </span>
                         <svg
-                          className="w-5 h-5 text-gray-400 group-hover:text-amber-600 transition-colors duration-200"
+                          className="w-5 h-5 text-amber-600 group-hover:text-amber-700 transition-colors duration-200"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -566,9 +584,9 @@ export default function RoomListPage() {
         {rooms.length === 0 && !showCreateForm && (
           <div className="bg-white rounded-2xl shadow-lg p-12 text-center border border-amber-100">
             <div className="mb-8">
-              <div className="w-24 h-24 bg-gradient-to-r from-amber-100 to-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="w-24 h-24 bg-white border-2 border-amber-600 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg
-                  className="h-12 w-12 text-amber-500"
+                  className="h-12 w-12 text-amber-700"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -581,10 +599,10 @@ export default function RoomListPage() {
                   />
                 </svg>
               </div>
-              <h2 className="text-3xl font-bold text-gray-800 mb-3">
+              <h2 className="text-3xl font-bold text-amber-900 mb-3">
                 첫 번째 링크룸을 만들어보세요!
               </h2>
-              <p className="text-lg text-gray-600 mb-8 max-w-md mx-auto">
+              <p className="text-lg text-amber-700 mb-8 max-w-md mx-auto">
                 친구들과 함께 유용한 링크를 공유하고, 실시간으로 소통할 수 있는
                 공간을 만들어보세요.
               </p>
@@ -593,29 +611,33 @@ export default function RoomListPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <button
                 onClick={handleShowCreateForm}
-                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-8 py-4 rounded-xl transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:scale-105 flex items-center"
+                className="group flex items-center gap-2 px-8 py-4 bg-white border border-amber-200 text-amber-700 rounded-xl shadow-md hover:bg-amber-100 hover:border-amber-400 hover:shadow-lg active:scale-95 transition-all duration-200 font-medium"
               >
-                <svg
-                  className="w-5 h-5 mr-2"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                첫 번째 링크룸 만들기
+                <div className="w-6 h-6 bg-amber-100 group-hover:bg-amber-300 group-active:bg-amber-400 rounded-full flex items-center justify-center transition-colors duration-200">
+                  <svg
+                    className="w-4 h-4 text-amber-600 group-hover:text-amber-700"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                </div>
+                <span>첫 번째 링크룸 만들기</span>
               </button>
             </div>
 
             {/* 기능 소개 */}
             <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
               <div className="flex items-start space-x-3">
-                <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                <div className="w-8 h-8 bg-white border-2 border-amber-600 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
                   <svg
-                    className="w-4 h-4 text-amber-600"
+                    className="w-4 h-4 text-amber-700"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
@@ -627,19 +649,19 @@ export default function RoomListPage() {
                   </svg>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-800 mb-1">
+                  <h4 className="font-semibold text-amber-900 mb-1">
                     링크 공유
                   </h4>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-amber-700">
                     유용한 링크를 쉽게 공유하고 정리하세요
                   </p>
                 </div>
               </div>
 
               <div className="flex items-start space-x-3">
-                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                <div className="w-8 h-8 bg-white border-2 border-amber-600 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
                   <svg
-                    className="w-4 h-4 text-blue-600"
+                    className="w-4 h-4 text-amber-700"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
@@ -647,19 +669,19 @@ export default function RoomListPage() {
                   </svg>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-800 mb-1">
+                  <h4 className="font-semibold text-amber-900 mb-1">
                     실시간 채팅
                   </h4>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-amber-700">
                     친구들과 실시간으로 대화해보세요
                   </p>
                 </div>
               </div>
 
               <div className="flex items-start space-x-3">
-                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                <div className="w-8 h-8 bg-white border-2 border-amber-600 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
                   <svg
-                    className="w-4 h-4 text-green-600"
+                    className="w-4 h-4 text-amber-700"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
@@ -667,10 +689,10 @@ export default function RoomListPage() {
                   </svg>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-800 mb-1">
+                  <h4 className="font-semibold text-amber-900 mb-1">
                     친구 초대
                   </h4>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-amber-700">
                     친구를 초대해서 함께 사용해보세요
                   </p>
                 </div>

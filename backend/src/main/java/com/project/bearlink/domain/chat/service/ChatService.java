@@ -1,6 +1,5 @@
-package com.project.bearlink.domain.chat.controller;
+package com.project.bearlink.domain.chat.service;
 
-import com.project.bearlink.domain.chat.dto.ChatMessageDto;
 import com.project.bearlink.domain.chat.entity.ChatMessage;
 import com.project.bearlink.domain.chat.entity.MessageType;
 import com.project.bearlink.domain.chat.repository.ChatMessageRepository;
@@ -9,35 +8,31 @@ import com.project.bearlink.domain.room.entity.LinkRoom;
 import com.project.bearlink.domain.room.repository.LinkRoomRepository;
 import com.project.bearlink.domain.user.user.entity.User;
 import com.project.bearlink.domain.user.user.repository.UserRepository;
+import com.project.bearlink.global.exception.ApiException;
+import com.project.bearlink.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.messaging.handler.annotation.DestinationVariable;
-import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
 
+@Service
 @RequiredArgsConstructor
-@Controller
-public class RoomWebSocketController {
-
+@Transactional(readOnly = true)
+public class ChatService {
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatMessageRepository chatMessageRepository;
     private final LinkRoomRepository linkRoomRepository;
     private final UserRepository userRepository;
 
-    @MessageMapping("/room/{roomId}")
-    public void handleRoomMessage(@DestinationVariable Long roomId, RoomMessageDto messageDto) {
-
+    @Transactional(readOnly = false)
+    public void handleRoomMessage(Long roomId, RoomMessageDto messageDto){
         LinkRoom room = linkRoomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("Room not found"));
+                .orElseThrow(() -> new ApiException(ErrorCode.ROOM_NOT_FOUND));
 
         User sender = userRepository.findById(messageDto.getSenderId())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
 
 
         if (messageDto.getType() == MessageType.TALK ||
@@ -56,14 +51,12 @@ public class RoomWebSocketController {
 
 
         messagingTemplate.convertAndSend("/topic/room/" + roomId, messageDto);
+
     }
 
-    @Transactional
-    @GetMapping("/api/rooms/{roomId}/messages")
-    @ResponseBody
-    public List<RoomMessageDto> getChatHistory(@PathVariable Long roomId) {
+    public List<RoomMessageDto> getChatHistory(Long roomId){
         LinkRoom room = linkRoomRepository.findById(roomId)
-                .orElseThrow(() -> new RuntimeException("Room not found"));
+                .orElseThrow(() -> new ApiException(ErrorCode.ROOM_NOT_FOUND));
 
         return chatMessageRepository.findTop50ByRoomOrderByCreatedAtDesc(room).stream()
                 .map(entity -> RoomMessageDto.builder()

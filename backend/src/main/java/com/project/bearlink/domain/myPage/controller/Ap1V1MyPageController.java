@@ -2,6 +2,7 @@ package com.project.bearlink.domain.myPage.controller;
 
 import com.project.bearlink.domain.myPage.dto.UpdateProfileDto;
 import com.project.bearlink.domain.myPage.service.MyPageService;
+import com.project.bearlink.global.response.ApiResponse;
 import com.project.bearlink.global.security.auth.SecurityUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,8 +22,8 @@ public class Ap1V1MyPageController {
 
 
     @PutMapping
-    public ResponseEntity<String> updateProfile(@AuthenticationPrincipal SecurityUser user, @RequestBody UpdateProfileDto dto){
+    public ResponseEntity<ApiResponse<String>> updateProfile(@AuthenticationPrincipal SecurityUser user, @RequestBody UpdateProfileDto dto){
             myPageService.updateProfile(user.getId(), dto);
-        return ResponseEntity.ok().body("변경이 완료 되었습니다");
+        return ResponseEntity.ok(ApiResponse.ok("변경이 완료 되었습니다."));
     }
 }

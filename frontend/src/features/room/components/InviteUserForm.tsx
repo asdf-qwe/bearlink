@@ -68,9 +68,9 @@ export const InviteUserForm: React.FC<InviteUserFormProps> = ({
       {showForm ? (
         <div>
           <div className="flex items-center space-x-3 mb-6">
-            <div className="w-8 h-8 bg-amber-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-white border-2 border-amber-600 rounded-lg flex items-center justify-center">
               <svg
-                className="w-5 h-5 text-white"
+                className="w-5 h-5 text-amber-700"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -78,7 +78,7 @@ export const InviteUserForm: React.FC<InviteUserFormProps> = ({
                 <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
               </svg>
             </div>
-            <h2 className="text-xl font-semibold text-gray-800">
+            <h2 className="text-xl font-semibold text-amber-900">
               친구 초대하기
             </h2>
             <button
@@ -86,7 +86,7 @@ export const InviteUserForm: React.FC<InviteUserFormProps> = ({
               onClick={() => {
                 onRefresh();
               }}
-              className="px-3 py-2 text-sm bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition flex items-center shadow-sm"
+              className="px-3 py-2 text-sm bg-amber-700 hover:bg-amber-800 text-white rounded-lg transition flex items-center shadow-sm"
               disabled={loadingFriends}
             >
               <svg
@@ -109,26 +109,26 @@ export const InviteUserForm: React.FC<InviteUserFormProps> = ({
 
           {loadingFriends ? (
             <div className="flex justify-center items-center p-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-amber-600"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-amber-700"></div>
               <span className="ml-2 text-amber-700">
                 친구 목록을 불러오는 중...
               </span>
             </div>
           ) : invitableFriends.length === 0 ? (
-            <div className="bg-amber-50 p-12 text-center border border-amber-200 rounded-xl">
-              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="bg-amber-50 p-12 text-center border border-amber-600 rounded-xl">
+              <div className="w-16 h-16 bg-white border-2 border-amber-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg
-                  className="w-8 h-8 text-amber-600"
+                  className="w-8 h-8 text-amber-700"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
                   <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
                 </svg>
               </div>
-              <h3 className="font-semibold text-gray-700 mb-2">
+              <h3 className="font-semibold text-amber-900 mb-2">
                 초대할 수 있는 친구가 없습니다
               </h3>
-              <p className="text-gray-500 text-sm">
+              <p className="text-amber-700 text-sm">
                 친구 추가 후 다시 시도해주세요
               </p>
             </div>
@@ -148,12 +148,12 @@ export const InviteUserForm: React.FC<InviteUserFormProps> = ({
                         key={friend.userId}
                         className={`relative p-4 rounded-lg border transition-all duration-200 ${
                           isInvitable
-                            ? "bg-white border-amber-300 hover:shadow-md hover:bg-amber-50"
-                            : "bg-gray-50 border-gray-200"
+                            ? "bg-white border-amber-600 hover:shadow-md hover:bg-amber-50"
+                            : "bg-gray-50 border-amber-200"
                         }`}
                       >
                         <div className="flex items-center space-x-3">
-                          <div className="w-12 h-12 bg-amber-600 rounded-full flex items-center justify-center shadow-sm">
+                          <div className="w-12 h-12 bg-amber-700 rounded-full flex items-center justify-center shadow-sm">
                             <span className="text-white font-bold text-lg">
                               {friend.nickname.substring(0, 1).toUpperCase()}
                             </span>
@@ -161,7 +161,7 @@ export const InviteUserForm: React.FC<InviteUserFormProps> = ({
 
                           <div className="flex-1">
                             <div className="flex items-center justify-between">
-                              <h3 className="font-semibold text-gray-800">
+                              <h3 className="font-semibold text-amber-900">
                                 {friend.nickname}
                               </h3>
                               <span
@@ -170,7 +170,7 @@ export const InviteUserForm: React.FC<InviteUserFormProps> = ({
                                 {statusBadge.text}
                               </span>
                             </div>
-                            <p className="text-gray-500 text-sm mt-1">
+                            <p className="text-amber-700 text-sm mt-1">
                               {friend.email}
                             </p>
 
@@ -182,7 +182,7 @@ export const InviteUserForm: React.FC<InviteUserFormProps> = ({
                                 className={`mt-3 w-full py-2 px-4 text-sm font-medium rounded-lg transition-all duration-200 ${
                                   isInviting || loadingFriends
                                     ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                    : "bg-amber-600 hover:bg-amber-700 text-white shadow-sm hover:shadow-md"
+                                    : "bg-amber-700 hover:bg-amber-800 text-white shadow-sm hover:shadow-md"
                                 }`}
                               >
                                 {isInviting ? (
@@ -236,9 +236,9 @@ export const InviteUserForm: React.FC<InviteUserFormProps> = ({
         </div>
       ) : (
         <div className="text-center py-12">
-          <div className="w-16 h-16 bg-amber-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
+          <div className="w-16 h-16 bg-white border-2 border-amber-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
             <svg
-              className="w-8 h-8 text-white"
+              className="w-8 h-8 text-amber-700"
               fill="currentColor"
               viewBox="0 0 20 20"
             >
@@ -246,15 +246,15 @@ export const InviteUserForm: React.FC<InviteUserFormProps> = ({
               <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">
+          <h3 className="text-lg font-semibold text-amber-900 mb-2">
             친구들을 초대해보세요
           </h3>
-          <p className="text-gray-500 mb-6">
+          <p className="text-amber-700 mb-6">
             링크룸에 친구들을 초대하여 함께 링크를 공유해보세요
           </p>
           <button
             onClick={() => setShowForm(true)}
-            className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 rounded-lg font-medium shadow-sm hover:shadow-md transition-all duration-200 flex items-center space-x-2 mx-auto"
+            className="bg-amber-700 hover:bg-amber-800 text-white px-8 py-3 rounded-lg font-medium shadow-sm hover:shadow-md transition-all duration-200 flex items-center space-x-2 mx-auto"
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />

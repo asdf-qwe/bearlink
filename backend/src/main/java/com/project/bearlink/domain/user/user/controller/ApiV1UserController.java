@@ -7,10 +7,9 @@ import com.project.bearlink.domain.user.user.dto.UserResponseDto;
 import com.project.bearlink.domain.user.user.entity.User;
 import com.project.bearlink.domain.user.user.service.AuthLoginService;
 import com.project.bearlink.domain.user.user.service.UserService;
+import com.project.bearlink.global.response.ApiResponse;
 import com.project.bearlink.global.rq.Rq;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,15 +31,11 @@ public class ApiV1UserController {
     private final Rq rq;
 
     @Operation(summary = "회원가입", description = "새로운 사용자를 등록합니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "회원가입 성공"),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청")
-    })
     @PostMapping("/signup")
-    public ResponseEntity<UserResponseDto> signup(@Valid @RequestBody SignupRequestDto request) {
+    public ResponseEntity<ApiResponse<UserResponseDto>> signup(@Valid @RequestBody SignupRequestDto request) {
         User user = userService.signup(request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(UserResponseDto.fromEntity(user));
+                .body(ApiResponse.ok(UserResponseDto.fromEntity(user)));
     }
 
     @GetMapping("/check-email")
@@ -48,13 +43,13 @@ public class ApiV1UserController {
         boolean exists = userService.existsByEmail(email);
 
         if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
-            return ResponseEntity.badRequest().body("유효하지 않은 이메일 형식입니다");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.ok("유효하지 않은 이메일 형식입니다"));
         }
 
         if (exists) {
-            return ResponseEntity.status(409).body("이미 사용 중인 이메일입니다");
+            return ResponseEntity.status(409).body(ApiResponse.ok("이미 사용 중인 이메일입니다"));
         }
-        return ResponseEntity.ok("사용 가능한 이메일입니다");
+        return ResponseEntity.ok(ApiResponse.ok("사용 가능한 이메일입니다"));
     }
 
     @GetMapping("/check-loginId")
@@ -62,18 +57,14 @@ public class ApiV1UserController {
         boolean exists = userService.existsByLoginId(loginId);
 
         if (exists) {
-            return ResponseEntity.status(409).body("이미 사용 중인 아이디입니다");
+            return ResponseEntity.status(409).body(ApiResponse.ok("이미 사용 중인 아이디입니다"));
         }
-        return ResponseEntity.ok("사용 가능한 아이디입니다");
+        return ResponseEntity.ok(ApiResponse.ok("사용 가능한 아이디입니다"));
     }
 
     @Operation(summary = "로그인", description = "로그인 ID 또는 이메일과 비밀번호를 입력해 accessToken을 발급받습니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "로그인 성공"),
-            @ApiResponse(responseCode = "401", description = "아이디 또는 비밀번호 불일치")
-    })
     @PostMapping("/login")
-    public ResponseEntity<TokenResponseDto> login(
+    public ResponseEntity<ApiResponse<TokenResponseDto>> login(
             @Valid @RequestBody LoginRequestDto request,
             HttpServletResponse response) {
         TokenResponseDto tokenDto = authLoginService.login(request);
@@ -88,13 +79,12 @@ public class ApiV1UserController {
         response.addHeader("Set-Cookie", accessCookie);
         response.addHeader("Set-Cookie", refreshCookie);
 
-        return ResponseEntity.ok(tokenDto);
+        return ResponseEntity.ok(ApiResponse.ok(tokenDto));
     }
 
     @Operation(summary = "로그아웃", description = "로그아웃 처리를 합니다.")
-    @ApiResponse(responseCode = "200", description = "로그아웃 성공")
     @PostMapping("/logout")
-    public ResponseEntity<String> logout() {
+    public ResponseEntity<ApiResponse<String>> logout() {
         User user = rq.getActor();
         if (user != null) authLoginService.logout(user); // 저장 필요 시
 
@@ -103,24 +93,19 @@ public class ApiV1UserController {
         rq.deleteCookie("JSESSIONID");
         SecurityContextHolder.clearContext();
 
-        return ResponseEntity.ok("로그아웃 되었습니다.");
+        return ResponseEntity.ok(ApiResponse.ok("로그아웃 되었습니다."));
     }
 
     @Operation(summary = "AccessToken 재발급", description = "쿠키에 저장된 refreshToken을 이용해 새로운 accessToken을 발급합니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "AccessToken 재발급 성공"),
-            @ApiResponse(responseCode = "401", description = "유효하지 않은 refreshToken")
-    })
     @PostMapping("/refresh")
-    public ResponseEntity<TokenResponseDto> refresh(@CookieValue("refreshToken") String refreshToken) {
+    public ResponseEntity<ApiResponse<TokenResponseDto>> refresh(@CookieValue("refreshToken") String refreshToken) {
         TokenResponseDto response = authLoginService.refreshToken(refreshToken);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
     @Operation(summary = "내 정보 조회", description = "현재 로그인한 사용자의 정보를 조회합니다.")
-    @ApiResponse(responseCode = "200", description = "조회 성공")
     @GetMapping("/me")
-    public ResponseEntity<?> getMyProfile() {
+    public ResponseEntity<ApiResponse<?>> getMyProfile() {
         try{
             User user = rq.getActor(); // 현재 로그인한 사용자 가져오기
 
@@ -132,11 +117,11 @@ public class ApiV1UserController {
             System.out.println("user id: " + user.getId());
             System.out.println("imageUrl: " + user.getImageUrl());
 
-            return ResponseEntity.ok(UserResponseDto.fromEntity(user)); // DTO 변환 후 반환
+            return ResponseEntity.ok(ApiResponse.ok(UserResponseDto.fromEntity(user))); // DTO 변환 후 반환
         } catch (Exception e) {
             log.error("사용자 정보 조회 중 예외 발생", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("서버 에러 발생: " + e.getMessage());
+                    .body(ApiResponse.ok("서버 에러 발생: " + e.getMessage()));
         }
     }
 }

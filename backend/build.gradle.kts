@@ -49,6 +49,10 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-websocket")
 
 	testImplementation ("com.h2database:h2")
+
+	// --- test ---
+	testCompileOnly("org.projectlombok:lombok")
+	testAnnotationProcessor("org.projectlombok:lombok")
 }
 
 

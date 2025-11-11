@@ -4,6 +4,8 @@ import com.project.bearlink.domain.user.user.dto.SignupRequestDto;
 import com.project.bearlink.domain.user.user.entity.User;
 import com.project.bearlink.domain.user.user.entity.UserRole;
 import com.project.bearlink.domain.user.user.repository.UserRepository;
+import com.project.bearlink.global.exception.ApiException;
+import com.project.bearlink.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,7 +23,7 @@ public class UserService {
     public User signup(SignupRequestDto request) {
 
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+            throw new ApiException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
         User user = User.builder()
@@ -49,6 +51,6 @@ public class UserService {
 
     public User findById(Long id) {
         return userRepository.findByIdWithRelations(id)
-                .orElseThrow(() -> new IllegalArgumentException("관계에 해당하는 유저 없음"));
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
     }
 }
