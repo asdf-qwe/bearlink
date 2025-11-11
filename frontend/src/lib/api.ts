@@ -46,11 +46,19 @@ export class ApiClient {
           },
         });
       } catch (refreshError) {
-        console.error("토큰 갱신 실패:", refreshError);
-        // 로그인 페이지로 리다이렉트 또는 로그아웃 처리
-        if (typeof window !== "undefined") {
-          window.location.href = "/login";
+        // 현재 페이지가 인증이 필요 없는 페이지인지 확인
+        const currentPath =
+          typeof window !== "undefined" ? window.location.pathname : "";
+        const publicPaths = ["/", "/auth/login", "/auth/signup"];
+
+        // 공개 페이지에서는 조용히 처리 (로그 출력 안 함)
+        if (!publicPaths.includes(currentPath)) {
+          console.error("토큰 갱신 실패:", refreshError);
+          if (typeof window !== "undefined") {
+            window.location.href = "/auth/login";
+          }
         }
+
         throw new Error("인증이 만료되었습니다. 다시 로그인해주세요");
       }
     }
@@ -114,9 +122,19 @@ export class ApiClient {
     const text = await response.text();
     const result = text ? JSON.parse(text) : null;
 
-    // ApiResponse 형태인지 확인하고 에러 처리
-    if (result && result.success !== undefined && !result.success) {
-      throw new Error(result.message);
+    // ApiResponse 구조 먼저 확인 (백엔드 커스텀 응답)
+    if (result && result.success !== undefined) {
+      if (!result.success) {
+        throw new Error(result.message);
+      }
+      return result;
+    }
+
+    // ApiResponse 구조가 아닌 경우 HTTP 상태 코드 확인
+    if (!response.ok) {
+      const errorMessage =
+        result?.message || `HTTP ${response.status} 오류가 발생했습니다.`;
+      throw new Error(errorMessage);
     }
 
     return result;
@@ -133,9 +151,19 @@ export class ApiClient {
     const text = await response.text();
     const result = text ? JSON.parse(text) : null;
 
-    // ApiResponse 형태인지 확인하고 에러 처리
-    if (result && result.success !== undefined && !result.success) {
-      throw new Error(result.message);
+    // ApiResponse 구조 먼저 확인 (백엔드 커스텀 응답)
+    if (result && result.success !== undefined) {
+      if (!result.success) {
+        throw new Error(result.message);
+      }
+      return result;
+    }
+
+    // ApiResponse 구조가 아닌 경우 HTTP 상태 코드 확인
+    if (!response.ok) {
+      const errorMessage =
+        result?.message || `HTTP ${response.status} 오류가 발생했습니다.`;
+      throw new Error(errorMessage);
     }
 
     return result;
@@ -151,9 +179,19 @@ export class ApiClient {
     const text = await response.text();
     const result = text ? JSON.parse(text) : null;
 
-    // ApiResponse 형태인지 확인하고 에러 처리
-    if (result && result.success !== undefined && !result.success) {
-      throw new Error(result.message);
+    // ApiResponse 구조 먼저 확인 (백엔드 커스텀 응답)
+    if (result && result.success !== undefined) {
+      if (!result.success) {
+        throw new Error(result.message);
+      }
+      return result;
+    }
+
+    // ApiResponse 구조가 아닌 경우 HTTP 상태 코드 확인
+    if (!response.ok) {
+      const errorMessage =
+        result?.message || `HTTP ${response.status} 오류가 발생했습니다.`;
+      throw new Error(errorMessage);
     }
 
     return result;
@@ -168,9 +206,19 @@ export class ApiClient {
     const text = await response.text();
     const result = text ? JSON.parse(text) : null;
 
-    // ApiResponse 형태인지 확인하고 에러 처리
-    if (result && result.success !== undefined && !result.success) {
-      throw new Error(result.message);
+    // ApiResponse 구조 먼저 확인 (백엔드 커스텀 응답)
+    if (result && result.success !== undefined) {
+      if (!result.success) {
+        throw new Error(result.message);
+      }
+      return result;
+    }
+
+    // ApiResponse 구조가 아닌 경우 HTTP 상태 코드 확인
+    if (!response.ok) {
+      const errorMessage =
+        result?.message || `HTTP ${response.status} 오류가 발생했습니다.`;
+      throw new Error(errorMessage);
     }
 
     return result;
