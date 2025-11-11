@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/friend")
-public class Ap1V1FriendController {
+public class ApiV1FriendController {
 
     private final FriendService friendService;
 

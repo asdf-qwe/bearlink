@@ -8,9 +8,7 @@ import {
   AlertCircle,
   Loader2,
   User,
-  Settings,
   LogOut,
-  CreditCard,
   Users,
   Home,
   UsersRound,
@@ -335,24 +333,6 @@ export default function Sidebar() {
               </div>
               <nav className="space-y-1">
                 <Link
-                  href="/main/myPage/account"
-                  className={`group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
-                    pathname === "/main/myPage/account"
-                      ? "bg-amber-100 text-amber-800 border-l-4 border-amber-500"
-                      : "text-amber-700 hover:bg-amber-100 hover:text-amber-900"
-                  }`}
-                >
-                  <CreditCard
-                    size={18}
-                    className={`mr-3 ${
-                      pathname === "/main/myPage/account"
-                        ? "text-amber-700"
-                        : "text-amber-500 group-hover:text-amber-700"
-                    }`}
-                  />
-                  계정
-                </Link>
-                <Link
                   href="/main/myPage/friend"
                   className={`group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
                     pathname === "/main/myPage/friend"
@@ -369,24 +349,6 @@ export default function Sidebar() {
                     }`}
                   />
                   친구
-                </Link>
-                <Link
-                  href="/main/myPage/settings"
-                  className={`group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
-                    pathname === "/main/myPage/settings"
-                      ? "bg-amber-100 text-amber-800 border-l-4 border-amber-500"
-                      : "text-amber-700 hover:bg-amber-100 hover:text-amber-900"
-                  }`}
-                >
-                  <Settings
-                    size={18}
-                    className={`mr-3 ${
-                      pathname === "/main/myPage/settings"
-                        ? "text-amber-700"
-                        : "text-amber-500 group-hover:text-amber-700"
-                    }`}
-                  />
-                  설정
                 </Link>
               </nav>
             </>

@@ -5,6 +5,8 @@ import com.project.bearlink.domain.room.entity.LinkRoom;
 import com.project.bearlink.domain.room.service.RoomService;
 import com.project.bearlink.domain.user.user.entity.User;
 import com.project.bearlink.domain.user.user.repository.UserRepository;
+import com.project.bearlink.global.exception.ApiException;
+import com.project.bearlink.global.exception.ErrorCode;
 import com.project.bearlink.global.response.ApiResponse;
 import com.project.bearlink.global.security.auth.SecurityUser;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +30,7 @@ public class Ap1V1RoomController {
             @AuthenticationPrincipal SecurityUser securityUser
     ) {
         User user = userRepository.findById(securityUser.getId())
-                .orElseThrow(() -> new IllegalArgumentException("유저 찾을 수 없음"));
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
 
         CreateLinkRoomResponse response = linkRoomService.createRoom(request, user);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(response));
@@ -61,7 +63,7 @@ public class Ap1V1RoomController {
             @AuthenticationPrincipal SecurityUser securityUser
     ) {
         User user = userRepository.findById(securityUser.getId())
-                .orElseThrow(() -> new IllegalArgumentException("유저 찾을 수 없음"));
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
 
         linkRoomService.inviteUser(roomId, request.userId(), user);
         return ResponseEntity.ok(ApiResponse.ok());
@@ -72,7 +74,7 @@ public class Ap1V1RoomController {
             @AuthenticationPrincipal SecurityUser securityUser
     ) {
         User user = userRepository.findById(securityUser.getId())
-                .orElseThrow(() -> new IllegalArgumentException("유저 찾을 수 없음"));
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
 
         List<InvitationResponse> invitations = linkRoomService.getMyInvitations(user);
         return ResponseEntity.ok(ApiResponse.ok(invitations));
@@ -84,7 +86,7 @@ public class Ap1V1RoomController {
             @AuthenticationPrincipal SecurityUser securityUser
     ) {
         User user = userRepository.findById(securityUser.getId())
-                .orElseThrow(() -> new IllegalArgumentException("유저 찾을 수 없음"));
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
 
         linkRoomService.acceptInvitation(roomMemberId, user);
         return ResponseEntity.ok(ApiResponse.ok());
@@ -97,7 +99,7 @@ public class Ap1V1RoomController {
             @AuthenticationPrincipal SecurityUser securityUser
     ) {
         User user = userRepository.findById(securityUser.getId())
-                .orElseThrow(() -> new IllegalArgumentException("유저 찾을 수 없음"));
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
 
         linkRoomService.declineInvitation(roomMemberId, user);
         return ResponseEntity.ok(ApiResponse.ok());
@@ -110,7 +112,7 @@ public class Ap1V1RoomController {
             @PathVariable Long roomId
     ) {
         User user = userRepository.findById(securityUser.getId())
-                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없음"));
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
 
         List<InviteFriendWithStatusResponse> friends = linkRoomService.getInviteFriendsWithStatus(user, roomId);
         return ResponseEntity.ok(ApiResponse.ok(friends));
