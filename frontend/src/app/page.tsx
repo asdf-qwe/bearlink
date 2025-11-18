@@ -5,13 +5,20 @@ import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { categoryService } from "@/features/category/service/categoryService";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import BackgroundCard from "@/components/BackgroundCard";
 
 export default function HomePage() {
   const { isLoggedIn, userInfo, loading } = useAuth();
   const router = useRouter();
+  const [isElectronApp, setIsElectronApp] = useState(false);
+
+  // Electron 앱 감지
+  useEffect(() => {
+    const userAgent = navigator.userAgent.toLowerCase();
+    setIsElectronApp(userAgent.includes("electron"));
+  }, []);
 
   // 사이트 첫 접속 시에만 로그인 상태 확인하여 자동 리다이렉트
   useEffect(() => {
@@ -204,7 +211,7 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div className="pt-3 sm:pt-4 lg:pt-6">
+              <div className="pt-3 sm:pt-4 lg:pt-6 flex flex-col lg:flex-row gap-3 sm:gap-4">
                 <button
                   onClick={handleStartClick}
                   className="w-full lg:w-auto px-6 sm:px-8 py-2.5 sm:py-3 bg-white border-2 border-amber-600 text-amber-600 text-base sm:text-lg font-semibold rounded-lg hover:bg-amber-50 hover:border-amber-700 hover:text-amber-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 flex items-center justify-center gap-2"
@@ -224,6 +231,27 @@ export default function HomePage() {
                   </svg>
                   지금 시작하기
                 </button>
+                {!isElectronApp && (
+                  <a
+                    href="https://github.com/asdf-qwe/bearlink/releases/latest/download/BearLink.Setup.1.0.7.exe"
+                    className="w-full lg:w-auto px-6 sm:px-8 py-2.5 sm:py-3 bg-amber-600 border-2 border-amber-600 text-white text-base sm:text-lg font-semibold rounded-lg hover:bg-amber-700 hover:border-amber-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 flex items-center justify-center gap-2"
+                  >
+                    <svg
+                      className="w-4 h-4 sm:w-5 sm:h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                      />
+                    </svg>
+                    앱 다운로드
+                  </a>
+                )}
               </div>
             </div>
           </div>
