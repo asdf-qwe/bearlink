@@ -1,16 +1,13 @@
-name: release
+name: Desktop Release
 
 on:
   push:
     tags:
       - "desktop-v*"
-    paths:
-      - "bear-desktop/**"
-      - ".github/workflows/release.yml"
 
 jobs:
   build-and-release:
-    runs-on: windows-latest
+    runs-on: windows-latest  
 
     steps:
       - uses: actions/checkout@v4
@@ -28,9 +25,12 @@ jobs:
         working-directory: bear-desktop
         run: npm run build
 
-      - name: Release
+      - name: Upload Release Assets
         uses: softprops/action-gh-release@v1
         with:
-          files: bear-desktop/dist/**
+          files: |
+            bear-desktop/dist/*.exe
+            bear-desktop/dist/*.zip
+            bear-desktop/dist/*.blockmap
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
