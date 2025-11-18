@@ -57,7 +57,8 @@ export const authService = {
       );
       return result.data;
     } catch (error) {
-      console.error("사용자 정보 조회 에러:", error);
+      // 로그인하지 않은 상태에서는 정상적인 에러이므로 조용히 처리
+      // console.error("사용자 정보 조회 에러:", error);
       throw error;
     }
   },
@@ -100,7 +101,8 @@ export const authService = {
       await this.getCurrentUser();
       return true;
     } catch (error) {
-      console.error("로그인 상태 확인 에러:", error);
+      // 홈페이지에서 로그인 상태 확인은 정상적인 동작이므로 조용히 처리
+      // console.error("로그인 상태 확인 에러:", error);
       return false;
     }
   },
