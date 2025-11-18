@@ -16,14 +16,14 @@ function createWindow() {
   win.setMenu(null);
   win.loadURL("https://www.bearlink.kr");
 
-  // 🔗 외부 링크는 기본 브라우저에서 열기
+
   win.webContents.setWindowOpenHandler(({ url }) => {
     require("electron").shell.openExternal(url);
     return { action: "deny" };
   });
 }
 
-// 🔥 자동 업데이트 이벤트 로그
+
 function initAutoUpdater() {
   autoUpdater.on("checking-for-update", () => {
     console.log("업데이트 확인 중…");
