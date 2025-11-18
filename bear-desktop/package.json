@@ -1,6 +1,6 @@
 {
   "name": "bearlink-desktop",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "description": "BearLink Desktop App using Electron",
   "main": "main.js",
   "scripts": {
@@ -27,14 +27,7 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "BearLink"
-    },
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "asdf-qwe",
-        "repo": "bearlink"
-      }
-    ]
+    }
   },
   "devDependencies": {
     "electron": "^28.0.0",
