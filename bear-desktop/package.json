@@ -1,6 +1,6 @@
 {
   "name": "bearlink-desktop",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "BearLink Desktop App using Electron",
   "main": "main.js",
   "scripts": {
