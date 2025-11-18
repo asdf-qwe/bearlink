@@ -23,8 +23,6 @@ jobs:
 
       - name: Build App
         working-directory: bear-desktop
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
         run: npm run build
 
       - name: Upload Release Assets
@@ -36,5 +34,4 @@ jobs:
             bear-desktop/dist/*.blockmap
             bear-desktop/dist/latest.yml
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
