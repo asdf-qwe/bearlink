@@ -1,0 +1,47 @@
+{
+  "name": "bearlink-desktop",
+  "version": "1.0.0",
+  "description": "BearLink Desktop App using Electron",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "build": {
+    "appId": "com.bearlink.desktop",
+    "productName": "BearLink",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "BearLink"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "asdf-qwe",
+        "repo": "bearlink",
+        "releaseType": "release"
+      }
+    ]
+  },
+  "dependencies": {
+    "electron-updater": "^6.1.1"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^23.6.0"
+  }
+}

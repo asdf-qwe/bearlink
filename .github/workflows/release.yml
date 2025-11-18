@@ -1,0 +1,36 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "desktop-v*"
+    paths:
+      - "bear-desktop/**"
+      - ".github/workflows/release.yml"
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        working-directory: bear-desktop
+        run: npm install
+
+      - name: Build App
+        working-directory: bear-desktop
+        run: npm run build
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: bear-desktop/dist/**
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

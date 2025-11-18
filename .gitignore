@@ -1,0 +1,6 @@
+bear-desktop/dist/
+bear-desktop/node_modules/
+bear-desktop/win-unpacked/
+bear-desktop/*.exe
+bear-desktop/*.zip
+bear-desktop/*.blockmap
