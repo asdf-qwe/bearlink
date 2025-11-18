@@ -1,12 +1,11 @@
 {
   "name": "bearlink-desktop",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "BearLink Desktop App using Electron",
   "main": "main.js",
-  "author": "BearLink",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder"
+    "build": "electron-builder --win"
   },
   "build": {
     "appId": "com.bearlink.desktop",
@@ -28,8 +27,7 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "BearLink"
-    },
-    "publish": "never"
+    }
   },
   "devDependencies": {
     "electron": "^28.0.0",
