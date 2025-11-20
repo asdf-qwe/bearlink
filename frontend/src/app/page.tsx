@@ -233,7 +233,7 @@ export default function HomePage() {
                 </button>
                 {!isElectronApp && (
                   <a
-                    href="https://github.com/asdf-qwe/bearlink/releases/latest/download/BearLink.Setup.1.0.9.exe"
+                    href="https://github.com/asdf-qwe/bearlink/releases/latest/download/BearLink.Setup.1.1.0.exe"
                     className="w-full lg:w-auto px-6 sm:px-8 py-2.5 sm:py-3 bg-amber-600 border-2 border-amber-600 text-white text-base sm:text-lg font-semibold rounded-lg hover:bg-amber-700 hover:border-amber-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 flex items-center justify-center gap-2"
                   >
                     <svg
