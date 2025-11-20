@@ -87,7 +87,25 @@ export const categoryService = {
         }
       );
 
-      const result: ApiResponse<string> = await response.json();
+      // 404 에러 확인
+      if (response.status === 404) {
+        throw new Error("카테고리를 찾을 수 없습니다.");
+      }
+
+      // 응답이 비어있는지 확인
+      const text = await response.text();
+      
+      // 빈 응답이면 성공으로 처리
+      if (!text || text.trim() === "") {
+        if (response.ok) {
+          return "카테고리가 성공적으로 삭제되었습니다.";
+        } else {
+          throw new Error("카테고리 삭제에 실패했습니다.");
+        }
+      }
+
+      // JSON 응답 파싱
+      const result: ApiResponse<string> = JSON.parse(text);
 
       if (!result.success) {
         throw new Error(result.message);
